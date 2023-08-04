@@ -14,9 +14,15 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Topic :: Security",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
-    "click"
+    "sentence_transformers",
+    "transformers",
+    "typing_extensions",
+    "torch",
+    "nltk",
+    "numpy",
+    "networkx",
 ]
 
 [project.optional-dependencies]
