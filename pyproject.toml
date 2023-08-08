@@ -1,7 +1,7 @@
 [project]
-name = "story_clustering"
+name = "taranis_story_clustering"
 description = "Story Clustering Bot for Taranis-NG"
-version = "0.1.0"
+version = "0.1.1"
 readme = "README.md"
 license = {file = "LICENSE.md"}
 maintainers = [{ name = "AIT", email = "benjamin.akhras@ait.ac.at" }]
