@@ -5,34 +5,12 @@ from .nlp_utils import idf, tfidf
 
 
 class Keyword:
-    """
-    A class to represent the keyword data type
-    Attributes
-    -------------
-    baseForm: str
-        Base form of the word
-    word: list[str]
-        List of words with similar form
-    tf: double
-        Term frequency of the word
-    df: double
-        Document frequency of the word
-    documents: set
-        Set of document ids containing this word
-    Methods
-    ------------
-    TODO
-    """
-
-    def __init__(self, baseform, words, documents=None, tf=0, df=0):
+    def __init__(self, baseform: str, words: list[str], documents: None | set = None, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
         self.tf = tf
         self.df = df
-        if documents != None:
-            self.documents = documents
-        else:
-            self.documents = {}
+        self.documents = documents if documents != None else {}
 
     def increase_tf(self, k):
         self.tf += k
@@ -40,24 +18,8 @@ class Keyword:
     def increase_df(self, k):
         self.df += k
 
-    def documents(self) -> set:
-        return self.documents
-
-    def tf(self):
-        return self.tf
-
-    def df(self):
-        return self.df
-
     def reprJSON(self):
         return {"baseForm": self.baseForm, "words": self.words, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
-
-    # def add_document(self, doc_id):
-
-
-# class KeywordEncoder(json.JSONEncoder):
-#    def default(self, o: Any) -> Any:
-#        return {'baseForm': o.baseForm, 'tf': o.tf, 'df': o.df, 'documents': list(o.documents) }
 
 
 class Document:
@@ -98,7 +60,7 @@ class Document:
 
     """
 
-    def __init__(self, doc_id, url=None, publish_date=None, language=None, title=None, content=None, keywords=None):
+    def __init__(self, doc_id: int, url: str | None = None, publish_date=None, language=None, title=None, content=None, keywords=None):
         self.doc_id = doc_id
         self.url = url
         self.publishTime = publish_date
@@ -193,7 +155,7 @@ class Corpus:
     ----------
     """
 
-    def __init__(self, docs=None, df=None) -> None:
+    def __init__(self, docs=None, df=None):
         """
         Args:
             docs (_type_, optional): _description_. Defaults to None.
@@ -201,14 +163,15 @@ class Corpus:
         """
         self.docs = {}
         self.DF = {} if df is None else df
-        if docs is not None:
-            for doc_id, doc in enumerate(docs):
-                self.docs[doc_id] = doc
-                for keyword in doc.keywords().values():
-                    if keyword.baseForm() in self.DF:
-                        self.DF[keyword.baseForm()] += 1
-                    else:
-                        self.DF[keyword.baseForm()] = 1
+        if docs is None:
+            return
+        for doc_id, doc in enumerate(docs):
+            self.docs[doc_id] = doc
+            for keyword in doc.keywords().values():
+                if keyword.baseForm() in self.DF:
+                    self.DF[keyword.baseForm()] += 1
+                else:
+                    self.DF[keyword.baseForm()] = 1
 
     def updateDF(self):
         self.DF = {}

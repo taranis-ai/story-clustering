@@ -20,8 +20,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     """
     corpus = Corpus()
     for nitem in new_news_items:
-        doc = Document()
-        doc.doc_id = nitem["id"]
+        doc = Document(nitem["id"])
 
         doc.url = nitem.get("url", None)
         doc.content = nitem["text"]
@@ -73,7 +72,6 @@ def to_json_events(events: list[Event]) -> dict:
     # iterate over each event and return the list of documents ids belonging to the same event
     all_events = []
     for e in events:
-        e_docs = [d.doc_id for d in e.docs]
         all_events.append(e)
     return {"event_clusters": all_events}
 
@@ -94,8 +92,7 @@ def incremental_clustering(new_news_items: list, already_clustered_events: list)
     # create corpus
     corpus = Corpus()
     for nitem in new_news_items:
-        doc = Document()
-        doc.doc_id = nitem["id"]
+        doc = Document(doc_id=nitem["id"])
         doc.url = nitem["url"]
         doc.content = nitem["text"]
         doc.title = nitem["title"]
