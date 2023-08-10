@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extractEventsFromCorpus
+from .eventdetector import extract_events_from_corpus
 
 EventSplitAlg = "DocGraph"
 MinTopicSize = 1
@@ -20,12 +20,12 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     """
     corpus = Corpus()
     for nitem in new_news_items:
-        doc = Document(nitem["id"])
+        doc = Document(doc_id=nitem["id"])
 
         doc.url = nitem.get("url", None)
         doc.content = nitem["text"]
         doc.title = nitem["title"]
-        doc.publishTime = nitem.get("date", None)
+        doc.publish_time = nitem.get("date", None)
         doc.language = nitem["lang"]
         # create keywords
         keywords = {}
@@ -38,7 +38,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
         doc.keywords = keywords
         corpus.docs[doc.doc_id] = doc
 
-    corpus.updateDF()
+    corpus.update_df()
     return corpus
 
 
@@ -48,47 +48,47 @@ def initial_clustering(new_news_items: list):
 
     # extract events
     model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
-    events = extractEventsFromCorpus(corpus=corpus, model=model)
+    events = extract_events_from_corpus(corpus=corpus, model=model)
 
     # create stories based on events
     stories = []
-    for e in events:
+    for event in events:
         found_story = False
-        for s in stories:
-            if belongsToStory(e, s, model):
-                s.append(e)
+        for story in stories:
+            if belongs_to_story(event, story, model):
+                story.append(event)
                 found_story = True
                 break
         if not found_story:
-            aux = [e]
+            aux = [event]
             stories.append(aux)
 
     new_aggregates = to_json_events(events)
-    new_aggregates.append(to_json_stories(stories))
+    new_aggregates = new_aggregates | to_json_stories(stories)
     return new_aggregates
 
 
 def to_json_events(events: list[Event]) -> dict:
     # iterate over each event and return the list of documents ids belonging to the same event
     all_events = []
-    for e in events:
-        all_events.append(e)
+    for event in events:
+        all_events.append(event)
     return {"event_clusters": all_events}
 
 
 def to_json_stories(stories: list[list[Event]]) -> dict:
-    # iterate over each story s
-    # iterate over each event in s
+    # iterate over each story
+    # iterate over each event in story
     all_stories = []
-    for s in stories:
+    for story in stories:
         s_docs = []
-        for e in s:
-            s_docs.extend(d.doc_id for d in e.docs)
+        for event in story:
+            s_docs.extend(d.doc_id for d in event.docs)
         all_stories.append(s_docs)
     return {"story_clusters": all_stories}
 
 
-def incremental_clustering(new_news_items: list, already_clustered_events: list):
+def incremental_clustering(new_news_items: list):
     # create corpus
     corpus = Corpus()
     for nitem in new_news_items:
@@ -96,7 +96,7 @@ def incremental_clustering(new_news_items: list, already_clustered_events: list)
         doc.url = nitem["url"]
         doc.content = nitem["text"]
         doc.title = nitem["title"]
-        doc.publishTime = nitem["date"]
+        doc.publish_time = nitem["date"]
         doc.language = nitem["lang"]
         # create keywords
         keywords = {}
@@ -106,7 +106,7 @@ def incremental_clustering(new_news_items: list, already_clustered_events: list)
         doc.keywords = keywords
         corpus.docs[doc.doc_id] = doc
 
-    corpus.updateDF()
+    corpus.update_df()
 
     # create KeyGraph from existing event_clusters
 
@@ -127,7 +127,7 @@ def compute_similarity(text_1, text_2, model):
     return avg.item()
 
 
-def belongsToStory(ev, story, model) -> bool:
+def belongs_to_story(ev, story, model) -> bool:
     text_1 = " ".join([d.title for d in ev.docs.values()])
     text_2 = " ".join([d.title for e in story for d in e.docs.values()])
     print(text_1)

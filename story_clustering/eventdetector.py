@@ -1,42 +1,42 @@
-from .keywords_organizer import KeywordGraph, CommunityDetector, KeywordNode, KeywordEdge
+import math
+import json
+import torch
 from sentence_transformers import SentenceTransformer, util
+from .keywords_organizer import KeywordGraph, CommunityDetector, KeywordNode
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-import math
 from .nlp_utils import tfidf, idf
-import torch
-import json
 
 
 EventSplitAlg = "DocGraph"
 MinTopicSize = 1
 
 
-def extractEventsFromCorpus(corpus: Corpus, model) -> list[Event]:
+def extract_events_from_corpus(corpus: Corpus, model) -> list[Event]:
     g = KeywordGraph()
-    g.buildGraph(corpus)
+    g.build_graph(corpus)
 
     # extract keyword communities from keyword graph
-    calcDocsTFIDFVectorSizeWithGraph(corpus.docs, corpus.DF, g.graphNodes)
+    calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.DF, g.graphNodes)
 
-    communities = CommunityDetector(g.graphNodes).detectCommunitiesLouvain()
+    communities = CommunityDetector(g.graphNodes).detect_communities_louvain()
     s = len(communities)
     print(f"Communities size: {s}")
 
     # extract events from corpus based on keyword communities
-    events = extractTopicByKeywordCommunities(corpus, communities)
+    events = extract_topic_by_keyword_communities(corpus, communities)
     print("docs to events assigned. Detecting sub-events...")
 
     # identify more fine-grained events
-    events = splitEvents(events, corpus.DF, len(corpus.docs), model)
+    events = split_events(events, model)
 
-    for e in events:
-        e.refineKeyGraph()
+    for event in events:
+        event.refine_key_graph()
 
     return events
 
 
-def calcDocsTFIDFVectorSizeWithGraph(docs: dict[str, Document], DF: dict[str, float], graphNodes: dict[str, KeywordNode]):
+def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], DF: dict[str, float], graphNodes: dict[str, KeywordNode]):
     for d in docs.values():
         d.tfidfVectorSizeWithKeygraph = sum(
             math.pow(tfidf(k.tf, idf(DF[k.baseForm], len(docs))), 2) for k in d.keywords.values() if k.baseForm in graphNodes
@@ -44,7 +44,7 @@ def calcDocsTFIDFVectorSizeWithGraph(docs: dict[str, Document], DF: dict[str, fl
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
 
-def extractTopicByKeywordCommunities(corpus: Corpus, communities: dict[str, KeywordNode]) -> list[Event]:
+def extract_topic_by_keyword_communities(corpus: Corpus, communities: dict[str, KeywordNode]) -> list[Event]:
     result = []
     doc_community = {}
     doc_similarity = {}
@@ -55,7 +55,7 @@ def extractTopicByKeywordCommunities(corpus: Corpus, communities: dict[str, Keyw
 
     for i, c in enumerate(communities):
         for doc in corpus.docs.values():
-            cosineSimilarity = tfidfCosineSimilarityGraph2Doc(c, doc, corpus.DF, len(corpus.docs))
+            cosineSimilarity = tfidf_cosine_similarity_graph_2doc(c, doc, corpus.DF, len(corpus.docs))
             if cosineSimilarity > doc_similarity[doc.doc_id]:
                 doc_community[doc.doc_id] = i
                 doc_similarity[doc.doc_id] = cosineSimilarity
@@ -78,16 +78,16 @@ def extractTopicByKeywordCommunities(corpus: Corpus, communities: dict[str, Keyw
     return result
 
 
-def tfidfCosineSimilarityGraph2Doc(community: dict[str, KeywordNode], d2: Document, DF: dict[str, float], docSize: int) -> float:
+def tfidf_cosine_similarity_graph_2doc(community: dict[str, KeywordNode], d2: Document, DF: dict[str, float], docSize: int) -> float:
     sim = 0
     vectorsize1 = 0
-    numberOfKeywordsInCommon = 0
+    number_of_keywords_in_common = 0
 
     for n in community.graphNodes.values():
         # calculate community keyword's tf
         nTF = 0
         for e in n.edges.values():
-            e.computeCPs()
+            e.compute_cps()
             nTF += max(e.cp1, e.cp2)
         n.keyword.tf = nTF / len(n.edges)
 
@@ -97,7 +97,7 @@ def tfidfCosineSimilarityGraph2Doc(community: dict[str, KeywordNode], d2: Docume
 
             # update similarity between document d2 and community
             if n.keyword.baseForm in d2.keywords:
-                numberOfKeywordsInCommon += 1
+                number_of_keywords_in_common += 1
                 sim += tfidf(n.keyword.tf, idf(DF[n.keyword.baseForm], docSize)) * tfidf(
                     d2.keywords[n.keyword.baseForm].tf, idf(DF[n.keyword.baseForm], docSize)
                 )
@@ -106,17 +106,16 @@ def tfidfCosineSimilarityGraph2Doc(community: dict[str, KeywordNode], d2: Docume
     # return similarity
     if vectorsize1 > 0 and d2.tfidfVectorSizeWithKeygraph > 0:
         return sim / vectorsize1 / d2.tfidfVectorSizeWithKeygraph
-    else:
-        return 0
+    return 0
 
 
-def splitEvents(events: list[Event], DF: dict[str, float], docAmount: int, model) -> list[Event]:
+def split_events(events: list[Event], model) -> list[Event]:
     # updated the original implementation to use sentence transformers to detect if
     # two documents talk about the same event
     result = []
     for e in events:
         if len(e.docs) >= 2:
-            split_events = []
+            split_events_list = []
             processed_doc_keys = []
 
             for i, d1 in enumerate(e.docs.keys()):
@@ -131,14 +130,13 @@ def splitEvents(events: list[Event], DF: dict[str, float], docAmount: int, model
 
                 for j in range(i + 1, len(e.docs.keys())):
                     d2 = list(e.docs.keys())[j]
-                    if d2 not in processed_doc_keys:
-                        if is_same_event := sameEvent(e.docs[d1], e.docs[d2], DF, docAmount, model):
-                            sub_event.docs[d2] = e.docs[d2]
-                            sub_event.similarities[d2] = e.similarities[d2]
-                            processed_doc_keys.append(d2)
+                    if d2 not in processed_doc_keys and same_event(e.docs[d1], e.docs[d2],  model):
+                        sub_event.docs[d2] = e.docs[d2]
+                        sub_event.similarities[d2] = e.similarities[d2]
+                        processed_doc_keys.append(d2)
 
-                split_events.append(sub_event)
-            result.extend(split_events)
+                split_events_list.append(sub_event)
+            result.extend(split_events_list)
         else:
             result.append(e)
     return result
@@ -160,7 +158,7 @@ def compute_similarity(text_1, text_2, model):
     return avg.item()
 
 
-def sameEvent(d1: Document, d2: Document, DF, docAmount, model) -> bool:
+def same_event(d1: Document, d2: Document, model) -> bool:
     text_1 = d1.content
     text_2 = d2.content
     return compute_similarity(text_1, text_2, model) >= 0.44
@@ -207,12 +205,12 @@ if __name__ == "__main__":
     f.close()
     print("Corpus loaded...")
     corpus = create_corpus_from_json(corpus_dict)
-    corpus.updateDF()
+    corpus.update_df()
 
     print("Corpus created...")
     # extract events from corpus
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-    events = extractEventsFromCorpus(corpus=corpus, model=model)
+    events = extract_events_from_corpus(corpus=corpus, model=model)
     for e in events:
         print("Titles:")
         for d in e.docs:

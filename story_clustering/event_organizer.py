@@ -16,37 +16,37 @@ class Event:
 
     # get start timestamp of all docs in this event
     # return -1 if no docs in this event
-    def getStartTimestamp(self):
+    def get_start_timestamp(self):
         if len(self.docs) == 0:
             return -1
 
         timestamp = time.time()
-        for d in self.docs.values():
-            if d.publishTime is not None and d.publishTime.getTime() < timestamp:
-                timestamp = d.publishTime.getTime()
+        for doc in self.docs.values():
+            if doc.publish_time is not None and doc.publish_time.getTime() < timestamp:
+                timestamp = doc.publish_time.getTime()
         return timestamp
 
     # get end timestamp of all docs in this event
     # return -1 if no doc in this event
-    def getEndTimestamp(self):
+    def get_end_timestamp(self):
         if len(self.docs) == 0:
             return -1
 
         timestamp = -1
-        for d in self.docs.values():
-            if d.publishTime is not None and d.publishTime.getTime() > timestamp:
-                timestamp = d.publishTime.getTime()
+        for doc in self.docs.values():
+            if doc.publish_time is not None and doc.publish_time.getTime() > timestamp:
+                timestamp = doc.publish_time.getTime()
         return timestamp
 
     # calculate the centroid document of this document cluster
     # centroid is the concatenation of all docs in this event
-    def calcCentroid(self):
+    def calc_centroid(self):
         self.centroid = Document("-1")
         timestamp = float("inf")
-        for d in self.docs.values():
-            if d.publishTime.getTime() < timestamp:
-                timestamp = d.publishTime.getTime()
-            for k in d.keywords.values():
+        for doc in self.docs.values():
+            if doc.publish_time.getTime() < timestamp:
+                timestamp = doc.publish_time.getTime()
+            for k in doc.keywords.values():
                 if k.baseForm in self.centroid.keywords:
                     kk = self.centroid.keywords[k.baseForm]
                     kk.tf += k.tf
@@ -54,18 +54,18 @@ class Event:
                 else:
                     self.centroid[k.baseForm] = Keyword(k.baseForm, k.word, k.tf, k.df)
 
-        self.centroid.calcTFVectorSize()
-        self.centroid.publishTime = timestamp
+        self.centroid.calc_tf_vector_size()
+        self.centroid.publish_time = timestamp
 
-    def refineKeyGraph(self):
+    def refine_key_graph(self):
         toRemove = []
         for key in self.keyGraph.graphNodes:
             keywordNode = self.keyGraph.graphNodes[key]
             keyword = keywordNode.keyword.baseForm
-            exist = any(d.containsKeyword(keyword) for d in self.docs.values())
+            exist = any(d.contains_keyword(keyword) for d in self.docs.values())
             if not exist:
                 toRemove.append(keyword)
 
-        for kw in toRemove:
-            self.keyGraph.graphNodes.pop(kw)
+        for keyword in toRemove:
+            self.keyGraph.graphNodes.pop(keyword)
             # KeywordGraph.removeNode(self.keyGraph,kw)

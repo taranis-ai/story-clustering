@@ -1,14 +1,15 @@
 from __future__ import annotations
-from .eventdetector import Event, sameEvent
 from datetime import datetime
 from enum import Enum
 import time
-from .document_representation import Corpus, Document
-from .keywords_organizer import KeywordGraph
 import math
 
-import nltk
+from .eventdetector import Event, same_event
+from .document_representation import Corpus, Document
+from .keywords_organizer import KeywordGraph
 
+
+import nltk
 nltk.download("stopwords")
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -25,8 +26,8 @@ class StoryNode:
         self.e = ev
         self.parent = p
         if ev is not None:
-            self.startTimestamp = ev.getStartTimestamp()
-            self.endTimestamp = ev.getEndTimestamp()
+            self.startTimestamp = ev.get_start_timestamp()
+            self.endTimestamp = ev.get_end_timestamp()
         else:
             self.startTimestamp = -1
             self.endTimestamp = -1
@@ -41,23 +42,23 @@ class StoryNode:
         StoryNode.MAX_ID += 1
         return max_id
 
-    def setChildren(self, children):
+    def set_children(self, children):
         for child in children:
             child.parent = self
         self.children = children
 
-    def numberOfChildren(self):
+    def number_of_children(self):
         return len(self.children)
 
-    def hasChildren(self):
-        return self.numberOfChildren() > 0
+    def has_children(self):
+        return self.number_of_children() > 0
 
     def addChild(self, child: StoryNode):
         child.parent = self
         child.numPathNode = self.numPathNode + 1
         self.children.append(child)
 
-    def addChildAt(self, index, child):
+    def add_child_at(self, index, child):
         child.parent = self
         child.numPathNode = self.numPathNode + 1
         self.children.insert(index, child)
@@ -86,8 +87,8 @@ class StoryTree:
             self.keyGraph = ev.keyGraph
 
             self.docTitles.extend(ev.docs[key].segTitle for key in ev.docs.keys())
-            self.startTimestamp = ev.getStartTimestamp()
-            self.endTimestamp = ev.getEndTimestamp()
+            self.startTimestamp = ev.get_start_timestamp()
+            self.endTimestamp = ev.get_end_timestamp()
         else:
             self.startTimestamp = -1
             self.endTimestamp = -1
@@ -106,21 +107,21 @@ class StoryTree:
     def isEmpty(self):
         return self.root is None
 
-    def getNumberOfNodes(self, node: StoryNode | None = None):
+    def get_number_of_nodes(self, node: StoryNode | None = None):
         if node:
-            return self.auxiliaryGetNumberOfNodes(node) + 1
-        return self.auxiliaryGetNumberOfNodes(self.root) + 1 if self.root else 0
+            return self.auxiliary_get_number_of_nodes(node) + 1
+        return self.auxiliary_get_number_of_nodes(self.root) + 1 if self.root else 0
 
-    def auxiliaryGetNumberOfNodes(self, node: StoryNode):
-        numberOfNodes = node.numberOfChildren()
+    def auxiliary_get_number_of_nodes(self, node: StoryNode):
+        numberOfNodes = node.number_of_children()
         for child in node.children:
-            numberOfNodes += self.auxiliaryGetNumberOfNodes(child)
+            numberOfNodes += self.auxiliary_get_number_of_nodes(child)
         return numberOfNodes
 
-    def getNumberOfDocs(self):
+    def get_number_of_docs(self):
         return len(self.docTitles)
 
-    def getNumberOfDocsByTime(self, timestamp1: int, timestamp2: int):
+    def get_number_of_docs_by_time(self, timestamp1: int, timestamp2: int):
         startTimestamp = 0
         endTimestamp = 0
         if timestamp1 < timestamp2:
@@ -135,31 +136,31 @@ class StoryTree:
         for i in range(1, len(storyNodes)):
             sn = self.storyNodes[i]
             for d in sn.e.docs.values():
-                if d.publishTime.getTime() >= startTimestamp and d.publishTime.getTime() <= endTimestamp:
+                if d.publish_time.getTime() >= startTimestamp and d.publish_time.getTime() <= endTimestamp:
                     numberOfDocs += 1
 
         return numberOfDocs
 
-    def getStartTimestamp(self):
+    def get_start_timestamp(self):
         storyNodes = self.build(self.root, TreeTraversalOrderEnum.PRE_ORDER)
         if len(storyNodes) <= 1:
             return -1
         timestamp = time.time()
         for i in range(1, len(storyNodes)):
             sn = storyNodes[i]
-            if sn.e.getStartTimestamp() < timestamp:
-                timestamp = sn.e.getStartTimestamp()
+            if sn.e.get_start_timestamp() < timestamp:
+                timestamp = sn.e.get_start_timestamp()
         return timestamp
 
-    def getEndTimestamp(self):
+    def get_end_timestamp(self):
         storyNodes = self.build(self.root, TreeTraversalOrderEnum.PRE_ORDER)
         if len(storyNodes) <= 1:
             return -1
         timestamp = -1
         for i in range(1, len(storyNodes)):
             sn = storyNodes[i]
-            if sn.e.getEndTimestamp() > timestamp:
-                timestamp = sn.e.getEndTimestamp()
+            if sn.e.get_end_timestamp() > timestamp:
+                timestamp = sn.e.get_end_timestamp()
         return timestamp
 
     def build(self, traversalOrder):
@@ -172,22 +173,22 @@ class StoryTree:
         traversalResult = []
 
         if traversalOrder == TreeTraversalOrderEnum.PRE_ORDER:
-            self.buildPreOrder(node, traversalResult)
+            self.build_pre_order(node, traversalResult)
 
         elif traversalOrder == TreeTraversalOrderEnum.POST_ORDER:
-            self.buildPostOrder(node, traversalResult)
+            self.build_post_order(node, traversalResult)
         return traversalResult
 
-    def buildPreOrder(self, node: StoryNode, traversalResult):
+    def build_pre_order(self, node: StoryNode, traversalResult):
         traversalResult.add(node)
 
         for child in node.children:
-            self.buildPreOrder(child, traversalResult)
+            self.build_pre_order(child, traversalResult)
 
     # TODO: to remove is not really used
-    def buildPostOrder(self, node: StoryNode, traversalResult):
+    def build_post_order(self, node: StoryNode, traversalResult):
         for child in node.children:
-            self.buildPostOrder(child, traversalResult)
+            self.build_post_order(child, traversalResult)
         traversalResult.add(node)
 
 
@@ -198,14 +199,14 @@ class StoryForest:
         self.cumulativeDF = {}
         self.cumulativeDocAmount = 0
 
-    def getAllEvents(self):
+    def get_all_events(self):
         result = []
         for st in self.storyTrees:
             storyNodes = st.build(TreeTraversalOrderEnum.PRE_ORDER)
             result.extend(storyNodes[i].e for i in range(1, len(storyNodes)))
         return result
 
-    def filterStoryTreesByTime(self, t):
+    def filter_story_trees_by_time(self, t):
         result = []
         t = datetime.fromtimestamp(t)
         for st in self.storyTrees:
@@ -221,18 +222,18 @@ class StoryMaker:
         self.model = model
 
     # generate stories from corpus
-    def generateStories(self, events) -> StoryForest:
+    def generate_stories(self, events) -> StoryForest:
         sf = StoryForest()
-        # events = extractEventsFromCorpus(self.corpus)
-        sf = self.updateStoriesByEvents(sf, events)
+        # events = extract_events_from_corpus(self.corpus)
+        sf = self.update_stories_by_events(sf, events)
         return sf
 
     # this is done daily
-    def updateStoriesByEvents(self, sf: StoryForest, events: list[Event]) -> StoryForest:
+    def update_stories_by_events(self, sf: StoryForest, events: list[Event]) -> StoryForest:
         for e in events:
-            storyIdx = self.findRelatedStory(e, sf)
+            storyIdx = self.find_related_story(e, sf)
             if storyIdx >= 0:
-                self.updateStoryTree(sf, storyIdx, e)
+                self.update_story_tree(sf, storyIdx, e)
                 sf.storyTrees[storyIdx].staleAge = -1
             else:
                 newSt = StoryTree(e)
@@ -246,7 +247,7 @@ class StoryMaker:
 
         return sf
 
-    def updateStoryTree(self, sf: StoryForest, storyIdx: int, e: Event):
+    def update_story_tree(self, sf: StoryForest, storyIdx: int, e: Event):
         st = sf.storyTrees[storyIdx]
         storyNodes = st.build(TreeTraversalOrderEnum.PRE_ORDER)
 
@@ -256,13 +257,13 @@ class StoryMaker:
 
         # compare with each story node
         for i in range(1, len(storyNodes)):
-            sameEv = self.sameEvent(e, storyNodes[i], sf.corpus.DF, len(sf.corpus.docs))
+            sameEv = self.same_event(e, storyNodes[i], len(sf.corpus.docs))
             if sameEv:
                 matchIdx = i
                 break
 
             # if not an existing event, calculate compatibility
-            compatibility = self.calcCompatibilityEvent2StoryNode(e, storyNodes[i], st)
+            compatibility = self.calc_compatibility_event_2story_node(e, storyNodes[i], st)
             if compatibility > maxCompatibility:
                 maxCompatibility = compatibility
                 matchIdx = i
@@ -275,24 +276,24 @@ class StoryMaker:
             self.extend(e, st.root)
 
         # update tree's info
-        st.keyGraph = KeywordGraph.mergeKeyGraphs(st.keyGraph, e.keyGraph)
-        if st.startTimestamp > e.getEndTimestamp():
-            st.startTimestamp = e.getStartTimestamp
-        if st.endTimestamp < e.getEndTimestamp:
-            st.endTimestamp = e.getEndTimestamp()
+        st.keyGraph = KeywordGraph.merge_key_graphs(st.keyGraph, e.keyGraph)
+        if st.startTimestamp > e.get_end_timestamp():
+            st.startTimestamp = e.get_start_timestamp
+        if st.endTimestamp < e.get_end_timestamp:
+            st.endTimestamp = e.get_end_timestamp()
 
         for d in e.docs.values():
             st.docTitles.append(d.segTitle)
 
-    def findRelatedStory(self, e: Event, sf: StoryForest) -> int:
+    def find_related_story(self, e: Event, sf: StoryForest) -> int:
         matchIdx = -1
         for i in range(0, len(sf.storyTrees)):
-            if self.sameStoryByRule(e, sf, i):
+            if self.same_story_by_rule(e, sf, i):
                 matchIdx = i
                 break
         return matchIdx
 
-    def sameStoryByRule(self, e: Event, sf: StoryForest, storyTreeIdx: int) -> bool:
+    def same_story_by_rule(self, e: Event, sf: StoryForest, storyTreeIdx: int) -> bool:
         st = sf.storyTrees[storyTreeIdx]
 
         if eventDocTitles := {d.segTitle for d in e.docs.values() if d.segTitle in st.docTitles}:
@@ -300,7 +301,7 @@ class StoryMaker:
 
         # use sone rules for brand new event
         # compare event and story's keyword graphs
-        keyGraphCompatibility = self.calcKeygraphCompatibilityEvent2Story(e, st)
+        keyGraphCompatibility = self.calc_keygraph_compatibility_event_2story(e, st)
         if keyGraphCompatibility < MinKeyGraphCompatibilityEv2St:
             return False
 
@@ -321,30 +322,30 @@ class StoryMaker:
 
         return False
 
-    def calcKeygraphCompatibilityEvent2Story(self, e: Event, st: StoryTree) -> float:
+    def calc_keygraph_compatibility_event_2story(self, e: Event, st: StoryTree) -> float:
         numIntersection = len(set(e.keyGraph.graphNodes.keys()).intersection(set(st.keyGraph.graphNodes.keys())))
         numUnion = len(e.keyGraph.graphNodes.keys()) + len(st.keyGraph.graphNodes.keys()) - numIntersection
         return (numIntersection + 0.0) / numUnion if numUnion > 0 else 0
 
-    def calcCompatibilityEvent2StoryNode(self, e: Event, sn: StoryNode, st: StoryTree) -> float:
+    def calc_compatibility_event_2story_node(self, e: Event, sn: StoryNode, st: StoryTree) -> float:
         compatibility = 0
         if e.centroid is None:
-            e.calcCentroid()
+            e.calc_centroid()
         if sn.e.centroid is None:
-            sn.e.calcCentroid()
+            sn.e.calc_centroid()
 
         # content similarity
-        event2StoryNodeCompatibility = Document.cosineSimilarityByTF(e.centroid, sn.e.centroid)
+        event2StoryNodeCompatibility = Document.cosine_similarity_by_tf(e.centroid, sn.e.centroid)
 
         # path similarity
         event2PathCompatibility = (event2StoryNodeCompatibility + (sn.numPathNode - 1) * sn.consistency) / sn.numPathNode
 
         # time proximity
         timeProximity = 0
-        T = abs(max(st.endTimestamp, e.getEndTimestamp()) - min(st.startTimestamp, e.getStartTimestamp()))
+        T = abs(max(st.endTimestamp, e.get_end_timestamp()) - min(st.startTimestamp, e.get_start_timestamp()))
         timeGap = 0
         if T != 0:
-            timeGap = (e.getStartTimestamp() - sn.e.getStartTimestamp()) / (T + 0.0)
+            timeGap = (e.get_start_timestamp() - sn.e.get_start_timestamp()) / (T + 0.0)
 
         if timeGap >= 0:
             timeProximity = math.exp(-timeGap * DeltaTimeGap)
@@ -356,21 +357,21 @@ class StoryMaker:
     # TODO: check if correct and if it matches the description in the paper
     def merge(self, e: Event, sn: StoryNode):
         sn.e.docs.update(e.docs)
-        sn.startTimestamp = sn.e.getStartTimestamp()
-        sn.endTimestamp = sn.e.getEndTimestamp()
+        sn.startTimestamp = sn.e.get_start_timestamp()
+        sn.endTimestamp = sn.e.get_end_timestamp()
 
     def extend(self, e: Event, sn: StoryNode):
         if len(e.docs) > 0:
             newSn = StoryNode(e)
             sn.addChild(newSn)
             if not sn.isRoot():
-                event2StoryNodeCompatibility = Document.cosineSimilarityByTF(e.centroid, sn.e.centroid)
+                event2StoryNodeCompatibility = Document.cosine_similarity_by_tf(e.centroid, sn.e.centroid)
                 event2PathCompatibility = (event2StoryNodeCompatibility + (sn.numPathNode - 1) * sn.consistency) / sn.numPathNode
                 newSn.consistency = event2PathCompatibility
             else:
                 newSn.consistency = 0
 
-    def sameEvent(self, e: Event, sn: StoryNode, DF: dict[str, float], model) -> bool:
+    def same_event(self, e: Event, sn: StoryNode, model) -> bool:
         # check if duplicated docs
         eDocTitles = set()
         for d in e.docs.values():
@@ -391,4 +392,4 @@ class StoryMaker:
         d1 = e.docs[keyd1]
         d2 = sn.e.docs[keyd2]
 
-        return sameEvent(d1, d2, None, None, self.model)
+        return same_event(d1, d2, self.model)
