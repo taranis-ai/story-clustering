@@ -2,10 +2,12 @@ from sentence_transformers import SentenceTransformer, util
 import torch
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extract_events_from_corpus
-
+from .eventdetector import extract_events_from_corpus, extract_events_incrementally
+from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
+from .nlp_utils import compute_tf
 EventSplitAlg = "DocGraph"
 MinTopicSize = 1
+SimilarityThreshold = 0.44
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -33,8 +35,9 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             keyword = Keyword(baseform=tag["baseform"], words=tag["words"], tf=tag.get("tf", 0), df=tag.get("df", 0))
             keywords[tag["baseForm"]] = keyword
 
-            # TODO: check if tf and df are computed and do so if not
-
+            # update tf for keyword
+            if keyword.tf == 0:
+                keyword.tf = compute_tf(keyword.baseForm,keyword.words,doc.content)
         doc.keywords = keywords
         corpus.docs[doc.doc_id] = doc
 
@@ -88,27 +91,75 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
     return {"story_clusters": all_stories}
 
 
-def incremental_clustering(new_news_items: list):
-    # create corpus
-    corpus = Corpus()
-    for nitem in new_news_items:
-        doc = Document(doc_id=nitem["id"])
-        doc.url = nitem["url"]
-        doc.content = nitem["text"]
-        doc.title = nitem["title"]
-        doc.publish_time = nitem["date"]
-        doc.language = nitem["lang"]
-        # create keywords
-        keywords = {}
-        for tag in nitem["tags"]:
-            keyword = Keyword(baseform=tag["baseform"], words=tag["words"], tf=tag["tf"], df=tag["df"])
-            keywords[tag["baseForm"]] = keyword
-        doc.keywords = keywords
-        corpus.docs[doc.doc_id] = doc
+def get_or_add_keywordNode(tag: dict, graphNodes: dict) -> KeywordNode:
+    if tag["baseForm"] in graphNodes:
+        return graphNodes[tag["baseForm"]]
+    
+    keyword = Keyword(tag["baseForm"],words=tag["words"],tf=tag.get("tf", 0), df=tag.get("df", 0))
+    keywordNode = KeywordNode(keyword=keyword)
+    graphNodes[keyword.baseForm] = keywordNode
+    return keywordNode
 
-    corpus.update_df()
+def update_or_create_keywordEdge(kn1: KeywordNode, kn2:KeywordNode) -> KeywordEdge:
+    edgeId = KeywordEdge.get_id(kn1, kn2)
+    if edgeId not in kn1.edges:
+        new_edge = KeywordEdge(kn1, kn2, edgeId)
+        new_edge.df += 1
+        kn1.edges[edgeId] = new_edge
+        kn2.edges[edgeId] = new_edge
+    else:
+        kn1.edges[edgeId].df += 1
+        
+        if kn1.edges[edgeId].df != kn2.edges[edgeId].df:
+            print("Edge object is not the same")
+            kn2.edges[edgeId].df = kn1.edges[edgeId].df
+   
 
-    # create KeyGraph from existing event_clusters
+def incremental_clustering(new_news_items: list,already_clusterd_events:list):
+    # create corpus from news_items
+    corpus = create_corpus(new_news_items)
+
+    # create keyGraph from corpus
+    g = KeywordGraph()
+    g.build_graph(corpus=corpus)
+    
+    # add to g the new nodes and edges from already_clusterd_events
+    for cluster in already_clusterd_events:
+        tags = cluster["tags"]
+        for keyword_1 in tags:
+            for keyword_2 in tags:
+                if keyword_1 != keyword_2:
+                    keyNode1 = get_or_add_keywordNode(keyword_1, g.graphNodes)
+                    keyNode2 = get_or_add_keywordNode(keyword_2, g.graphNodes)
+                    # add edge and increase edge df 
+                    update_or_create_keywordEdge(keyNode1,keyNode2)
+                    
+    # extract events
+    model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
+    events = extract_events_incrementally(corpus=corpus, g=g, model=model)
+
+    # create stories based on events
+    stories = []
+    for event in events:
+        found_story = False
+        for story in stories:
+            if belongs_to_story(event, story, model):
+                story.append(event)
+                found_story = True
+                break
+        if not found_story:
+            aux = [event]
+            stories.append(aux)
+
+    new_aggregates = to_json_events(events)
+    new_aggregates = new_aggregates | to_json_stories(stories)
+    return new_aggregates
+                    
+    
+    
+    
+    
+    
 
 
 def compute_similarity(text_1, text_2, model):
@@ -130,6 +181,6 @@ def compute_similarity(text_1, text_2, model):
 def belongs_to_story(ev, story, model) -> bool:
     text_1 = " ".join([d.title for d in ev.docs.values()])
     text_2 = " ".join([d.title for e in story for d in e.docs.values()])
-    print(text_1)
-    print(text_2)
-    return compute_similarity(text_1, text_2, model) >= 0.44
+    #print(text_1)
+    #print(text_2)
+    return compute_similarity(text_1, text_2, model) >= SimilarityThreshold

@@ -228,7 +228,7 @@ class StoryMaker:
         sf = self.update_stories_by_events(sf, events)
         return sf
 
-    # this is done daily
+    # this could be done daily
     def update_stories_by_events(self, sf: StoryForest, events: list[Event]) -> StoryForest:
         for e in events:
             storyIdx = self.find_related_story(e, sf)
@@ -295,8 +295,8 @@ class StoryMaker:
 
     def same_story_by_rule(self, e: Event, sf: StoryForest, storyTreeIdx: int) -> bool:
         st = sf.storyTrees[storyTreeIdx]
-
-        if eventDocTitles := {d.segTitle for d in e.docs.values() if d.segTitle in st.docTitles}:
+        eventDocTitles = [d.title for d in e.docs]
+        if eventDocTitles in {d.segTitle for d in e.docs.values() if d.segTitle in st.docTitles}:
             return True
 
         # use sone rules for brand new event

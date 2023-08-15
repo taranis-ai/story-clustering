@@ -82,7 +82,6 @@ class Document:
 
     Methods
     -----------
-    TODO
 
     """
 
@@ -154,6 +153,12 @@ class Document:
             "tfidfVectorSizeWithKeygraph": self.tfidfVectorSizeWithKeygraph,
         }
 
+class KeywordEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        return {"baseForm": o.baseForm, 
+                "tf": o.tf, 
+                "df": o.df, 
+                "documents": list(o.documents) }
 
 class DocumentEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:

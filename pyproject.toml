@@ -23,6 +23,7 @@ dependencies = [
     "nltk",
     "numpy",
     "networkx",
+    "polyfuzz",
 ]
 
 [project.optional-dependencies]
