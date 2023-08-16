@@ -3,51 +3,41 @@
 This code takes newsitems in the format as provided by [Taranis-NG](https://github) and clusters them into Stories.
 
 
+# Description and Use
 
+The approach supports the following functionalities:
+1) Automatically detect Events.
+2) News items are clustered based on the detected Events.
+3) Documents belonging to related Events are then clustered into Stories.
 
-# Editing this README
+## Initial clustering
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+The method `initial_clustering` in `clustering.py` takes as input a dictionary of `news_items_aggregate` (see `tests/testdapa.py` for the actual input format) and outputs a dictionary containing two keys:
+("event_clusters" : list of list of documents ids) and 
+("story_clusters" : list of list of documents ids) 
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Incremental clustering
+The incremental clustering method takes as input a dictionary of `news_items_aggregate`, containing new news items to be clustered, and `clustered_news_items_aggregate`, containing already clustered items, and tries to cluster the new documents to the existing clusters or create new ones. See `tests/testdata.py` for the actual input formats. This method also 
+outputs a dictionary containing two keys:
+("event_clusters" : list of list of documents ids) and 
+("story_clusters" : list of list of documents ids) 
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+The `requirements.txt` file should list all Python libraries that the story-clustering
+depends on, and they will be installed using:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```
+pip install -r requirements.txt
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+## Use
+See `notebook\test_story_clustering.ipynb` for examples on how to use the clustering methods.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
 
 ## License
-For open source projects, say how it is licensed.
+EUROPEAN UNION PUBLIC LICENCE v. 1.2
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+

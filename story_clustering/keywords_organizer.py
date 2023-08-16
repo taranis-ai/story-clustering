@@ -281,105 +281,31 @@ class CommunityDetector:
         for w1 in gr.nodes():
             word = keywords_dict[w1]
             for e in self.nodes[word].edges.values():
-                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
+                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], 
+                            keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
-        G = gr.copy()
+        gr_copy = gr.copy()
         start = time.time()
-        communities = nx.community.louvain_communities(G, seed=123)
+        communities = nx.community.louvain_communities(gr_copy, seed=123)
         # communities = nx.community.girvan_newman(G)
         end = time.time()
-        print(f"Time to run girvan newman (sec): {end-start}")
+        print(f"Time to louvain communities alg (sec): {end-start}")
 
-        S = []
+        key_communities = []
         for c in communities:
             if len(c) > 1:
                 subgraph = gr.subgraph(c)
-                S.append(subgraph)
+                key_communities.append(subgraph)
 
-        return self.get_keywords_keygraphs(S, keywords_dict)
+        return self.get_keywords_keygraphs(key_communities, keywords_dict)
 
-    def detect_communities_key_graph(self) -> dict:
-        # create network from keywords graph
-        gr = nx.Graph()
-        keywords_dict = {}
-        for i, n in enumerate(self.nodes.values(), start=1):
-            keywords_dict[i] = n.keyword.baseForm
-            gr.add_node(i)
-        keywords_vals = {v: k for (k, v) in keywords_dict.items()}
-        for w1 in gr.nodes():
-            word = keywords_dict[w1]
-            for e in self.nodes[word].edges.values():
-                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
-        G = gr.copy()
-        start = time.time()
-        communities = nx.community.girvan_newman(G, most_valuable_edge=betweenness_centrality_parallel)
-        # communities = nx.community.girvan_newman(G)
-        end = time.time()
-        print(f"Time to run girvan newman (sec): {end-start}")
-        start = time.time()
-        communities_by_quality = []
-        k = 100
-        limited = itertools.takewhile(lambda c: len(c) <= k, communities)
-        for i, c in enumerate(limited):
-            # print(c)
-            print(f"Community {i}")
-            # s = time.time()
-            m = modularity(G, c)
-            # e = time.time()
-            # print(f'Time to compute modularity: {e-s}')
-            communities_by_quality.append((c, m))
-        # communities_by_quality = [(c, modularity(G, c)) for c in communities]
-        end = time.time()
-        print(f"Time to run communities detection (sec): {end-start}")
-        c_best = sorted(list(communities_by_quality), key=lambda x: x[1], reverse=True)
-        c_best = c_best[0][0]
-        # print(Util.pp(communities_by_quality))
-        print("Clusters:", modularity(G, c_best), c_best)
+    
 
-        S = []
-        for c in c_best:
-            if len(c) > 1:
-                subgraph = gr.subgraph(c)
-                S.append(subgraph)
-
-        # res = tuple(sorted(c) for c in next(comp))
-        # print(res)
-
-        # S = [gr.subgraph(c).copy() for c in components]
-        # print(len(S))
-
-        # create communities keywords
-
-        return self.get_keywords_keygraphs(S, keywords_dict)
-
-    def communitySplits(self, graph, betweenness, keywords_dict):
-        # while(self.keepRemovingEdges(graph,betweenness)):
-        # betweenness = nx.edge_betweenness_centrality(graph)
-        max_betweenness = 0
-        if len(betweenness.values()) != 0:
-            max_betweenness = max(betweenness.values())
-        else:
-            return graph
-        for u, v in betweenness.items():
-            if float(v) == max_betweenness:
-                print(f"Removing edge: {keywords_dict[u[0]]}_{keywords_dict[u[1]]} with betweenness_score: {max_betweenness}")
-                graph.remove_edge(u[0], u[1])
-        return graph
-
-    def keepRemovingEdges(self, graph, betweenness):
-        # betweenness = nx.edge_betweenness_centrality(graph, normalized=False)
-        if len(betweenness.values()) != 0:
-            betweennessScore = max(betweenness.values())
-        else:
-            return False
-        graphSize = len(graph.nodes())
-        possible_path = min(graphSize * (graphSize - 1) / 2, MaxClusterNodeSize * (MaxClusterNodeSize - 1) / 2)
-        threshold = 4.35 * math.log(possible_path) / math.log(2) + 1
-        return graphSize > MinClusterNodeSize and betweennessScore > threshold
+    
 
     def get_keywords_keygraphs(self, communities, keywords_dict):
-        all_commpunities = []
+        all_communities = []
 
         for subgraph in communities:
             new_keywords_graph = KeywordGraph()
@@ -396,61 +322,12 @@ class CommunityDetector:
                 keyword_edge.df = weight["weight"]
                 new_keywords_graph.graphNodes[w1].edges[edge_id] = keyword_edge
                 new_keywords_graph.graphNodes[w2].edges[edge_id] = keyword_edge
-            all_commpunities.append(new_keywords_graph)
-        return all_commpunities
+            all_communities.append(new_keywords_graph)
+        return all_communities
 
-    def detectCommunities(self) -> dict:
-        for n in self.nodes.values():
-            n.visited = False
-        communities = []
-        # nodes_n = self.nodes
-        connectedComponents = self.find_connected_components(self.nodes)
+    
 
-        # processing each connected component sub-graph
-        while len(connectedComponents) != 0:
-            subNodes = connectedComponents.pop(0)
-            # filter small connected components
-            if len(subNodes) >= MinClusterNodeSize:
-                # iteratively split big connected components into smaller ones
-                # this step is in case the graph is too big, and calculate betweenness score is too time consuming
-                if len(subNodes) > MaxClusterNodeSize:
-                    self.filter_top_k_percent_of_edges(subNodes, 1)
-                    for n in subNodes.values():
-                        n.visited = False
-                    connectedComponents[:0] = self.find_connected_components(subNodes)
-                    # connectedComponents.extend(0, self.find_connected_components(subNodes))
-                else:
-                    self.detect_communities_betweenness(subNodes, communities)
-
-        return communities
-
-    #
-    def find_connected_components(self, nodes: dict) -> list[dict]:
-        cc = []
-        iter_nodes = iter(set(nodes.values()))
-        while nodes:
-            source = next(iter_nodes)
-
-            subNodes = {}
-            q = []
-            q.insert(0, source)
-            while q:
-                n = q.pop(0)
-                n.visited = True
-                nodes.pop(n.keyword.baseForm)
-                subNodes[n.keyword.baseForm] = n
-                for e in n.edges.values():
-                    n2 = e.opposite(n)
-                    if not n2.visited:
-                        n2.visited = True
-                        q.append(n2)
-            q.clear()
-            cc.append(subNodes)
-            # l = len(cc)
-            # print(f'{source.keyword.baseForm} we found {l} connected components')
-            # if len(subNodes) >= 2:
-            #    print(subNodes)
-        return cc
+    
 
     def filter_top_k_percent_of_edges(self, nodes, k) -> bool:
         edgeSize = sum(len(n.edges) for n in nodes.values())
@@ -464,11 +341,7 @@ class CommunityDetector:
         all_edges = list({e for n in nodes.values() for e in n.edges.values()})
         all_edges.sort(key=lambda x: max(x.cp1, x.cp2))
 
-        # toRemove = list()
-        # for n1 in nodes.values():
-        #    for e in n1.edges.values():
-        #        if n1 == e.n1:
-        #            self.insert_into(toRemove,e)
+        
 
         for e in all_edges[:ntoremove]:
             e.n1.edges.pop(e.id)
@@ -494,123 +367,8 @@ class CommunityDetector:
         toRemove.insert(i, e)
         return True
 
-    # find communities using betweenness centrality
-    # returns communities extracted from the graph
-    def detect_communities_betweenness(self, nodes: dict, communities):
-        # find the edge with maximum betweenness score
-        maxKeywordEdge = self.find_max_edge(nodes)
 
-        # decide whether continue to find sub communities
-        if self.get_filter_status(len(nodes), maxKeywordEdge):
-            # remove the edge with maximum betweenness score
-            maxKeywordEdge.n1.edges.pop(maxKeywordEdge.id)
-            maxKeywordEdge.n2.edges.pop(maxKeywordEdge.id)
 
-            # check if the graph is stil connected
-            # if yes, iteratively run to find communities
-            subgraph1 = self.find_subgraph(maxKeywordEdge.n1, nodes)
-            if len(subgraph1) == len(nodes):
-                return self.detect_communities_betweenness(nodes, communities)
-            # remove a subgraph from the whole graph
-            for key in subgraph1:
-                nodes.pop(key)
+    
 
-            # duplicate edge if the conditional probability is higher than threshold
-            if maxKeywordEdge.cp1 > MinCpToDuplicateEdge:
-                k = maxKeywordEdge.n2.keyword
-                newn = KeywordNode(Keyword(k.baseForm, k.word, k.tf, k.df))
-                e = KeywordEdge(maxKeywordEdge.n1, newn)
-                maxKeywordEdge.n1.edges[e.id] = e
-                newn.edges[e.id] = e
-                subgraph1[k.baseForm] = newn
-
-            if maxKeywordEdge.cp2 > MinCpToDuplicateEdge:
-                k = maxKeywordEdge.n1.keyword
-                newn = KeywordNode(Keyword(k.baseForm, k.word, k.tf, k.df))
-                e = KeywordEdge(newn, maxKeywordEdge.n2)
-                maxKeywordEdge.n2.edges[e.id] = e
-                newn.edges[e.id] = e
-                nodes[k.baseForm] = newn
-
-            self.detect_communities_betweenness(subgraph1, communities)
-            self.detect_communities_betweenness(nodes, communities)
-        else:
-            communities.append(nodes)
-
-        return communities
-
-    def find_max_edge(self, nodes: dict):
-        # clear each edge's betweenness score as it changes when graph structure changes
-        for n in nodes.values():
-            for e in n.edges.values():
-                e.betweennessScore = 0
-
-        maxKewordEdge = KeywordEdge(None, None, None)
-        maxKewordEdge.betweennessScore = -1
-
-        for source in nodes.values():
-            for n in nodes.values():
-                n.visited = False
-            maxKewordEdge = self.BFS(source, maxKewordEdge)
-
-        # for undirected graph, each shortest path will be count twice as each nide will be retrieved twice as source or destination
-        maxKewordEdge.betweennessScore /= 2
-        return maxKewordEdge
-
-    # using BFS to get edge with maximum betweenness score
-    def BFS(self, source: KeywordNode, maxKeywordEdge: KeywordEdge):
-        q = [source]
-        while q:
-            n = q.pop(0)
-            for e in n.edges.values():
-                n2 = e.opposite(n)
-                if not n2.visited:
-                    n2.visited = True
-                    n2.prev = n
-                    self.update_betweenness_score(n2, source, maxKeywordEdge)
-                    if e.compare_betweenness(maxKeywordEdge) > 0:
-                        maxKeywordEdge = e
-                    q.append(n2)
-        return maxKeywordEdge
-
-    def update_betweenness_score(self, n, root, maxKeywordEdge):
-        while True:
-            e = n.edges.get(KeywordEdge.get_id(n, n.prev))
-            e.betweennessScore += 1
-            if e.compare_betweenness(maxKeywordEdge) > 0:
-                maxKeywordEdge = e
-            n = n.prev
-            if n.id == root.id:
-                break
-        return maxKeywordEdge
-
-    # extract sub-graph that contains a specific node
-    def find_subgraph(self, source, nodes):
-        for n in nodes.values():
-            n.visited = False
-
-        subnodes = {}
-        q = [source]
-        while q:
-            n = q.pop(0)
-            n.visited = True
-            subnodes[n.keyword.baseForm] = n
-            for e in n.edges.values():
-                n2 = e.opposite(n)
-                if not n2.visited:
-                    n2.visited = True
-                    q.append(n2)
-
-        return subnodes
-
-    # decide whether continue to split graph into subnodes
-    def get_filter_status(self, graphSize: int, maxKeywordEdge: KeywordEdge):
-        possible_path = min(graphSize * (graphSize - 1) / 2, MaxClusterNodeSize * (MaxClusterNodeSize - 1) / 2)
-        # threshold = 4.2 * math.log(possible_path) / math.log(2)+1
-        threshold = 2.4 * math.log(possible_path) / math.log(2) + 1
-        return (
-            graphSize > MinClusterNodeSize
-            and maxKeywordEdge is not None
-            and maxKeywordEdge.df > 0
-            and maxKeywordEdge.betweennessScore > threshold
-        )
+   

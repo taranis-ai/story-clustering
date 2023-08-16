@@ -12,14 +12,35 @@ EventSplitAlg = "DocGraph"
 MinTopicSize = 1
 
 
-def extract_events_from_corpus(corpus: Corpus, model) -> list[Event]:
-    g = KeywordGraph()
-    g.build_graph(corpus)
 
+def extract_events_incrementally(corpus:Corpus, g: KeywordGraph, model) -> list[Event]:
     # extract keyword communities from keyword graph
     calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.DF, g.graphNodes)
 
     communities = CommunityDetector(g.graphNodes).detect_communities_louvain()
+    #s = len(communities)
+    #print(f"Communities size: {s}")
+
+    # extract events from corpus based on keyword communities
+    events = extract_topic_by_keyword_communities(corpus, communities)
+    print("docs to events assigned. Detecting sub-events...")
+
+    # identify more fine-grained events
+    events = split_events(events, model)
+
+    for event in events:
+        event.refine_key_graph()
+
+    return events
+
+def extract_events_from_corpus(corpus: Corpus, model) -> list[Event]:
+    graph = KeywordGraph()
+    graph.build_graph(corpus)
+
+    # extract keyword communities from keyword graph
+    calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.DF, graph.graphNodes)
+
+    communities = CommunityDetector(graph.graphNodes).detect_communities_louvain()
     s = len(communities)
     print(f"Communities size: {s}")
 
@@ -168,12 +189,8 @@ def create_corpus_from_json(corpus_dict) -> Corpus:
     docs = {}
     DF = {}
     corpus = Corpus()
-    # print(type(corpus_dict['docs']))
-
-    # list_ids = [0,4,29,30]
+   
     for doc_id, doc in corpus_dict["docs"].items():
-        # if int(doc_id) not in list_ids:
-        #    continue
         keywords = {}
 
         for k in doc["keywords"]:
@@ -189,10 +206,7 @@ def create_corpus_from_json(corpus_dict) -> Corpus:
             content=doc["content"],
             keywords=keywords,
         )
-    # TODO: uncomment after debugging
-    # for word, tf in corpus_dict['DF'].items():
-    #    DF[word] = tf
-    # corpus.DF = DF
+   
 
     return corpus
 

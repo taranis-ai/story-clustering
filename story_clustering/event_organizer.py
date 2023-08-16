@@ -57,15 +57,15 @@ class Event:
         self.centroid.calc_tf_vector_size()
         self.centroid.publish_time = timestamp
 
-    def refine_key_graph(self):
-        toRemove = []
-        for key in self.keyGraph.graphNodes:
-            keywordNode = self.keyGraph.graphNodes[key]
-            keyword = keywordNode.keyword.baseForm
-            exist = any(d.contains_keyword(keyword) for d in self.docs.values())
-            if not exist:
-                toRemove.append(keyword)
+    #def refine_key_graph(self):
+    #    toRemove = []
+    #    for key in self.keyGraph.graphNodes:
+    #        keywordNode = self.keyGraph.graphNodes[key]
+    #        keyword = keywordNode.keyword.baseForm
+    #        exist = any(d.contains_keyword(keyword) for d in self.docs.values())
+    #        if not exist:
+    #            toRemove.append(keyword)
 
-        for keyword in toRemove:
-            self.keyGraph.graphNodes.pop(keyword)
-            # KeywordGraph.removeNode(self.keyGraph,kw)
+    #    for keyword in toRemove:
+    #        self.keyGraph.graphNodes.pop(keyword)
+            
