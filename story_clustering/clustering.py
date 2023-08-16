@@ -15,7 +15,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
 
     Args:
         new_news_items (list[dict]): list of dict with following keys
-            {'id': str, 'url': str, 'text': str, 'title':str,'date': 'YYYY-MM-DD', 'lang': str,
+            {'id': str, 'link': str, 'text': str, 'title':str,'date': 'YYYY-MM-DD', 'lang': str,
             'tags': [{'baseForm': str, 'words': list[str]}]}
     Returns:
         corpus: Corpus of documents
@@ -24,16 +24,18 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     for nitem in new_news_items:
         doc = Document(doc_id=nitem["id"])
 
-        doc.url = nitem.get("url", None)
-        doc.content = nitem["text"]
-        doc.title = nitem["title"]
-        doc.publish_time = nitem.get("date", None)
-        doc.language = nitem["lang"]
+        doc.url = nitem.get("news_item_data.link", None)
+        doc.content = nitem["news_item_data"]["content"]
+        doc.title =  nitem["news_item_data"]["title"]
+        if doc.title is not None:
+            doc.segTitle = doc.title.strip().split(" ")
+        doc.publish_time = nitem.get("news_item_data.published", None)
+        doc.language =  nitem["news_item_data"]["language"]
         # create keywords
         keywords = {}
-        for tag in nitem["tags"]:
-            keyword = Keyword(baseform=tag["baseform"], words=tag["words"], tf=tag.get("tf", 0), df=tag.get("df", 0))
-            keywords[tag["baseForm"]] = keyword
+        for tag in nitem["tags"].values():
+            keyword = Keyword(baseform=tag["name"], words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),documents=None)
+            keywords[tag["name"]] = keyword
 
             # update tf for keyword
             if keyword.tf == 0:
@@ -72,10 +74,11 @@ def initial_clustering(new_news_items: list):
 
 
 def to_json_events(events: list[Event]) -> dict:
-    # iterate over each event and return the list of documents ids belonging to the same event
+    # iterate over each event and return the list of documents 
+    # ids belonging to the same event
     all_events = []
     for event in events:
-        all_events.append(event)
+        all_events.append(event.docs)
     return {"event_clusters": all_events}
 
 

@@ -25,7 +25,7 @@ class Keyword:
       TODO
       """
 
-    def __init__(self, baseform: str, words: list[str], documents: None | set = None, tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, words: list[str], documents: set, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
         self.documents = documents if documents is not None else {}
@@ -85,14 +85,15 @@ class Document:
 
     """
 
-    def __init__(self, doc_id: int, url: str | None = None, publish_date=None, language=None, title=None, content=None,
+    def __init__(self, doc_id: int, url=None, publish_date=None, language=None, title=None, content=None,
                  keywords=None):
         self.doc_id = doc_id
         self.url = url
         self.publish_time = publish_date
         self.language = language
         self.title = title
-        self.segTitle = title.strip().split(" ")
+        if title is not None:
+            self.segTitle = title.strip().split(" ")
         self.content = content
         self.keywords = keywords
         self.tf_vector_size = -1

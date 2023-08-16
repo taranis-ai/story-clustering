@@ -23,6 +23,7 @@ def tokanize_text(text:str) -> list[str]:
     tokenizer = RegexpTokenizer(r'\w+')
     text_content_tokanized = tokenizer.tokenize(text)
     text_content_tokanized = [w.lower() for w in text_content_tokanized if w.lower() not in stopwords_list]
+    return text_content_tokanized
 
 def compute_tf(baseForm, words, text):
     tfidf = TFIDF(model_id="TF-IDF-Sklearn",clean_string=False,n_gram_range=(3, 3))
@@ -31,7 +32,8 @@ def compute_tf(baseForm, words, text):
     if not baseForm.strip().isalpha() or len(baseForm.strip()) <=2 or baseForm in stopwords_list:
         return 1
     n_words = len(baseForm.strip().split(" "))  
-    model.match(tokanize_text(text),words.append(baseForm)).group(link_min_similarity=0.75)
+    #all_words = words.append(baseForm)
+    model.match(tokanize_text(text),words).group(link_min_similarity=0.75)
     df = model.get_matches()
     
     values = df[(df["Group"].notnull()) & (df["Similarity"] >=0.65) ]

@@ -30,7 +30,7 @@ news_item_aggregate_1 = {
                 "source": "https://url/13",
                 "link": "https://url/13",
                 "language": None,
-                "content": "CVE-2020-1234 - Test Aggregate 1",
+                "content": "CVE-2020-1234 - Test Aggregate 1, Securities",
                 "collected": "2023-08-01T17:01:04.802015",
                 "published": "2023-08-01T17:01:04.801998",
                 "updated": "2023-08-01T17:00:39.893435",
