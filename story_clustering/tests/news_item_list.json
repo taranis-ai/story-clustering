@@ -423,7 +423,7 @@
           "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
           "hash": "599fafee5eeb098239c57c78bf5cea6ea52b0e92a1abc9e80964150a3773f135",
           "title": "Test News Item 10",
-          "content": "An unspecified Software and OS developer from Redmond Washingigton has so many security issues you won't belive the 5th vulnerability - See the list of CVEs only from the last hour below: CVE-....",
+          "content": "An unspecified Azure Software and OS developer from Redmond Washingigton has so many security issues you won't belive the 5th vulnerability - See the list of CVEs only from the last hour below: CVE-....",
           "collected": "2023-08-01T17:01:04.801886",
           "published": "2023-08-01T17:01:04.801870",
           "updated": "2023-08-01T17:00:39.893435"
@@ -496,7 +496,7 @@
       "vulnerability": {
         "name": "vulnerability",
         "tag_type": "MISC",
-        "sub_forms": []
+        "sub_forms": ["vulnerabilities"]
       }
     },
     "id": 10

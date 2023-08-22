@@ -21,27 +21,30 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
         corpus: Corpus of documents
     """
     corpus = Corpus()
-    for nitem in new_news_items:
-        doc = Document(doc_id=nitem["id"])
+    for nitem_agg in new_news_items:
+        for nitem in nitem_agg["news_items"]:
+            doc = Document(doc_id=nitem["id"])
 
-        doc.url = nitem.get("news_item_data.link", None)
-        doc.content = nitem["news_item_data"]["content"]
-        doc.title =  nitem["news_item_data"]["title"]
-        if doc.title is not None:
-            doc.segTitle = doc.title.strip().split(" ")
-        doc.publish_time = nitem.get("news_item_data.published", None)
-        doc.language =  nitem["news_item_data"]["language"]
-        # create keywords
-        keywords = {}
-        for tag in nitem["tags"].values():
-            keyword = Keyword(baseform=tag["name"], words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),documents=None)
-            keywords[tag["name"]] = keyword
+            doc.url = nitem.get("news_item_data.link", None)
+            doc.content = nitem["news_item_data"]["content"]
+            doc.title =  nitem["news_item_data"]["title"]
+            if doc.title is not None:
+                doc.segTitle = doc.title.strip().split(" ")
+            doc.publish_time = nitem.get("news_item_data.published", None)
+            doc.language =  nitem["news_item_data"]["language"]
+            print(doc.doc_id)
+            # create keywords
+            keywords = {}
+            for tag in nitem_agg["tags"].values():
+                keyword = Keyword(baseform=tag["name"].lower(), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),documents=None)
+                keywords[tag["name"]] = keyword
 
-            # update tf for keyword
-            if keyword.tf == 0:
-                keyword.tf = compute_tf(keyword.baseForm,keyword.words,doc.content)
-        doc.keywords = keywords
-        corpus.docs[doc.doc_id] = doc
+                print(tag["name"])
+                # update tf for keyword
+                if keyword.tf == 0:
+                    keyword.tf = compute_tf(keyword.baseForm,keyword.words,doc.content)
+            doc.keywords = keywords
+            corpus.docs[doc.doc_id] = doc
 
     corpus.update_df()
     return corpus
@@ -70,6 +73,7 @@ def initial_clustering(new_news_items: list):
 
     new_aggregates = to_json_events(events)
     new_aggregates = new_aggregates | to_json_stories(stories)
+    #new_aggregates.update(to_json_stories(stories))
     return new_aggregates
 
 
@@ -78,7 +82,7 @@ def to_json_events(events: list[Event]) -> dict:
     # ids belonging to the same event
     all_events = []
     for event in events:
-        all_events.append(event.docs)
+        all_events.append(list(event.docs.keys()))
     return {"event_clusters": all_events}
 
 
@@ -89,7 +93,7 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
     for story in stories:
         s_docs = []
         for event in story:
-            s_docs.extend(d.doc_id for d in event.docs)
+            s_docs.extend([d for d in event.docs])
         all_stories.append(s_docs)
     return {"story_clusters": all_stories}
 

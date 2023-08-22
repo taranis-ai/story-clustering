@@ -177,7 +177,7 @@ news_item_aggregate_7 = {
     "id": 7,
     "news_items": [
         {
-            "id": 13,
+            "id": 137,
             "news_item_data_id": "e7890cde-g567-1234-56de-4fgh5678i901",
             "news_item_aggregate_id": 7,
             "news_item_data": {
@@ -243,7 +243,7 @@ news_item_aggregate_9 = {
         }
     ],
     "tags": {
-        "Software": {"name": "Azure", "tag_type": "MISC", "sub_forms": []},
+        "Software": {"name": "Software", "tag_type": "MISC", "sub_forms": []},
         "CVE": {"name": "CVE", "tag_type": "MISC", "sub_forms": []},
         "vulnerability": {"name": "vulnerability", "tag_type": "MISC", "sub_forms": []},
     },

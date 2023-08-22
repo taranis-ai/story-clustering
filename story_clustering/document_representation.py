@@ -28,7 +28,7 @@ class Keyword:
     def __init__(self, baseform: str, words: list[str], documents: set, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
-        self.documents = documents if documents is not None else {}
+        self.documents = documents if documents is not None else set()
         self.tf = tf
         self.df = df
 

@@ -6,7 +6,8 @@ from networkx.algorithms.community.quality import modularity
 from .document_representation import Corpus,  Keyword
 # from multiprocessing import Pool
 
-MinEdgeDF = 2
+#MinEdgeDF = 2
+MinEdgeDF = 1
 MinEdgeCorrelation = 0.05
 MaxClusterNodeSize = 5
 MinClusterNodeSize = 1

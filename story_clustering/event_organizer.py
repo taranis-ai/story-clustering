@@ -6,7 +6,7 @@ from .keywords_organizer import KeywordGraph, KeywordNode, KeywordEdge
 class Event:
     def __init__(self):
         self.max_id = 1
-        # self.keyGraph = dict()
+        self.keyGraph = None
         self.docs = {}
         self.similarities = {}
         self.centroid = None
@@ -57,15 +57,15 @@ class Event:
         self.centroid.calc_tf_vector_size()
         self.centroid.publish_time = timestamp
 
-    #def refine_key_graph(self):
-    #    toRemove = []
-    #    for key in self.keyGraph.graphNodes:
-    #        keywordNode = self.keyGraph.graphNodes[key]
-    #        keyword = keywordNode.keyword.baseForm
-    #        exist = any(d.contains_keyword(keyword) for d in self.docs.values())
-    #        if not exist:
-    #            toRemove.append(keyword)
+    def refine_key_graph(self):
+        toRemove = []
+        for key in self.keyGraph.graphNodes:
+            keywordNode = self.keyGraph.graphNodes[key]
+            keyword = keywordNode.keyword.baseForm
+            exist = any(d.contains_keyword(keyword) for d in self.docs.values())
+            if not exist:
+                toRemove.append(keyword)
 
-    #    for keyword in toRemove:
-    #        self.keyGraph.graphNodes.pop(keyword)
+        for keyword in toRemove:
+            self.keyGraph.graphNodes.pop(keyword)
             
