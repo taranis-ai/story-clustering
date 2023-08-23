@@ -28,9 +28,20 @@ jobs:
         with:
           black_args: "story_clustering --check"
           fail_on_error: false
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/huggingface
+            ~/nltk_data
+          key: ${{ hashFiles('**/pyproject.toml') }}
+
+      - name: Install dependencies
+        run: pip install -e .[dev]
+
       - name: test
         run: |
-          pip install -e .[dev]
           echo "Starting Pytest"
           pytest
 
