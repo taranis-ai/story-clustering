@@ -27,9 +27,13 @@ The `requirements.txt` file should list all Python libraries that the story-clus
 depends on, and they will be installed using:
 
 ```
-pip install -r requirements.txt
+pip install .
 ```
 
+## Development
+```
+pip install .[dev]
+```
 
 ## Use
 See `notebook\test_story_clustering.ipynb` for examples on how to use the clustering methods.
