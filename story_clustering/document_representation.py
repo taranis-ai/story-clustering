@@ -6,26 +6,10 @@ from .nlp_utils import idf, tfidf
 
 class Keyword:
     """
-      A class to represent the keyword data type
-      Attributes
-      -------------
-      baseForm: str
-          Base form of the word
-      words: list[str]
-          List of words with similar form
-      documents: set
-          Set of document ids containing this word
-      tf: double
-          Term frequency of the word
-      df: double
-          Document frequency of the word
+    A class to represent the keyword data type
+    """
 
-      Methods
-      ------------
-      TODO
-      """
-
-    def __init__(self, baseform: str, words: list[str], documents: set, tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, words: list[str], documents: set | None, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
         self.documents = documents if documents is not None else set()
@@ -39,8 +23,7 @@ class Keyword:
         self.df += k
 
     def reprJSON(self):
-        return {"baseForm": self.baseForm, "words": self.words, "tf": self.tf, "df": self.df,
-                "documents": list(self.documents)}
+        return {"baseForm": self.baseForm, "words": self.words, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
 # class KeywordEncoder(json.JSONEncoder):
@@ -51,42 +34,25 @@ class Keyword:
 class Document:
     """
     A class to represent a document in a corpus
-    Attributes
-    ------------
-    doc_id: int
-        document id
-    url: str
-        document URL
-    publish_time: date
-        document publish date
-    language: str
-        document language
-    title: str
-        document title
-    segTitle: str
-        seg title
-    content: str
-        Document content
-    keywords: dict (id-> str)
-        map (keywords id, keyword) for content keywords
-    tf_vector_size: double
-        Document TF vector's size.
-    tfidf_vector_size: double
-        Document TF-IDF vector size.
+
     tfidfVectorSizeWithKeygraph: double
-        Document TF-IDF vector size that consider keygraph keywords. For keywords that doesn't included in a keygraph,
+        Document TF-IDF vector size float consider keygraph keywords. For keywords that doesn't included in a keygraph,
         we don't calculate the keyword's tf.
         This is used to calculate the similarity between a keygraph and a document. It is the norm of document vector,
         where each element in the vector
         is the feature (such as tf, tf-idf) of one document keyword.
-
-    Methods
-    -----------
-
     """
 
-    def __init__(self, doc_id: int, url=None, publish_date=None, language=None, title=None, content=None,
-                 keywords=None):
+    def __init__(
+        self,
+        doc_id: int,
+        url: str | None = None,
+        publish_date=None,
+        language: str | None = None,
+        title: str | None = None,
+        content: str | None = None,
+        keywords: dict | None = None,
+    ):
         self.doc_id = doc_id
         self.url = url
         self.publish_time = publish_date
@@ -96,12 +62,17 @@ class Document:
             self.segTitle = title.strip().split(" ")
         self.content = content
         self.keywords = keywords
-        self.tf_vector_size = -1
-        self.tfidf_vector_size = -1
-        self.tfidfVectorSizeWithKeygraph = -1
+        self.tf_vector_size: float = -1
+        self.tfidf_vector_size: float = -1
+        self.tfidfVectorSizeWithKeygraph: float = -1
 
     def contains_keyword(self, kw):
         return kw in self.keywords
+
+    def set_keyword(self, kw: Keyword):
+        if not self.keywords:
+            self.keywords = {}
+        self.keywords[kw.baseForm] = kw
 
     # compute document's TF vector size
     # Given document's keywords [w1,..,wn] the vector size of a doc is sqrt(tf(wi)^2)
@@ -154,12 +125,11 @@ class Document:
             "tfidfVectorSizeWithKeygraph": self.tfidfVectorSizeWithKeygraph,
         }
 
+
 class KeywordEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
-        return {"baseForm": o.baseForm, 
-                "tf": o.tf, 
-                "df": o.df, 
-                "documents": list(o.documents) }
+        return {"baseForm": o.baseForm, "tf": o.tf, "df": o.df, "documents": list(o.documents)}
+
 
 class DocumentEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:

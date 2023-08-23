@@ -3,10 +3,11 @@ import time
 import itertools
 import networkx as nx
 from networkx.algorithms.community.quality import modularity
-from .document_representation import Corpus,  Keyword
+from story_clustering.document_representation import Corpus, Keyword
+
 # from multiprocessing import Pool
 
-#MinEdgeDF = 2
+# MinEdgeDF = 2
 MinEdgeDF = 1
 MinEdgeCorrelation = 0.05
 MaxClusterNodeSize = 5
@@ -55,42 +56,43 @@ class KeywordNode:
 
 class KeywordEdge:
     """
-           A class to represent an edge in a keyword graph
-           Attributes
-           -------------
-           id: str
-               Edge identifier
-           n1: KeywordNode
-           n2: KeywordNode
-               Connected nodes
-           df: int
-               how many times this edge exists within all documents
-           cp1: double
-               conditional probability p(n2 | n1)
-           cp2: double
-               conditional probability p(n1 | n2)
-           betweennessScore: double
-               betweenness score
+    A class to represent an edge in a keyword graph
+    Attributes
+    -------------
+    id: str
+        Edge identifier
+    n1: KeywordNode
+    n2: KeywordNode
+        Connected nodes
+    df: int
+        how many times this edge exists within all documents
+    cp1: double
+        conditional probability p(n2 | n1)
+    cp2: double
+        conditional probability p(n1 | n2)
+    betweennessScore: double
+        betweenness score
 
-           Methods
-           -------------
-           get_id(KeywordNode n1, KeywordNode n2):
-               generate edge id from two connected nodes
-           increase_df():
-               increase document frequency of the edge
-           compute_cps():
-               update edge's two conditional probabilities
-           opposite(KeywordNode n):
-               given one end node of the edge, return the node at the other end
-           compare_betweenness(KeywordEdge e): int
-               compare two edges's betweenness score: -1 if edge e has higher betweenness score (less important)
-               1 if edge e has lower betweenness score (more important)
-               0 if the two edges are of the same
-           compare_edge_strength(KeywordEdge e): int
-               compare two edges' link strength: -1 denotes the edge to be compared with is less important,
-               1 denotes the edge to be compared with is more important,
-               0 denotes their strengths are the same.
-           """
+    Methods
+    -------------
+    get_id(KeywordNode n1, KeywordNode n2):
+        generate edge id from two connected nodes
+    increase_df():
+        increase document frequency of the edge
+    compute_cps():
+        update edge's two conditional probabilities
+    opposite(KeywordNode n):
+        given one end node of the edge, return the node at the other end
+    compare_betweenness(KeywordEdge e): int
+        compare two edges's betweenness score: -1 if edge e has higher betweenness score (less important)
+        1 if edge e has lower betweenness score (more important)
+        0 if the two edges are of the same
+    compare_edge_strength(KeywordEdge e): int
+        compare two edges' link strength: -1 denotes the edge to be compared with is less important,
+        1 denotes the edge to be compared with is more important,
+        0 denotes their strengths are the same.
+    """
+
     def __init__(self, n1: KeywordNode, n2: KeywordNode, id) -> None:
         self.n1 = n1
         self.n2 = n2
@@ -231,8 +233,10 @@ class KeywordGraph:
 
         for node in kg1.values():
             for edge in node.edges.values():
-                if (node.keyword.baseForm.compareTo(edge.opposite(node).keyword.baseForm) < 0 and
-                        edge.id not in kg[edge.n1.keyword.baseForm].edges):
+                if (
+                    node.keyword.baseForm.compareTo(edge.opposite(node).keyword.baseForm) < 0
+                    and edge.id not in kg[edge.n1.keyword.baseForm].edges
+                ):
                     n1 = kg[edge.n1.keyword.baseForm]
                     n2 = kg[edge.n2.keyword.baseForm]
                     ee = KeywordEdge(n1, n2, edge.id)
@@ -241,8 +245,10 @@ class KeywordGraph:
 
         for node in kg2.values():
             for edge in node.edges.values():
-                if (node.keyword.baseForm.compareTo(edge.opposite(node).keyword.baseForm) < 0 and
-                        edge.id not in kg[edge.n1.keyword.baseForm].edges):
+                if (
+                    node.keyword.baseForm.compareTo(edge.opposite(node).keyword.baseForm) < 0
+                    and edge.id not in kg[edge.n1.keyword.baseForm].edges
+                ):
                     n1 = kg[edge.n1.keyword.baseForm]
                     n2 = kg[edge.n2.keyword.baseForm]
                     ee = KeywordEdge(n1, n2, edge.id)
@@ -282,8 +288,7 @@ class CommunityDetector:
         for w1 in gr.nodes():
             word = keywords_dict[w1]
             for e in self.nodes[word].edges.values():
-                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], 
-                            keywords_vals[e.n2.keyword.baseForm], weight=e.df)
+                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
         gr_copy = gr.copy()
         start = time.time()
@@ -299,11 +304,6 @@ class CommunityDetector:
                 key_communities.append(subgraph)
 
         return self.get_keywords_keygraphs(key_communities, keywords_dict)
-
-
-    
-
-    
 
     def get_keywords_keygraphs(self, communities, keywords_dict):
         all_communities = []
@@ -326,10 +326,6 @@ class CommunityDetector:
             all_communities.append(new_keywords_graph)
         return all_communities
 
-    
-
-    
-
     def filter_top_k_percent_of_edges(self, nodes, k) -> bool:
         edgeSize = sum(len(n.edges) for n in nodes.values())
         edgeSize /= 2
@@ -341,8 +337,6 @@ class CommunityDetector:
         # order edges based on their strength/significance
         all_edges = list({e for n in nodes.values() for e in n.edges.values()})
         all_edges.sort(key=lambda x: max(x.cp1, x.cp2))
-
-        
 
         for e in all_edges[:ntoremove]:
             e.n1.edges.pop(e.id)
@@ -367,9 +361,3 @@ class CommunityDetector:
             i -= 1
         toRemove.insert(i, e)
         return True
-
-
-
-    
-
-   

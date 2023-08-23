@@ -12,14 +12,13 @@ EventSplitAlg = "DocGraph"
 MinTopicSize = 1
 
 
-
-def extract_events_incrementally(corpus:Corpus, g: KeywordGraph, model) -> list[Event]:
+def extract_events_incrementally(corpus: Corpus, g: KeywordGraph, model) -> list[Event]:
     # extract keyword communities from keyword graph
     calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.DF, g.graphNodes)
 
     communities = CommunityDetector(g.graphNodes).detect_communities_louvain()
-    #s = len(communities)
-    #print(f"Communities size: {s}")
+    # s = len(communities)
+    # print(f"Communities size: {s}")
 
     # extract events from corpus based on keyword communities
     events = extract_topic_by_keyword_communities(corpus, communities)
@@ -32,6 +31,7 @@ def extract_events_incrementally(corpus:Corpus, g: KeywordGraph, model) -> list[
         event.refine_key_graph()
 
     return events
+
 
 def extract_events_from_corpus(corpus: Corpus, model) -> list[Event]:
     graph = KeywordGraph()
@@ -145,13 +145,13 @@ def split_events(events: list[Event], model) -> list[Event]:
                 processed_doc_keys.append(d1)
                 sub_event = Event()
                 sub_event.keyGraph = KeywordGraph()
-                sub_event.keyGraph.graphNodes = e.keyGraph.graphNodes.copy()
+                sub_event.keyGraph.graphNodes = e.keyGraph.graphNodes.copy() if e.keyGraph else None
                 sub_event.docs[d1] = e.docs[d1]
                 sub_event.similarities[d1] = e.similarities[d1]
 
                 for j in range(i + 1, len(e.docs.keys())):
                     d2 = list(e.docs.keys())[j]
-                    if d2 not in processed_doc_keys and same_event(e.docs[d1], e.docs[d2],  model):
+                    if d2 not in processed_doc_keys and same_event(e.docs[d1], e.docs[d2], model):
                         sub_event.docs[d2] = e.docs[d2]
                         sub_event.similarities[d2] = e.similarities[d2]
                         processed_doc_keys.append(d2)
@@ -170,8 +170,8 @@ def compute_similarity(text_1, text_2, model):
     sent_text_2 = [s for s in sent_text_2 if s != ""][:10]
     sent_text_1 = [s for s in sent_text_1 if s != ""][:10]
 
-    em_1 = model.encode(sent_text_1, convert_to_tensor=True)
-    em_2 = model.encode(sent_text_2, convert_to_tensor=True)
+    em_1 = model.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
+    em_2 = model.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
 
     consine_sim_1 = util.pytorch_cos_sim(em_1, em_2)
     max_vals, _inx = torch.max(consine_sim_1, dim=1)
@@ -189,13 +189,12 @@ def create_corpus_from_json(corpus_dict) -> Corpus:
     docs = {}
     DF = {}
     corpus = Corpus()
-   
+
     for doc_id, doc in corpus_dict["docs"].items():
         keywords = {}
 
         for k in doc["keywords"]:
-            # print(type(k))
-            keyword = Keyword(baseform=k["baseForm"], words=k["words"], tf=k["tf"], df=k["df"])
+            keyword = Keyword(baseform=k["baseForm"], words=k["words"], documents=None, tf=k["tf"], df=k["df"])
             keywords[k["baseForm"]] = keyword
         corpus.docs[doc_id] = Document(
             doc_id=doc_id,
@@ -206,29 +205,5 @@ def create_corpus_from_json(corpus_dict) -> Corpus:
             content=doc["content"],
             keywords=keywords,
         )
-   
 
     return corpus
-
-
-if __name__ == "__main__":
-    # read and create Corpus
-    f = open("awake/data/corpus_test.json", "r")
-    # print(corpus)
-    corpus_dict = json.load(f)
-    f.close()
-    print("Corpus loaded...")
-    corpus = create_corpus_from_json(corpus_dict)
-    corpus.update_df()
-
-    print("Corpus created...")
-    # extract events from corpus
-    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-    events = extract_events_from_corpus(corpus=corpus, model=model)
-    for e in events:
-        print("Titles:")
-        for d in e.docs:
-            print(e.docs[d].title)
-        print("------")
-        print(f"Keywords: {list(e.keyGraph.graphNodes.keys())}")
-        print("-------------")
