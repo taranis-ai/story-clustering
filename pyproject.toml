@@ -41,6 +41,9 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["story_clustering"]
+
 [tool.black]
 line-length = "142"
 target-version = ["py311"]
