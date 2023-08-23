@@ -32,14 +32,14 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 doc.segTitle = doc.title.strip().split(" ")
             doc.publish_time = nitem.get("news_item_data.published", None)
             doc.language =  nitem["news_item_data"]["language"]
-            print(doc.doc_id)
+            #print(doc.doc_id)
             # create keywords
             keywords = {}
             for tag in nitem_agg["tags"].values():
                 keyword = Keyword(baseform=tag["name"].lower(), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),documents=None)
                 keywords[tag["name"]] = keyword
 
-                print(tag["name"])
+                #print(tag["name"])
                 # update tf for keyword
                 if keyword.tf == 0:
                     keyword.tf = compute_tf(keyword.baseForm,keyword.words,doc.content)
@@ -99,10 +99,10 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
 
 
 def get_or_add_keywordNode(tag: dict, graphNodes: dict) -> KeywordNode:
-    if tag["baseForm"] in graphNodes:
-        return graphNodes[tag["baseForm"]]
+    if tag["name"].lower() in graphNodes:
+        return graphNodes[tag["name"].lower()]
     
-    keyword = Keyword(tag["baseForm"],words=tag["words"],tf=tag.get("tf", 0), df=tag.get("df", 0))
+    keyword = Keyword(baseform=tag["name"].lower(),words=tag["sub_forms"],tf=tag.get("tf", 0), df=tag.get("df", 0))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode
@@ -133,8 +133,8 @@ def incremental_clustering(new_news_items: list,already_clusterd_events:list):
     # add to g the new nodes and edges from already_clusterd_events
     for cluster in already_clusterd_events:
         tags = cluster["tags"]
-        for keyword_1 in tags:
-            for keyword_2 in tags:
+        for keyword_1 in tags.values():
+            for keyword_2 in tags.values():
                 if keyword_1 != keyword_2:
                     keyNode1 = get_or_add_keywordNode(keyword_1, g.graphNodes)
                     keyNode2 = get_or_add_keywordNode(keyword_2, g.graphNodes)

@@ -32,7 +32,7 @@
         }
       },
       {
-        "id": 13,
+        "id": 137,
         "news_item_data_id": "e7890cde-g567-1234-56de-4fgh5678i901",
         "news_item_aggregate_id": 7,
         "news_item_data": {
@@ -84,7 +84,7 @@
     "summary": "",
     "news_items": [
       {
-        "id": 13,
+        "id": 137,
         "news_item_data_id": "e7890cde-g567-1234-56de-4fgh5678i901",
         "news_item_aggregate_id": 7,
         "news_item_data": {
@@ -162,5 +162,143 @@
       }
     },
     "id": 7
+  },
+  {
+    "title": "Test Aggregate",
+    "description": "Test Aggregate",
+    "created": "2023-08-01T17:01:04.801870",
+    "read": false,
+    "important": false,
+    "likes": 0,
+    "dislikes": 0,
+    "relevance": 0,
+    "comments": "",
+    "summary": "",
+    "news_items": [
+      {
+        "id": 13,
+        "news_item_data_id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
+        "news_item_aggregate_id": 1,
+        "news_item_data": {
+          "review": "",
+          "author": "",
+          "source": "https://url/",
+          "link": "https://url/",
+          "language": null,
+          "osint_source_id": "78049551-dcef-45bd-a5cd-4fe842c4d5e2",
+          "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
+          "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
+          "title": "Test News Item 13",
+          "content": "CVE-2020-1234 - Test Aggregate 1, Securities",
+          "collected": "2023-08-01T17:01:04.802015",
+          "published": "2023-08-01T17:01:04.801998",
+          "updated": "2023-08-01T17:00:39.893435"
+        }
+      }
+    ],
+    "tags": {
+      "CVE-2020-1234": {
+        "name": "CVE-2020-1234",
+        "tag_type": "CVE",
+        "sub_forms": [
+          "CVE"
+        ]
+      },
+      "Security": {
+        "name": "Security",
+        "tag_type": "MISC",
+        "sub_forms": [
+          "securities"
+        ]
+      }
+    },
+    "id": 1
+  },
+  {
+    "title": "Test Aggregate",
+    "description": "Test Aggregate",
+    "created": "2023-08-01T17:01:04.801870",
+    "read": false,
+    "important": false,
+    "likes": 0,
+    "dislikes": 0,
+    "relevance": 0,
+    "comments": "",
+    "summary": "",
+    "news_items": [
+      {
+        "id": 27,
+        "news_item_data_id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
+        "news_item_aggregate_id": 2,
+        "news_item_data": {
+          "review": "",
+          "author": "",
+          "source": "https://url/",
+          "link": "https://url/",
+          "language": null,
+          "osint_source_id": "78049551-dcef-45bd-a5cd-4fe842c4d5e2",
+          "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
+          "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
+          "title": "Test News Item 27",
+          "content": "CVE-2020-4321 - Test Aggregate 2, Software",
+          "collected": "2023-08-01T17:01:04.802015",
+          "published": "2023-08-01T17:01:04.801998",
+          "updated": "2023-08-01T17:00:39.893435"
+        }
+      }
+    ],
+    "tags": {
+      "CVE-2020-4321": {
+        "name": "CVE-2020-4321",
+        "tag_type": "CVE",
+        "sub_forms": [
+          "CVE"
+        ]
+      },
+      "Software": {
+        "name": "Software",
+        "tag_type": "MISC",
+        "sub_forms": [
+          "softwares"
+        ]
+      }
+    },
+    "id": 2
+  },
+  {
+    "title": "Test Aggregate",
+    "description": "Test Aggregate",
+    "created": "2023-08-01T17:01:04.801870",
+    "read": false,
+    "important": false,
+    "likes": 0,
+    "dislikes": 0,
+    "relevance": 0,
+    "comments": "",
+    "summary": "",
+    "news_items": [
+      {
+        "id": 93,
+        "news_item_data_id": "533086da-c8c1-4f8e-b3ee-103268983580",
+        "news_item_aggregate_id": 3,
+        "news_item_data": {
+          "review": "",
+          "author": "",
+          "source": "https://url/",
+          "link": "https://url/",
+          "language": null,
+          "osint_source_id": "78049551-dcef-45bd-a5cd-4fe842c4d5e2",
+          "id": "533086da-c8c1-4f8e-b3ee-103268983580",
+          "hash": "f4c7b52ecfe6ab612db30e7fa534b470fd11493fc92f30575577b356b2a1abc7",
+          "title": "Test News Item",
+          "content": "Long and random text - bla bla foo bar lorem ipsum",
+          "collected": "2023-08-01T17:01:04.801951",
+          "published": "2023-08-01T17:01:04.801934",
+          "updated": "2023-08-01T17:00:39.893435"
+        }
+      }
+    ],
+    "tags": {},
+    "id": 3
   }
 ]

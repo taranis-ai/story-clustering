@@ -36,7 +36,9 @@ def compute_tf(baseForm, words, text):
     all_words.append(baseForm)
     model.match(tokanize_text(text),all_words).group(link_min_similarity=0.75)
     df = model.get_matches()
-    
+    if len(df) == 0:
+        # keyword not appearing in text
+        return 0
     values = df[(df["Group"].notnull()) & (df["Similarity"] >=0.65) ]
     if len(values) == 0:
         return 0
