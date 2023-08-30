@@ -12,6 +12,11 @@ MinTopicSize = 1
 SimilarityThreshold = 0.44
 
 
+def reformat_string(s: str) -> str:
+    return (s.lower().replace('ä', 'ae').replace('ö', 'oe')
+            .replace('ü', 'ue').replace('ß', "ss"))
+
+
 def create_corpus(new_news_items: list[dict]) -> Corpus:
     """Creates a Corpus object from a JSON object denoting all documents
 
@@ -41,7 +46,8 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             keywords = {}
             for tag in nitem_agg["tags"].values():
                 keyword = Keyword(
-                    baseform=tag["name"].lower(), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0), documents=None
+                    baseform=reformat_string(tag["name"]), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),
+                    documents=None
                 )
                 keywords[tag["name"]] = keyword
 
@@ -113,10 +119,10 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
 
 
 def get_or_add_keywordNode(tag: dict, graphNodes: dict) -> KeywordNode:
-    if tag["name"].lower() in graphNodes:
-        return graphNodes[tag["name"].lower()]
+    if reformat_string(tag["name"]) in graphNodes:
+        return graphNodes[reformat_string(tag["name"])]
 
-    keyword = Keyword(baseform=tag["name"].lower(), words=tag["sub_forms"], documents=None, tf=tag.get("tf", 0), df=tag.get("df", 0))
+    keyword = Keyword(baseform=reformat_string(tag["name"]), words=tag["sub_forms"], documents=None, tf=tag.get("tf", 0), df=tag.get("df", 0))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode
