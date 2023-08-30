@@ -1,7 +1,6 @@
 [project]
 name = "taranis_story_clustering"
 description = "Story Clustering Bot for Taranis-NG"
-version = "0.2.0"
 readme = "README.md"
 license = {file = "LICENSE.md"}
 maintainers = [{ name = "AIT", email = "benjamin.akhras@ait.ac.at" }]
@@ -26,6 +25,7 @@ dependencies = [
     "polyfuzz",
     "pytest"
 ]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = ["black", "pytest"]
@@ -33,13 +33,15 @@ dev = ["black", "pytest"]
 [project.urls]
 "Source Code" = "https://github.com/ait-cs-IaaS/story-clustering"
 
-
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=45",
+    "setuptools_scm[toml]>=6.2",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
 
 [tool.setuptools]
 packages = ["story_clustering"]

@@ -5,6 +5,7 @@ from .event_organizer import Event
 from .eventdetector import extract_events_from_corpus, extract_events_incrementally
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf
+import time
 
 EventSplitAlg = "DocGraph"
 MinTopicSize = 1
@@ -63,10 +64,13 @@ def initial_clustering(new_news_items: list):
     corpus = create_corpus(new_news_items)
 
     # extract events
-    model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
+    # this is too slow model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
+    model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
     events = extract_events_from_corpus(corpus=corpus, model=model)
 
     # create stories based on events
+    print(f"Aggregating events into stories...")
+    t1 = time.time()
     stories = []
     for event in events:
         found_story = False
@@ -78,6 +82,8 @@ def initial_clustering(new_news_items: list):
         if not found_story:
             aux = [event]
             stories.append(aux)
+    t2 = time.time()
+    print(f"Time to construct stories (sec): {t2-t1}")
 
     new_aggregates = to_json_events(events)
     new_aggregates = new_aggregates | to_json_stories(stories)
@@ -151,7 +157,8 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
                     update_or_create_keywordEdge(keyNode1, keyNode2)
 
     # extract events
-    model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
+    # model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
+    model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
     events = extract_events_incrementally(corpus=corpus, g=g, model=model)
 
     # create stories based on events
@@ -172,12 +179,12 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
     return new_aggregates
 
 
-def compute_similarity(text_1, text_2, model):
+def compute_similarity_for_stories(text_1, text_2, model):
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
-    sent_text_2 = [s for s in sent_text_2 if s != ""][:10]
-    sent_text_1 = [s for s in sent_text_1 if s != ""][:10]
+    sent_text_2 = [s for s in sent_text_2 if s != ""]
+    sent_text_1 = [s for s in sent_text_1 if s != ""]
 
     em_1 = model.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
     em_2 = model.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
@@ -193,4 +200,4 @@ def belongs_to_story(ev, story, model) -> bool:
     text_2 = " ".join([d.title for e in story for d in e.docs.values()])
     # print(text_1)
     # print(text_2)
-    return compute_similarity(text_1, text_2, model) >= SimilarityThreshold
+    return compute_similarity_for_stories(text_1, text_2, model) >= SimilarityThreshold

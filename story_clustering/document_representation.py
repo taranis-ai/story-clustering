@@ -9,7 +9,7 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, words: list[str], documents: set | None, tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, words: list[str], documents: set, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
         self.documents = documents if documents is not None else set()
@@ -45,13 +45,13 @@ class Document:
 
     def __init__(
         self,
-        doc_id: int,
-        url: str | None = None,
+        doc_id: int = None,
+        url: str = None,
+        language: str = None,
+        title: str = None,
+        content: str = None,
+        keywords: dict = None,
         publish_date=None,
-        language: str | None = None,
-        title: str | None = None,
-        content: str | None = None,
-        keywords: dict | None = None,
     ):
         self.doc_id = doc_id
         self.url = url

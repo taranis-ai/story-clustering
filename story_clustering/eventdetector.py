@@ -1,11 +1,12 @@
 import math
-import json
 import torch
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import util
 from .keywords_organizer import KeywordGraph, CommunityDetector, KeywordNode
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
 from .nlp_utils import tfidf, idf
+import time
+import networkx as nx
 
 
 EventSplitAlg = "DocGraph"
@@ -22,11 +23,15 @@ def extract_events_incrementally(corpus: Corpus, g: KeywordGraph, model) -> list
 
     # extract events from corpus based on keyword communities
     events = extract_topic_by_keyword_communities(corpus, communities)
-    print("docs to events assigned. Detecting sub-events...")
+    print("Docs to events assigned. Detecting sub-events...")
 
     # identify more fine-grained events
+    s1 = time.time()
     events = split_events(events, model)
+    s2 = time.time()
+    print(f"Split events (sec): {s2-s1}")
 
+    print("Sub-events detected. Refining event keygraph...")
     for event in events:
         event.refine_key_graph()
 
@@ -42,17 +47,32 @@ def extract_events_from_corpus(corpus: Corpus, model) -> list[Event]:
 
     communities = CommunityDetector(graph.graphNodes).detect_communities_louvain()
     s = len(communities)
-    print(f"Communities size: {s}")
+    print(f"Communities size: {s}. Assigning docs to communities...")
 
     # extract events from corpus based on keyword communities
+    t1 = time.time()
     events = extract_topic_by_keyword_communities(corpus, communities)
-    print("docs to events assigned. Detecting sub-events...")
+    t2 = time.time()
+    print(f"Time to assign docs to communities (sec): {t2-t1}. ")
+    print("Docs to events assigned. Detecting sub-events...")
 
     # identify more fine-grained events
+    # t1 = time.time()
+    # events = split_events_opmitized(events, model)
+    # t2 = time.time()
+    # print(f"Split events optimized (sec): {t2-t1} ")
+
+    s1 = time.time()
     events = split_events(events, model)
+    s2 = time.time()
+    print(f"Split events (sec): {s2-s1}")
+
+    print("Sub-events detected. Refining event keygraph...")
 
     for event in events:
         event.refine_key_graph()
+
+    print("Keygraph refined. Returning events.")
 
     return events
 
@@ -75,11 +95,17 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: dict[str, 
         doc_similarity[d.doc_id] = -1.0
 
     for i, c in enumerate(communities):
+        # t1 = time.time()
         for doc in corpus.docs.values():
+            # start = time.time()
             cosineSimilarity = tfidf_cosine_similarity_graph_2doc(c, doc, corpus.DF, len(corpus.docs))
+            # end = time.time()
+            # print(f"    Time to compute doc-comunity similarity (sec): {end-start}")
             if cosineSimilarity > doc_similarity[doc.doc_id]:
                 doc_community[doc.doc_id] = i
                 doc_similarity[doc.doc_id] = cosineSimilarity
+        # t2 = time.time()
+        # print(f"For comunity {i} time to compute all similarities (sec): {t2-t1}")
 
     # create event for each community
     for i, c in enumerate(communities):
@@ -130,6 +156,44 @@ def tfidf_cosine_similarity_graph_2doc(community: dict[str, KeywordNode], d2: Do
     return 0
 
 
+def split_events_by_community_detection(events: list[Event], model) -> list[Event]:
+    result = []
+    for e in events:
+        if len(e.docs) >= 2:
+            e_docs_ids_list = list(e.docs.keys())
+            n_docs = len(e_docs_ids_list)
+            print(f"Number of documents in the event: {n_docs}")
+            edges = []
+            start = time.time()
+
+            edges.extend(
+                [
+                    (i, j)
+                    for i in range(n_docs)
+                    for j in range(n_docs)
+                    if i < j and same_event(e.docs[e_docs_ids_list[i]], e.docs[e_docs_ids_list[j]], model)
+                ]
+            )
+            end = time.time()
+            G = nx.Graph()
+            G.add_nodes_from([*range(0, n_docs, 1)])
+            G.add_edges_from(edges)
+            S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+            print(f"Compute connected components (sec): {end - start}")
+            for conn_comp in S:
+                sub_event = Event()
+                sub_event.keyGraph = KeywordGraph()
+                sub_event.keyGraph.graphNodes = e.keyGraph.graphNodes.copy() if e.keyGraph else None
+                for id in conn_comp:
+                    sub_event.docs[e_docs_ids_list[id]] = e.docs[e_docs_ids_list[id]]
+                    sub_event.similarities[e_docs_ids_list[id]] = e.similarities[e_docs_ids_list[id]]
+                result.append(sub_event)
+
+        else:
+            result.append(e)
+    return result
+
+
 def split_events(events: list[Event], model) -> list[Event]:
     # updated the original implementation to use sentence transformers to detect if
     # two documents talk about the same event
@@ -138,8 +202,8 @@ def split_events(events: list[Event], model) -> list[Event]:
         if len(e.docs) >= 2:
             split_events_list = []
             processed_doc_keys = []
-
-            for i, d1 in enumerate(e.docs.keys()):
+            e_docs_ids_list = list(e.docs.keys())
+            for i, d1 in enumerate(e_docs_ids_list):
                 if d1 in processed_doc_keys:
                     continue
                 processed_doc_keys.append(d1)
@@ -150,7 +214,7 @@ def split_events(events: list[Event], model) -> list[Event]:
                 sub_event.similarities[d1] = e.similarities[d1]
 
                 for j in range(i + 1, len(e.docs.keys())):
-                    d2 = list(e.docs.keys())[j]
+                    d2 = e_docs_ids_list[j]
                     if d2 not in processed_doc_keys and same_event(e.docs[d1], e.docs[d2], model):
                         sub_event.docs[d2] = e.docs[d2]
                         sub_event.similarities[d2] = e.similarities[d2]
@@ -164,11 +228,12 @@ def split_events(events: list[Event], model) -> list[Event]:
 
 
 def compute_similarity(text_1, text_2, model):
+    # start = time.time()
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
-    sent_text_2 = [s for s in sent_text_2 if s != ""][:10]
-    sent_text_1 = [s for s in sent_text_1 if s != ""][:10]
+    sent_text_2 = [s for s in sent_text_2 if s != ""][:5]
+    sent_text_1 = [s for s in sent_text_1 if s != ""][:5]
 
     em_1 = model.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
     em_2 = model.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
@@ -176,7 +241,13 @@ def compute_similarity(text_1, text_2, model):
     consine_sim_1 = util.pytorch_cos_sim(em_1, em_2)
     max_vals, _inx = torch.max(consine_sim_1, dim=1)
     avg = torch.mean(max_vals, dim=0)
+    # end = time.time()
+    # print(f"    Time to compute doc-doc similarity (sec): {end - start}")
     return avg.item()
+
+
+def same_event_text(text_1, text_2, model):
+    return compute_similarity(text_1, text_2, model) >= 0.44
 
 
 def same_event(d1: Document, d2: Document, model) -> bool:
