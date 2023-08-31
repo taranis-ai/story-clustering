@@ -4,7 +4,7 @@ def test_create_corpus():
 
     corpus = create_corpus(news_item_list)
     assert corpus.docs[13].title == "Test News Item 13"
-    assert "Software" in corpus.docs[27].keywords.keys()
+    assert "software" in corpus.docs[27].keywords.keys()
 
 
 def test_initial_clustering():
