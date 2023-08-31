@@ -13,7 +13,7 @@ def test_initial_clustering():
 
     clustering_results = initial_clustering(news_item_list)
     print(clustering_results)
-    assert True
+    assert clustering_results == {"event_clusters": [[13], [27, 23], [93], [1414, 12, 1337], [11], [4242], [137]]}
 
 
 def test_incremental_clustering():
@@ -22,4 +22,4 @@ def test_incremental_clustering():
 
     clustering_results = incremental_clustering(news_item_list, clustered_news_item_list)
     print(clustering_results)
-    assert True
+    assert clustering_results == {"event_clusters": [[13], [27, 23], [93], [1414, 12, 1337], [11], [4242], [137]]}

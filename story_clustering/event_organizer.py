@@ -1,42 +1,17 @@
-import time
 from .document_representation import Document, Keyword
-from .keywords_organizer import KeywordGraph, KeywordNode, KeywordEdge
+from .keywords_organizer import KeywordGraph
 
 
 class Event:
-    def __init__(self):
+    def __init__(self, keyGraph: KeywordGraph | None = None):
         self.max_id = 1
-        self.keyGraph: KeywordGraph | None = None
+        self.keyGraph: KeywordGraph | None = keyGraph
         self.docs = {}
         self.similarities = {}
         self.centroid = None
         self.variance = None
         self.summary = None
         self.hotness = None
-
-    # get start timestamp of all docs in this event
-    # return -1 if no docs in this event
-    def get_start_timestamp(self):
-        if len(self.docs) == 0:
-            return -1
-
-        timestamp = time.time()
-        for doc in self.docs.values():
-            if doc.publish_time is not None and doc.publish_time.getTime() < timestamp:
-                timestamp = doc.publish_time.getTime()
-        return timestamp
-
-    # get end timestamp of all docs in this event
-    # return -1 if no doc in this event
-    def get_end_timestamp(self):
-        if len(self.docs) == 0:
-            return -1
-
-        timestamp = -1
-        for doc in self.docs.values():
-            if doc.publish_time is not None and doc.publish_time.getTime() > timestamp:
-                timestamp = doc.publish_time.getTime()
-        return timestamp
 
     # calculate the centroid document of this document cluster
     # centroid is the concatenation of all docs in this event

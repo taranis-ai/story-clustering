@@ -1,13 +1,8 @@
 import math
-from nltk.corpus import stopwords
 from polyfuzz import PolyFuzz
 from polyfuzz.models import TFIDF
-from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
-
-
-stopwords_list = stopwords.words("english")
-stopwords_list.extend(stopwords.words("german"))
+from story_clustering import stopwords_list
 
 
 # calculate word's inverse document frequency
@@ -28,8 +23,7 @@ def tokanize_text(text: str) -> list[str]:
 
 
 def compute_tf(baseForm, words, text):
-    tfidf = TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3))
-    model = PolyFuzz(tfidf)
+    model = PolyFuzz(TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3)))
 
     if not baseForm.strip().isalpha() or len(baseForm.strip()) <= 2 or baseForm in stopwords_list:
         return 1
@@ -45,7 +39,5 @@ def compute_tf(baseForm, words, text):
     if len(values) == 0:
         return 0
     values.loc[:, ("Similarity")] = 1
-    tf = values["Similarity"].sum()
-    if tf < 1:
-        tf = 1
+    tf = max(values["Similarity"].sum(), 1)
     return tf / n_words

@@ -9,10 +9,10 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, words: list[str], documents: set, tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, words: list[str], documents: set | None = None, tf: float = 0, df: float = 0):
         self.baseForm = baseform
         self.words = words
-        self.documents = documents if documents is not None else set()
+        self.documents = documents or set()
         self.tf = tf
         self.df = df
 

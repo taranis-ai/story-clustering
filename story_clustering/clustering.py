@@ -1,20 +1,17 @@
-from sentence_transformers import SentenceTransformer, util
 import torch
+from sentence_transformers import util
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extract_events_from_corpus, extract_events_incrementally
+from .eventdetector import extract_events_from_corpus
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf
-import time
+from story_clustering import sentence_transformer, logger
 
-EventSplitAlg = "DocGraph"
-MinTopicSize = 1
 SimilarityThreshold = 0.44
 
 
-def reformat_string(s: str) -> str:
-    return (s.lower().replace('ä', 'ae').replace('ö', 'oe')
-            .replace('ü', 'ue').replace('ß', "ss"))
+def replace_umlauts_with_digraphs(s: str) -> str:
+    return s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -41,18 +38,13 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 doc.segTitle = doc.title.strip().split(" ")
             doc.publish_time = nitem.get("news_item_data.published", None)
             doc.language = nitem["news_item_data"]["language"]
-            # print(doc.doc_id)
-            # create keywords
             keywords = {}
             for tag in nitem_agg["tags"].values():
-                keyword = Keyword(
-                    baseform=reformat_string(tag["name"]), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),
-                    documents=None
-                )
-                keywords[reformat_string(tag["name"])] = keyword
+                baseform = replace_umlauts_with_digraphs(tag["name"])
+                words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
+                keyword = Keyword(baseform=baseform, words=words, tf=tag.get("tf", 0), df=tag.get("df", 0))
+                keywords[baseform] = keyword
 
-                # print(tag["name"])
-                # update tf for keyword
                 if keyword.baseForm not in doc.content:
                     continue
 
@@ -62,48 +54,85 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             corpus.docs[doc.doc_id] = doc
 
     corpus.update_df()
+    logger.debug(f"Corpus size: {len(corpus.docs)}")
     return corpus
 
 
 def initial_clustering(new_news_items: list):
-    # create corpus
     corpus = create_corpus(new_news_items)
 
-    # extract events
-    # this is too slow model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
-    model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
-    events = extract_events_from_corpus(corpus=corpus, model=model)
+    # stories = cluster_stories_from_events(events)
+    # new_aggregates = new_aggregates | to_json_stories(stories)
 
-    # create stories based on events
-    print(f"Aggregating events into stories...")
-    t1 = time.time()
+    events = extract_events_from_corpus(corpus=corpus)
+    return to_json_events(events)
+
+
+def incremental_clustering(new_news_items: list, already_clusterd_events: list):
+    corpus = create_corpus(new_news_items)
+
+    # create keyGraph from corpus
+    graph = KeywordGraph()
+    graph.build_graph(corpus=corpus)
+
+    # add to g the new nodes and edges from already_clusterd_events
+    for cluster in already_clusterd_events:
+        tags = cluster["tags"]
+        for keyword_1 in tags.values():
+            for keyword_2 in tags.values():
+                if keyword_1 != keyword_2:
+                    keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes)
+                    keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes)
+                    # add edge and increase edge df
+                    update_or_create_keywordEdge(keyNode1, keyNode2)
+
+    # stories = cluster_stories_from_events(events)
+    # new_aggregates = new_aggregates | to_json_stories(stories)
+
+    events = extract_events_from_corpus(corpus=corpus, graph=graph)
+    return to_json_events(events)
+
+
+def cluster_stories_from_events(events: list[Event]) -> list[list[Event]]:
     stories = []
     for event in events:
         found_story = False
         for story in stories:
-            if belongs_to_story(event, story, model):
+            if belongs_to_story(event, story):
                 story.append(event)
                 found_story = True
                 break
         if not found_story:
             aux = [event]
             stories.append(aux)
-    t2 = time.time()
-    print(f"Time to construct stories (sec): {t2-t1}")
+    return stories
 
-    new_aggregates = to_json_events(events)
-    new_aggregates = new_aggregates | to_json_stories(stories)
-    # new_aggregates.update(to_json_stories(stories))
-    return new_aggregates
+
+def process_lists(input_lists):
+    element_to_list_mapping = {}
+    unique_lists = []
+
+    for lst in input_lists:
+        new_lst = []
+        for element in lst:
+            if element in element_to_list_mapping:
+                old_lst_idx = element_to_list_mapping[element]
+                old_lst = unique_lists[old_lst_idx]
+                if len(lst) > len(old_lst):
+                    new_lst.append(element)
+                    unique_lists[old_lst_idx] = []
+            else:
+                new_lst.append(element)
+                element_to_list_mapping[element] = len(unique_lists)
+        if new_lst:
+            unique_lists.append(new_lst)
+
+    return [lst for lst in unique_lists if lst]
 
 
 def to_json_events(events: list[Event]) -> dict:
-    # iterate over each event and return the list of documents
-    # ids belonging to the same event
-    all_events = []
-    for event in events:
-        all_events.append(list(event.docs.keys()))
-    return {"event_clusters": all_events}
+    all_events = [list(event.docs.keys()) for event in events if event.docs]
+    return {"event_clusters": process_lists(all_events)}
 
 
 def to_json_stories(stories: list[list[Event]]) -> dict:
@@ -119,10 +148,12 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
 
 
 def get_or_add_keywordNode(tag: dict, graphNodes: dict) -> KeywordNode:
-    if reformat_string(tag["name"]) in graphNodes:
-        return graphNodes[reformat_string(tag["name"])]
+    baseform = replace_umlauts_with_digraphs(tag["name"])
+    if baseform in graphNodes:
+        return graphNodes[baseform]
 
-    keyword = Keyword(baseform=reformat_string(tag["name"]), words=tag["sub_forms"], documents=None, tf=tag.get("tf", 0), df=tag.get("df", 0))
+    words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
+    keyword = Keyword(baseform=baseform, words=words, documents=None, tf=tag.get("tf", 0), df=tag.get("df", 0))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode
@@ -139,61 +170,21 @@ def update_or_create_keywordEdge(kn1: KeywordNode, kn2: KeywordNode):
         kn1.edges[edgeId].df += 1
 
         if kn1.edges[edgeId].df != kn2.edges[edgeId].df:
-            print("Edge object is not the same")
             kn2.edges[edgeId].df = kn1.edges[edgeId].df
 
 
-def incremental_clustering(new_news_items: list, already_clusterd_events: list):
-    # create corpus from news_items
-    corpus = create_corpus(new_news_items)
-
-    # create keyGraph from corpus
-    g = KeywordGraph()
-    g.build_graph(corpus=corpus)
-
-    # add to g the new nodes and edges from already_clusterd_events
-    for cluster in already_clusterd_events:
-        tags = cluster["tags"]
-        for keyword_1 in tags.values():
-            for keyword_2 in tags.values():
-                if keyword_1 != keyword_2:
-                    keyNode1 = get_or_add_keywordNode(keyword_1, g.graphNodes)
-                    keyNode2 = get_or_add_keywordNode(keyword_2, g.graphNodes)
-                    # add edge and increase edge df
-                    update_or_create_keywordEdge(keyNode1, keyNode2)
-
-    # extract events
-    # model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
-    model = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
-    events = extract_events_incrementally(corpus=corpus, g=g, model=model)
-
-    # create stories based on events
-    stories = []
-    for event in events:
-        found_story = False
-        for story in stories:
-            if belongs_to_story(event, story, model):
-                story.append(event)
-                found_story = True
-                break
-        if not found_story:
-            aux = [event]
-            stories.append(aux)
-
-    new_aggregates = to_json_events(events)
-    new_aggregates = new_aggregates | to_json_stories(stories)
-    return new_aggregates
-
-
-def compute_similarity_for_stories(text_1, text_2, model):
+def compute_similarity_for_stories(text_1, text_2):
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
     sent_text_2 = [s for s in sent_text_2 if s != ""]
     sent_text_1 = [s for s in sent_text_1 if s != ""]
 
-    em_1 = model.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
-    em_2 = model.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
+    if not sent_text_1 or not sent_text_2:
+        return 0
+
+    em_1 = sentence_transformer.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
+    em_2 = sentence_transformer.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
 
     consine_sim_1 = util.pytorch_cos_sim(em_1, em_2)
     max_vals, _inx = torch.max(consine_sim_1, dim=1)
@@ -201,9 +192,7 @@ def compute_similarity_for_stories(text_1, text_2, model):
     return avg.item()
 
 
-def belongs_to_story(ev, story, model) -> bool:
+def belongs_to_story(ev, story) -> bool:
     text_1 = " ".join([d.title for d in ev.docs.values()])
     text_2 = " ".join([d.title for e in story for d in e.docs.values()])
-    # print(text_1)
-    # print(text_2)
-    return compute_similarity_for_stories(text_1, text_2, model) >= SimilarityThreshold
+    return compute_similarity_for_stories(text_1, text_2) >= SimilarityThreshold
