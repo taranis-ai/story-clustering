@@ -49,7 +49,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                     baseform=reformat_string(tag["name"]), words=tag["sub_forms"], tf=tag.get("tf", 0), df=tag.get("df", 0),
                     documents=None
                 )
-                keywords[tag["name"]] = keyword
+                keywords[reformat_string(tag["name"])] = keyword
 
                 # print(tag["name"])
                 # update tf for keyword
