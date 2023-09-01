@@ -1,8 +1,5 @@
 import networkx as nx
 from story_clustering.document_representation import Corpus, Keyword
-from collections import defaultdict
-
-# from multiprocessing import Pool
 
 # MinEdgeDF = 2
 MinEdgeDF = 1

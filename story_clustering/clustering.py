@@ -108,31 +108,9 @@ def cluster_stories_from_events(events: list[Event]) -> list[list[Event]]:
     return stories
 
 
-def process_lists(input_lists):
-    element_to_list_mapping = {}
-    unique_lists = []
-
-    for lst in input_lists:
-        new_lst = []
-        for element in lst:
-            if element in element_to_list_mapping:
-                old_lst_idx = element_to_list_mapping[element]
-                old_lst = unique_lists[old_lst_idx]
-                if len(lst) > len(old_lst):
-                    new_lst.append(element)
-                    unique_lists[old_lst_idx] = []
-            else:
-                new_lst.append(element)
-                element_to_list_mapping[element] = len(unique_lists)
-        if new_lst:
-            unique_lists.append(new_lst)
-
-    return [lst for lst in unique_lists if lst]
-
-
 def to_json_events(events: list[Event]) -> dict:
     all_events = [list(event.docs.keys()) for event in events if event.docs]
-    return {"event_clusters": process_lists(all_events)}
+    return {"event_clusters": all_events}
 
 
 def to_json_stories(stories: list[list[Event]]) -> dict:
