@@ -1,6 +1,8 @@
 import math
 import torch
+from torch import Tensor
 from sentence_transformers import util
+from collections import defaultdict
 from .keywords_organizer import KeywordGraph, CommunityDetector, KeywordNode
 from .document_representation import Document, Corpus
 from .event_organizer import Event
@@ -31,29 +33,23 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], DF: dict[s
 
 def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> list[Event]:
     result = []
-    doc_community = {}
-    doc_similarity = {}
-    # initialization
-    for d in corpus.docs.values():
-        doc_community[d.doc_id] = -1
-        doc_similarity[d.doc_id] = -1.0
 
     for i, community in enumerate(communities):
         logger.info(f"Processing community {i}/{len(communities)}")
-        event = process_community(i, community, corpus, doc_community, doc_similarity)
-        logger.info(f"Community {i}/{len(communities)}: {len(event.docs)} docs")
+        event = process_community(i, community, corpus)
+        logger.info(f"Community {i}/{len(communities)} - contains {len(event.docs)}")
         result.extend(split_events(event))
     return result
 
 
-def process_community(i: int, community: KeywordGraph, corpus: Corpus, doc_community: dict[str, int], doc_similarity: dict[str, float]):
+def process_community(i: int, community: KeywordGraph, corpus: Corpus):
     event = Event()
     event.keyGraph = community
+    doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
         cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs))
         if cosineSimilarity > doc_similarity[doc.doc_id]:
-            doc_community[doc.doc_id] = i
             doc_similarity[doc.doc_id] = cosineSimilarity
             d = corpus.docs[doc.doc_id]
             if d.doc_id not in event.docs:
@@ -115,12 +111,6 @@ def split_events(event: Event) -> list[Event]:
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-
-            if all(k not in event.docs[d2].keywords for k in event.docs[d1].keywords):
-                continue
-            if i % 100 == 0:
-                logger.debug(f"Processing {i}/{len(e_docs_ids_list)}")
-                logger.debug(f"Checking if {d1} and {d2} are from the same event")
             if same_event(sub_event.docs[d1], event.docs[d2]):
                 sub_event.docs[d2] = event.docs[d2]
                 sub_event.similarities[d2] = event.similarities[d2]
@@ -139,8 +129,8 @@ def compute_similarity(text_1, text_2):
     sent_text_2 = [s for s in sent_text_2 if s != ""][:5]
     sent_text_1 = [s for s in sent_text_1 if s != ""][:5]
 
-    em_1 = sentence_transformer.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False)
-    em_2 = sentence_transformer.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False)
+    em_1 = Tensor(sentence_transformer.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False))
+    em_2 = Tensor(sentence_transformer.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False))
 
     consine_sim_1 = util.pytorch_cos_sim(em_1, em_2)
     max_vals, _inx = torch.max(consine_sim_1, dim=1)

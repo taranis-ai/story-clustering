@@ -1,3 +1,6 @@
+expected_results = {"event_clusters": [[13, 27], [93], [1414, 11, 12, 23, 1337], [137], [4242]]}
+
+
 def test_create_corpus():
     from story_clustering.clustering import create_corpus
     from .testdata import news_item_list
@@ -13,7 +16,7 @@ def test_initial_clustering():
 
     clustering_results = initial_clustering(news_item_list)
     print(clustering_results)
-    assert clustering_results == {"event_clusters": [[13], [27, 23], [93], [1414, 12, 1337], [11], [4242], [137]]}
+    assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
 
 
 def test_incremental_clustering():
@@ -22,4 +25,4 @@ def test_incremental_clustering():
 
     clustering_results = incremental_clustering(news_item_list, clustered_news_item_list)
     print(clustering_results)
-    assert clustering_results == {"event_clusters": [[13], [27, 23], [93], [1414, 12, 1337], [11], [4242], [137]]}
+    assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
