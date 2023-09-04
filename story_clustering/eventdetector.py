@@ -10,7 +10,7 @@ from .nlp_utils import tfidf, idf
 from story_clustering import logger, sentence_transformer
 
 
-def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None) -> list[Event]:
+def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph = None) -> list[Event]:
     if not graph:
         graph = KeywordGraph()
         graph.build_graph(corpus)
@@ -33,7 +33,6 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], DF: dict[s
 
 def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> list[Event]:
     result = []
-
     for i, community in enumerate(communities):
         logger.info(f"Processing community {i}/{len(communities)}")
         event = process_community(i, community, corpus)

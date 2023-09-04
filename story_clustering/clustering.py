@@ -81,8 +81,10 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
         for keyword_1 in tags.values():
             for keyword_2 in tags.values():
                 if keyword_1 != keyword_2:
-                    keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes)
-                    keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes)
+                    # doc frequency is the number of documents in the cluster
+                    df = len(cluster["news_items"])
+                    keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes,df)
+                    keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes,df)
                     # add edge and increase edge df
                     update_or_create_keywordEdge(keyNode1, keyNode2)
 
@@ -125,13 +127,15 @@ def to_json_stories(stories: list[list[Event]]) -> dict:
     return {"story_clusters": all_stories}
 
 
-def get_or_add_keywordNode(tag: dict, graphNodes: dict) -> KeywordNode:
+def get_or_add_keywordNode(tag: dict, graphNodes: dict, df: int) -> KeywordNode:
     baseform = replace_umlauts_with_digraphs(tag["name"])
     if baseform in graphNodes:
-        return graphNodes[baseform]
+        node = graphNodes[baseform]
+        node.keyword.increase_df(df)
+        return node
 
     words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
-    keyword = Keyword(baseform=baseform, words=words, documents=None, tf=tag.get("tf", 0), df=tag.get("df", 0))
+    keyword = Keyword(baseform=baseform, words=words, documents=None, tf=tag.get("tf", 0), df=tag.get("df", df))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode
