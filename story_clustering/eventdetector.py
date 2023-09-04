@@ -11,7 +11,7 @@ from story_clustering import logger, sentence_transformer
 import numpy as np
 
 
-def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None) -> list[Event]:
+def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph  = None) -> list[Event]:
     if not graph:
         graph = KeywordGraph()
         graph.build_graph(corpus)
@@ -47,20 +47,21 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> l
     return result
 
 
-def process_community(i: int, community: KeywordGraph, corpus: Corpus, max_comm: dict):
+def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict):
     event = Event()
     event.keyGraph = community
-    doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
+    #doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
-        cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs))
-        if max_comm[doc.doc_id] > doc_similarity[doc.doc_id]:
-            doc_similarity[doc.doc_id] = cosineSimilarity
-            d = corpus.docs[doc.doc_id]
-            if d.doc_id not in event.docs:
-                event.docs[d.doc_id] = d
-                event.similarities[d.doc_id] = doc_similarity[doc.doc_id]
-            d.processed = True
+        
+        if max_comm[doc.doc_id] == community_id:
+            cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs))
+            #doc_similarity[doc.doc_id] = cosineSimilarity
+            #d = corpus.docs[doc.doc_id]
+            #if d.doc_id not in event.docs:
+            event.docs[doc.doc_id] = doc
+            event.similarities[doc.doc_id] = cosineSimilarity
+            doc.processed = True
     return event
 
 
