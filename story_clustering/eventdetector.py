@@ -8,9 +8,10 @@ from .document_representation import Document, Corpus
 from .event_organizer import Event
 from .nlp_utils import tfidf, idf
 from story_clustering import logger, sentence_transformer
+import numpy as np
 
 
-def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph = None) -> list[Event]:
+def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None) -> list[Event]:
     if not graph:
         graph = KeywordGraph()
         graph.build_graph(corpus)
@@ -33,22 +34,27 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], DF: dict[s
 
 def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> list[Event]:
     result = []
+
+    max_comm = {
+        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs)) for community in communities])
+        for doc in corpus.docs.values()
+    }
     for i, community in enumerate(communities):
         logger.info(f"Processing community {i}/{len(communities)}")
-        event = process_community(i, community, corpus)
+        event = process_community(i, community, corpus, max_comm)
         logger.info(f"Community {i}/{len(communities)} - contains {len(event.docs)}")
         result.extend(split_events(event))
     return result
 
 
-def process_community(i: int, community: KeywordGraph, corpus: Corpus):
+def process_community(i: int, community: KeywordGraph, corpus: Corpus, max_comm: dict):
     event = Event()
     event.keyGraph = community
     doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
         cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs))
-        if cosineSimilarity > doc_similarity[doc.doc_id]:
+        if max_comm[doc.doc_id] > doc_similarity[doc.doc_id]:
             doc_similarity[doc.doc_id] = cosineSimilarity
             d = corpus.docs[doc.doc_id]
             if d.doc_id not in event.docs:
