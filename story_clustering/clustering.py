@@ -39,6 +39,8 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             doc.publish_time = nitem.get("news_item_data.published", None)
             doc.language = nitem["news_item_data"]["language"]
             keywords = {}
+            if len(nitem_agg["tags"]) < 10:
+                continue
             for tag in nitem_agg["tags"].values():
                 baseform = replace_umlauts_with_digraphs(tag["name"])
                 words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
@@ -83,8 +85,8 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
                 if keyword_1 != keyword_2:
                     # doc frequency is the number of documents in the cluster
                     df = len(cluster["news_items"])
-                    keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes,df)
-                    keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes,df)
+                    keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes, df)
+                    keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes, df)
                     # add edge and increase edge df
                     update_or_create_keywordEdge(keyNode1, keyNode2)
 
