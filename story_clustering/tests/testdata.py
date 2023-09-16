@@ -38,7 +38,7 @@ news_item_aggregate_1 = {
                 "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
                 "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
                 "title": "Test News Item 13",
-                "content": "CVE-2020-1234 - Test Aggregate 1, Securities",
+                "content": "Microsoft announced a security update addressing CVE-2020-1234. Experts at Google found vulnerabilities impacting Linux systems. Cisco advises users to update their security protocols to prevent potential breaches. The security community is on alert for new threats.",
                 "collected": "2023-08-01T17:01:04.802015",
                 "published": "2023-08-01T17:01:04.801998",
                 "updated": "2023-08-01T17:00:39.893435",
@@ -46,8 +46,16 @@ news_item_aggregate_1 = {
         }
     ],
     "tags": {
-        "CVE-2020-1234": {"name": "CVE-2020-1234", "tag_type": "CVE", "sub_forms": ["CVE"]},
-        "Security": {"name": "Security", "tag_type": "MISC", "sub_forms": ["securities"]},
+        "Microsoft": {"name": "Microsoft", "tag_type": "MISC", "sub_forms": []},
+        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
+        "CVE-2020-1234": {"name": "CVE-2020-1234", "tag_type": "CVE", "sub_forms": []},
+        "Google": {"name": "Google", "tag_type": "MISC", "sub_forms": []},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
+        "Linux": {"name": "Linux", "tag_type": "MISC", "sub_forms": []},
+        "Cisco": {"name": "Cisco", "tag_type": "MISC", "sub_forms": []},
+        "protocols": {"name": "protocols", "tag_type": "MISC", "sub_forms": []},
+        "breaches": {"name": "breaches", "tag_type": "MISC", "sub_forms": []},
+        "community": {"name": "community", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -63,7 +71,7 @@ news_item_aggregate_2 = {
                 "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
                 "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
                 "title": "Test News Item 27",
-                "content": "CVE-2020-4321 - Test Aggregate 2, Software",
+                "content": "Intel collaborates with Oracle to mitigate CVE-2021-5678 vulnerabilities in cloud infrastructures. Meanwhile, Apple is focusing on enhancing security measures against cyber threats, urging customers to update systems.",
                 "collected": "2023-08-01T17:01:04.802015",
                 "published": "2023-08-01T17:01:04.801998",
                 "updated": "2023-08-01T17:00:39.893435",
@@ -71,8 +79,16 @@ news_item_aggregate_2 = {
         }
     ],
     "tags": {
-        "CVE-2020-4321": {"name": "CVE-2020-4321", "tag_type": "CVE", "sub_forms": ["CVE"]},
-        "Software": {"name": "Software", "tag_type": "MISC", "sub_forms": ["softwares"]},
+        "Intel": {"name": "Intel", "tag_type": "MISC", "sub_forms": []},
+        "Oracle": {"name": "Oracle", "tag_type": "MISC", "sub_forms": []},
+        "CVE-2021-5678": {"name": "CVE-2021-5678", "tag_type": "CVE", "sub_forms": []},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
+        "cloud": {"name": "cloud", "tag_type": "MISC", "sub_forms": []},
+        "infrastructures": {"name": "infrastructures", "tag_type": "MISC", "sub_forms": []},
+        "Apple": {"name": "Apple", "tag_type": "MISC", "sub_forms": []},
+        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
+        "cyber": {"name": "cyber", "tag_type": "MISC", "sub_forms": []},
+        "systems": {"name": "systems", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -87,14 +103,25 @@ news_item_aggregate_3 = {
                 "id": "533086da-c8c1-4f8e-b3ee-103268983580",
                 "hash": "f4c7b52ecfe6ab612db30e7fa534b470fd11493fc92f30575577b356b2a1abc7",
                 "title": "Test News Item",
-                "content": "Long and random text - bla bla foo bar lorem ipsum",
+                "content": "IBM has partnered with NVIDIA to tackle the vulnerabilities found in AI modules. In addition, Amazon is improving its security posture to counteract cyber attacks on AWS platforms.",
                 "collected": "2023-08-01T17:01:04.801951",
                 "published": "2023-08-01T17:01:04.801934",
                 "updated": "2023-08-01T17:00:39.893435",
             },
         }
     ],
-    "tags": {},
+    "tags": {
+        "IBM": {"name": "IBM", "tag_type": "MISC", "sub_forms": []},
+        "NVIDIA": {"name": "NVIDIA", "tag_type": "MISC", "sub_forms": []},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
+        "AI": {"name": "AI", "tag_type": "MISC", "sub_forms": []},
+        "modules": {"name": "modules", "tag_type": "MISC", "sub_forms": []},
+        "Amazon": {"name": "Amazon", "tag_type": "MISC", "sub_forms": []},
+        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
+        "cyber": {"name": "cyber", "tag_type": "MISC", "sub_forms": []},
+        "attacks": {"name": "attacks", "tag_type": "MISC", "sub_forms": []},
+        "AWS": {"name": "AWS", "tag_type": "MISC", "sub_forms": []},
+    },
 }
 
 news_item_aggregate_4 = {
@@ -108,7 +135,7 @@ news_item_aggregate_4 = {
                 "id": "f8912dab-h345-6789-01jk-5lmn6789o012",
                 "hash": "d250dgfg45gh09824j59h56jk7k82l0m53o4p91q5rst9u809v567wx8910y234",
                 "title": "Test News Item",
-                "content": "Breaking: Local tech wizard claims to have found the solution to the world's biggest cybersecurity threat – turning it off and then back on again! Industries are flabbergasted by the simplicity of the remedy.",
+                "content": "Breaking: Local tech wizard claims to have found the solution to the world's biggest cybersecurity threat – turning it off and then back on again! Industries are flabbergasted by the simplicity of the remedy. Next he will fly to the moon with his rocket called 'Thunderbird 3'. His wife, Lady Penelope, a DevOps engineer, will accompany him.",
                 "collected": "2023-08-05T23:11:04.801886",
                 "published": "2023-08-05T23:11:04.801870",
                 "updated": "2023-08-05T23:10:39.893435",
@@ -119,6 +146,14 @@ news_item_aggregate_4 = {
         "tech wizard": {"name": "tech wizard", "tag_type": "MISC", "sub_forms": []},
         "cybersecurity": {"name": "cybersecurity", "tag_type": "MISC", "sub_forms": []},
         "remedy": {"name": "remedy", "tag_type": "MISC", "sub_forms": []},
+        "Industries": {"name": "Industries", "tag_type": "MISC", "sub_forms": []},
+        "solution": {"name": "solution", "tag_type": "MISC", "sub_forms": []},
+        "wizard": {"name": "wizard", "tag_type": "MISC", "sub_forms": []},
+        "rocket": {"name": "rocket", "tag_type": "MISC", "sub_forms": []},
+        "Thunderbird 3": {"name": "Thunderbird 3", "tag_type": "MISC", "sub_forms": []},
+        "moon": {"name": "moon", "tag_type": "MISC", "sub_forms": []},
+        "Lady Penelope": {"name": "Lady Penelope", "tag_type": "MISC", "sub_forms": []},
+        "DevOps": {"name": "DevOps", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -134,7 +169,7 @@ news_item_aggregate_5 = {
                 "id": "c12a3bde-a333-4567-90ab-2ed123f45678",
                 "hash": "a019afdb34ee098237c58f23ab5e80e7a51c0e91a2abc8e809e234fa3782f121",
                 "title": "Test News Item 11",
-                "content": "San Francisco based cloud infrastructure giant experiences significant data breach exposing millions of user records. The associated threat actors appear to be nation-state sponsored.",
+                "content": "Facebook initiated countermeasures against phishing attacks targeting user data. Following this, Salesforce has been investing in encryption technologies to protect customer information.",
                 "collected": "2023-08-02T14:05:04.801886",
                 "published": "2023-08-02T14:05:04.801870",
                 "updated": "2023-08-02T14:04:39.893435",
@@ -142,9 +177,16 @@ news_item_aggregate_5 = {
         }
     ],
     "tags": {
-        "cloud": {"name": "cloud", "tag_type": "MISC", "sub_forms": []},
-        "data breach": {"name": "data breach", "tag_type": "MISC", "sub_forms": []},
-        "nation-state": {"name": "nation-state", "tag_type": "MISC", "sub_forms": []},
+        "Facebook": {"name": "Facebook", "tag_type": "MISC", "sub_forms": []},
+        "countermeasures": {"name": "countermeasures", "tag_type": "MISC", "sub_forms": []},
+        "phishing": {"name": "phishing", "tag_type": "MISC", "sub_forms": []},
+        "attacks": {"name": "attacks", "tag_type": "MISC", "sub_forms": []},
+        "user": {"name": "user", "tag_type": "MISC", "sub_forms": []},
+        "data": {"name": "data", "tag_type": "MISC", "sub_forms": []},
+        "Salesforce": {"name": "Salesforce", "tag_type": "MISC", "sub_forms": []},
+        "encryption": {"name": "encryption", "tag_type": "MISC", "sub_forms": []},
+        "technologies": {"name": "technologies", "tag_type": "MISC", "sub_forms": []},
+        "customer": {"name": "customer", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -159,7 +201,7 @@ news_item_aggregate_6 = {
                 "id": "d45b6cde-f456-7890-91bc-3ed456f78901",
                 "hash": "b029bfbb34ef098238c59f34bc5f90f8b52c1e91a3efc9e809e456fb4790f132",
                 "title": "Test News Item 12",
-                "content": "Sophisticated malware targeting Linux servers has been identified, with potentially devastating consequences for enterprise operations. Cybersecurity firms are actively working on mitigation strategies.",
+                "content": "Adobe is collaborating with SAP to address CVE-2023-7891 vulnerabilities in enterprise solutions. Additionally, Twitter is boosting its defense mechanisms against potential malware attacks targeting its infrastructure.",
                 "collected": "2023-08-03T19:07:04.801886",
                 "published": "2023-08-03T19:07:04.801870",
                 "updated": "2023-08-03T19:06:39.893435",
@@ -167,9 +209,16 @@ news_item_aggregate_6 = {
         }
     ],
     "tags": {
+        "Adobe": {"name": "Adobe", "tag_type": "MISC", "sub_forms": []},
+        "SAP": {"name": "SAP", "tag_type": "MISC", "sub_forms": []},
+        "CVE-2023-7891": {"name": "CVE-2023-7891", "tag_type": "CVE", "sub_forms": []},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
+        "enterprise": {"name": "enterprise", "tag_type": "MISC", "sub_forms": []},
+        "solutions": {"name": "solutions", "tag_type": "MISC", "sub_forms": []},
+        "Twitter": {"name": "Twitter", "tag_type": "MISC", "sub_forms": []},
+        "mechanisms": {"name": "mechanisms", "tag_type": "MISC", "sub_forms": []},
         "malware": {"name": "malware", "tag_type": "MISC", "sub_forms": []},
-        "Linux": {"name": "Linux servers", "tag_type": "MISC", "sub_forms": []},
-        "Cybersecurity": {"name": "Cybersecurity", "tag_type": "MISC", "sub_forms": []},
+        "infrastructure": {"name": "infrastructure", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -184,7 +233,7 @@ news_item_aggregate_7 = {
                 "id": "e7890cde-g567-1234-56de-4fgh5678i901",
                 "hash": "c139cfcd35gf098239c58g45ch6g91h9j53d2e91a4fgh9e809e567gh5891i104",
                 "title": "Test News Item",
-                "content": "In a surprising move, a popular European software conglomerate admits to a long-standing vulnerability in its core codebase, urging users to apply patches immediately.",
+                "content": "HP is partnering with Qualcomm to develop firewall systems that counteract CVE-2023-1234 vulnerabilities in mobile devices. Concurrently, LinkedIn is working to fortify its security framework to shield against data breaches.",
                 "collected": "2023-08-04T21:09:04.801886",
                 "published": "2023-08-04T21:09:04.801870",
                 "updated": "2023-08-04T21:08:39.893435",
@@ -192,9 +241,16 @@ news_item_aggregate_7 = {
         }
     ],
     "tags": {
-        "European software": {"name": "European software", "tag_type": "MISC", "sub_forms": []},
-        "vulnerability": {"name": "vulnerability", "tag_type": "MISC", "sub_forms": []},
-        "patches": {"name": "patches", "tag_type": "MISC", "sub_forms": []},
+        "HP": {"name": "HP", "tag_type": "MISC", "sub_forms": []},
+        "Qualcomm": {"name": "Qualcomm", "tag_type": "MISC", "sub_forms": []},
+        "firewall": {"name": "firewall", "tag_type": "MISC", "sub_forms": []},
+        "systems": {"name": "systems", "tag_type": "MISC", "sub_forms": []},
+        "CVE-2023-1234": {"name": "CVE-2023-1234", "tag_type": "CVE", "sub_forms": []},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
+        "mobile": {"name": "mobile", "tag_type": "MISC", "sub_forms": []},
+        "devices": {"name": "devices", "tag_type": "MISC", "sub_forms": []},
+        "LinkedIn": {"name": "LinkedIn", "tag_type": "MISC", "sub_forms": []},
+        "data": {"name": "data", "tag_type": "MISC", "sub_forms": []},
     },
 }
 
@@ -210,7 +266,7 @@ news_item_aggregate_8 = {
                 "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
                 "hash": "599fafee5eeb098239c57c78bf5cea6ea52b0e92a1abc9e80964150a3773f135",
                 "title": "Test News Item",
-                "content": "Microsoft Azure launches in Europe!",
+                "content": "Dell has teamed up with VMware to combat security threats associated with CVE-2023-5678. At the same time, GitHub is heightening its security stance to fend off phishing scams targeting the platform.",
                 "collected": "2023-08-01T17:01:04.801886",
                 "published": "2023-08-01T17:01:04.801870",
                 "updated": "2023-08-01T17:00:39.893435",
@@ -218,9 +274,16 @@ news_item_aggregate_8 = {
         }
     ],
     "tags": {
-        "Azure": {"name": "Azure", "tag_type": "MISC", "sub_forms": []},
-        "Europe": {"name": "Europe", "tag_type": "LOC", "sub_forms": []},
-        "Microsoft": {"name": "Microsoft", "tag_type": "ORG", "sub_forms": []},
+        "Dell": {"name": "Dell", "tag_type": "MISC", "sub_forms": []},
+        "VMware": {"name": "VMware", "tag_type": "MISC", "sub_forms": []},
+        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
+        "threats": {"name": "threats", "tag_type": "MISC", "sub_forms": []},
+        "CVE-2023-5678": {"name": "CVE-2023-5678", "tag_type": "CVE", "sub_forms": []},
+        "GitHub": {"name": "GitHub", "tag_type": "MISC", "sub_forms": []},
+        "stance": {"name": "stance", "tag_type": "MISC", "sub_forms": []},
+        "phishing": {"name": "phishing", "tag_type": "MISC", "sub_forms": []},
+        "scams": {"name": "scams", "tag_type": "MISC", "sub_forms": []},
+        "platform": {"name": "platform", "tag_type": "MISC", "sub_forms": []},
     },
 }
 

@@ -6,8 +6,9 @@ def test_create_corpus():
     from .testdata import news_item_list
 
     corpus = create_corpus(news_item_list)
+    assert len(corpus.docs) == 8
     assert corpus.docs[13].title == "Test News Item 13"
-    assert "software" in corpus.docs[27].keywords.keys()
+    assert "cve-2021-5678" in corpus.docs[27].keywords.keys()
 
 
 def test_initial_clustering():
@@ -16,7 +17,7 @@ def test_initial_clustering():
 
     clustering_results = initial_clustering(news_item_list)
     print(clustering_results)
-    #assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
+    # assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
     assert True
 
 
@@ -26,5 +27,5 @@ def test_incremental_clustering():
 
     clustering_results = incremental_clustering(news_item_list, clustered_news_item_list)
     print(clustering_results)
-    #assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
+    # assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
     assert True
