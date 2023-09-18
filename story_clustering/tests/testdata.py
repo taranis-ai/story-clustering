@@ -46,16 +46,16 @@ news_item_aggregate_1 = {
         }
     ],
     "tags": {
-        "Microsoft": {"name": "Microsoft", "tag_type": "MISC", "sub_forms": []},
-        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
-        "CVE-2020-1234": {"name": "CVE-2020-1234", "tag_type": "CVE", "sub_forms": []},
-        "Google": {"name": "Google", "tag_type": "MISC", "sub_forms": []},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
-        "Linux": {"name": "Linux", "tag_type": "MISC", "sub_forms": []},
-        "Cisco": {"name": "Cisco", "tag_type": "MISC", "sub_forms": []},
-        "protocols": {"name": "protocols", "tag_type": "MISC", "sub_forms": []},
-        "breaches": {"name": "breaches", "tag_type": "MISC", "sub_forms": []},
-        "community": {"name": "community", "tag_type": "MISC", "sub_forms": []},
+        "Microsoft": {"name": "Microsoft", "tag_type": "MISC"},
+        "security": {"name": "security", "tag_type": "MISC"},
+        "CVE-2020-1234": {"name": "CVE-2020-1234", "tag_type": "CVE"},
+        "Google": {"name": "Google", "tag_type": "MISC"},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
+        "Linux": {"name": "Linux", "tag_type": "MISC"},
+        "Cisco": {"name": "Cisco", "tag_type": "MISC"},
+        "protocols": {"name": "protocols", "tag_type": "MISC"},
+        "breaches": {"name": "breaches", "tag_type": "MISC"},
+        "community": {"name": "community", "tag_type": "MISC"},
     },
 }
 
@@ -79,16 +79,16 @@ news_item_aggregate_2 = {
         }
     ],
     "tags": {
-        "Intel": {"name": "Intel", "tag_type": "MISC", "sub_forms": []},
-        "Oracle": {"name": "Oracle", "tag_type": "MISC", "sub_forms": []},
-        "CVE-2021-5678": {"name": "CVE-2021-5678", "tag_type": "CVE", "sub_forms": []},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
-        "cloud": {"name": "cloud", "tag_type": "MISC", "sub_forms": []},
-        "infrastructures": {"name": "infrastructures", "tag_type": "MISC", "sub_forms": []},
-        "Apple": {"name": "Apple", "tag_type": "MISC", "sub_forms": []},
-        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
-        "cyber": {"name": "cyber", "tag_type": "MISC", "sub_forms": []},
-        "systems": {"name": "systems", "tag_type": "MISC", "sub_forms": []},
+        "Intel": {"name": "Intel", "tag_type": "MISC"},
+        "Oracle": {"name": "Oracle", "tag_type": "MISC"},
+        "CVE-2021-5678": {"name": "CVE-2021-5678", "tag_type": "CVE"},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
+        "cloud": {"name": "cloud", "tag_type": "MISC"},
+        "infrastructures": {"name": "infrastructures", "tag_type": "MISC"},
+        "Apple": {"name": "Apple", "tag_type": "MISC"},
+        "security": {"name": "security", "tag_type": "MISC"},
+        "cyber": {"name": "cyber", "tag_type": "MISC"},
+        "systems": {"name": "systems", "tag_type": "MISC"},
     },
 }
 
@@ -111,16 +111,16 @@ news_item_aggregate_3 = {
         }
     ],
     "tags": {
-        "IBM": {"name": "IBM", "tag_type": "MISC", "sub_forms": []},
-        "NVIDIA": {"name": "NVIDIA", "tag_type": "MISC", "sub_forms": []},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
-        "AI": {"name": "AI", "tag_type": "MISC", "sub_forms": []},
-        "modules": {"name": "modules", "tag_type": "MISC", "sub_forms": []},
-        "Amazon": {"name": "Amazon", "tag_type": "MISC", "sub_forms": []},
-        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
-        "cyber": {"name": "cyber", "tag_type": "MISC", "sub_forms": []},
-        "attacks": {"name": "attacks", "tag_type": "MISC", "sub_forms": []},
-        "AWS": {"name": "AWS", "tag_type": "MISC", "sub_forms": []},
+        "IBM": {"name": "IBM", "tag_type": "MISC"},
+        "NVIDIA": {"name": "NVIDIA", "tag_type": "MISC"},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
+        "AI": {"name": "AI", "tag_type": "MISC"},
+        "modules": {"name": "modules", "tag_type": "MISC"},
+        "Amazon": {"name": "Amazon", "tag_type": "MISC"},
+        "security": {"name": "security", "tag_type": "MISC"},
+        "cyber": {"name": "cyber", "tag_type": "MISC"},
+        "attacks": {"name": "attacks", "tag_type": "MISC"},
+        "AWS": {"name": "AWS", "tag_type": "MISC"},
     },
 }
 
@@ -143,17 +143,17 @@ news_item_aggregate_4 = {
         }
     ],
     "tags": {
-        "tech wizard": {"name": "tech wizard", "tag_type": "MISC", "sub_forms": []},
-        "cybersecurity": {"name": "cybersecurity", "tag_type": "MISC", "sub_forms": []},
-        "remedy": {"name": "remedy", "tag_type": "MISC", "sub_forms": []},
-        "Industries": {"name": "Industries", "tag_type": "MISC", "sub_forms": []},
-        "solution": {"name": "solution", "tag_type": "MISC", "sub_forms": []},
-        "wizard": {"name": "wizard", "tag_type": "MISC", "sub_forms": []},
-        "rocket": {"name": "rocket", "tag_type": "MISC", "sub_forms": []},
-        "Thunderbird 3": {"name": "Thunderbird 3", "tag_type": "MISC", "sub_forms": []},
-        "moon": {"name": "moon", "tag_type": "MISC", "sub_forms": []},
-        "Lady Penelope": {"name": "Lady Penelope", "tag_type": "MISC", "sub_forms": []},
-        "DevOps": {"name": "DevOps", "tag_type": "MISC", "sub_forms": []},
+        "tech wizard": {"name": "tech wizard", "tag_type": "MISC"},
+        "cybersecurity": {"name": "cybersecurity", "tag_type": "MISC"},
+        "remedy": {"name": "remedy", "tag_type": "MISC"},
+        "Industries": {"name": "Industries", "tag_type": "MISC"},
+        "solution": {"name": "solution", "tag_type": "MISC"},
+        "wizard": {"name": "wizard", "tag_type": "MISC"},
+        "rocket": {"name": "rocket", "tag_type": "MISC"},
+        "Thunderbird 3": {"name": "Thunderbird 3", "tag_type": "MISC"},
+        "moon": {"name": "moon", "tag_type": "MISC"},
+        "Lady Penelope": {"name": "Lady Penelope", "tag_type": "MISC"},
+        "DevOps": {"name": "DevOps", "tag_type": "MISC"},
     },
 }
 
@@ -177,16 +177,16 @@ news_item_aggregate_5 = {
         }
     ],
     "tags": {
-        "Facebook": {"name": "Facebook", "tag_type": "MISC", "sub_forms": []},
-        "countermeasures": {"name": "countermeasures", "tag_type": "MISC", "sub_forms": []},
-        "phishing": {"name": "phishing", "tag_type": "MISC", "sub_forms": []},
-        "attacks": {"name": "attacks", "tag_type": "MISC", "sub_forms": []},
-        "user": {"name": "user", "tag_type": "MISC", "sub_forms": []},
-        "data": {"name": "data", "tag_type": "MISC", "sub_forms": []},
-        "Salesforce": {"name": "Salesforce", "tag_type": "MISC", "sub_forms": []},
-        "encryption": {"name": "encryption", "tag_type": "MISC", "sub_forms": []},
-        "technologies": {"name": "technologies", "tag_type": "MISC", "sub_forms": []},
-        "customer": {"name": "customer", "tag_type": "MISC", "sub_forms": []},
+        "Facebook": {"name": "Facebook", "tag_type": "MISC"},
+        "countermeasures": {"name": "countermeasures", "tag_type": "MISC"},
+        "phishing": {"name": "phishing", "tag_type": "MISC"},
+        "attacks": {"name": "attacks", "tag_type": "MISC"},
+        "user": {"name": "user", "tag_type": "MISC"},
+        "data": {"name": "data", "tag_type": "MISC"},
+        "Salesforce": {"name": "Salesforce", "tag_type": "MISC"},
+        "encryption": {"name": "encryption", "tag_type": "MISC"},
+        "technologies": {"name": "technologies", "tag_type": "MISC"},
+        "customer": {"name": "customer", "tag_type": "MISC"},
     },
 }
 
@@ -209,16 +209,16 @@ news_item_aggregate_6 = {
         }
     ],
     "tags": {
-        "Adobe": {"name": "Adobe", "tag_type": "MISC", "sub_forms": []},
-        "SAP": {"name": "SAP", "tag_type": "MISC", "sub_forms": []},
-        "CVE-2023-7891": {"name": "CVE-2023-7891", "tag_type": "CVE", "sub_forms": []},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
-        "enterprise": {"name": "enterprise", "tag_type": "MISC", "sub_forms": []},
-        "solutions": {"name": "solutions", "tag_type": "MISC", "sub_forms": []},
-        "Twitter": {"name": "Twitter", "tag_type": "MISC", "sub_forms": []},
-        "mechanisms": {"name": "mechanisms", "tag_type": "MISC", "sub_forms": []},
-        "malware": {"name": "malware", "tag_type": "MISC", "sub_forms": []},
-        "infrastructure": {"name": "infrastructure", "tag_type": "MISC", "sub_forms": []},
+        "Adobe": {"name": "Adobe", "tag_type": "MISC"},
+        "SAP": {"name": "SAP", "tag_type": "MISC"},
+        "CVE-2023-7891": {"name": "CVE-2023-7891", "tag_type": "CVE"},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
+        "enterprise": {"name": "enterprise", "tag_type": "MISC"},
+        "solutions": {"name": "solutions", "tag_type": "MISC"},
+        "Twitter": {"name": "Twitter", "tag_type": "MISC"},
+        "mechanisms": {"name": "mechanisms", "tag_type": "MISC"},
+        "malware": {"name": "malware", "tag_type": "MISC"},
+        "infrastructure": {"name": "infrastructure", "tag_type": "MISC"},
     },
 }
 
@@ -241,16 +241,16 @@ news_item_aggregate_7 = {
         }
     ],
     "tags": {
-        "HP": {"name": "HP", "tag_type": "MISC", "sub_forms": []},
-        "Qualcomm": {"name": "Qualcomm", "tag_type": "MISC", "sub_forms": []},
-        "firewall": {"name": "firewall", "tag_type": "MISC", "sub_forms": []},
-        "systems": {"name": "systems", "tag_type": "MISC", "sub_forms": []},
-        "CVE-2023-1234": {"name": "CVE-2023-1234", "tag_type": "CVE", "sub_forms": []},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC", "sub_forms": []},
-        "mobile": {"name": "mobile", "tag_type": "MISC", "sub_forms": []},
-        "devices": {"name": "devices", "tag_type": "MISC", "sub_forms": []},
-        "LinkedIn": {"name": "LinkedIn", "tag_type": "MISC", "sub_forms": []},
-        "data": {"name": "data", "tag_type": "MISC", "sub_forms": []},
+        "HP": {"name": "HP", "tag_type": "MISC"},
+        "Qualcomm": {"name": "Qualcomm", "tag_type": "MISC"},
+        "firewall": {"name": "firewall", "tag_type": "MISC"},
+        "systems": {"name": "systems", "tag_type": "MISC"},
+        "CVE-2023-1234": {"name": "CVE-2023-1234", "tag_type": "CVE"},
+        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
+        "mobile": {"name": "mobile", "tag_type": "MISC"},
+        "devices": {"name": "devices", "tag_type": "MISC"},
+        "LinkedIn": {"name": "LinkedIn", "tag_type": "MISC"},
+        "data": {"name": "data", "tag_type": "MISC"},
     },
 }
 
@@ -274,16 +274,16 @@ news_item_aggregate_8 = {
         }
     ],
     "tags": {
-        "Dell": {"name": "Dell", "tag_type": "MISC", "sub_forms": []},
-        "VMware": {"name": "VMware", "tag_type": "MISC", "sub_forms": []},
-        "security": {"name": "security", "tag_type": "MISC", "sub_forms": []},
-        "threats": {"name": "threats", "tag_type": "MISC", "sub_forms": []},
-        "CVE-2023-5678": {"name": "CVE-2023-5678", "tag_type": "CVE", "sub_forms": []},
-        "GitHub": {"name": "GitHub", "tag_type": "MISC", "sub_forms": []},
-        "stance": {"name": "stance", "tag_type": "MISC", "sub_forms": []},
-        "phishing": {"name": "phishing", "tag_type": "MISC", "sub_forms": []},
-        "scams": {"name": "scams", "tag_type": "MISC", "sub_forms": []},
-        "platform": {"name": "platform", "tag_type": "MISC", "sub_forms": []},
+        "Dell": {"name": "Dell", "tag_type": "MISC"},
+        "VMware": {"name": "VMware", "tag_type": "MISC"},
+        "security": {"name": "security", "tag_type": "MISC"},
+        "threats": {"name": "threats", "tag_type": "MISC"},
+        "CVE-2023-5678": {"name": "CVE-2023-5678", "tag_type": "CVE"},
+        "GitHub": {"name": "GitHub", "tag_type": "MISC"},
+        "stance": {"name": "stance", "tag_type": "MISC"},
+        "phishing": {"name": "phishing", "tag_type": "MISC"},
+        "scams": {"name": "scams", "tag_type": "MISC"},
+        "platform": {"name": "platform", "tag_type": "MISC"},
     },
 }
 
@@ -306,9 +306,9 @@ news_item_aggregate_9 = {
         }
     ],
     "tags": {
-        "Software": {"name": "Software", "tag_type": "MISC", "sub_forms": []},
-        "CVE": {"name": "CVE", "tag_type": "MISC", "sub_forms": []},
-        "vulnerability": {"name": "vulnerability", "tag_type": "MISC", "sub_forms": []},
+        "Software": {"name": "Software", "tag_type": "MISC"},
+        "CVE": {"name": "CVE", "tag_type": "MISC"},
+        "vulnerability": {"name": "vulnerability", "tag_type": "MISC"},
     },
 }
 
@@ -332,9 +332,9 @@ news_item_aggregate_10 = {
         }
     ],
     "tags": {
-        "Cybersecurity": {"name": "Cybersecurity", "tag_type": "MISC", "sub_forms": []},
-        "blog": {"name": "blog", "tag_type": "MISC", "sub_forms": []},
-        "vulnerability": {"name": "vulnerability", "tag_type": "MISC", "sub_forms": []},
+        "Cybersecurity": {"name": "Cybersecurity", "tag_type": "MISC"},
+        "blog": {"name": "blog", "tag_type": "MISC"},
+        "vulnerability": {"name": "vulnerability", "tag_type": "MISC"},
     },
 }
 
@@ -409,9 +409,9 @@ clustered_news_item_list = merge_multiple(
 
 news_item_tags_1 = {"Cyber": {"name": "Cyber", "tag_type": "CySec", "sub_forms": ["CyberSecurity"]}}
 news_item_tags_2 = {"Security": {"name": "Security", "tag_type": "Misc", "sub_forms": ["securities"]}}
-news_item_tags_3 = {"New Orleans": {"name": "New Orleans", "tag_type": "LOC", "sub_forms": []}}
+news_item_tags_3 = {"New Orleans": {"name": "New Orleans", "tag_type": "LOC"}}
 news_item_tags_4 = {"CVE": {"name": "CVE", "tag_type": "CySec", "sub_forms": ["cves"]}}
-news_item_tags_5 = {"CVE-2021-1234": {"name": "CVE-2021-1234", "tag_type": "CVE", "sub_forms": []}}
+news_item_tags_5 = {"CVE-2021-1234": {"name": "CVE-2021-1234", "tag_type": "CVE"}}
 
 
 if __name__ == "__main__":

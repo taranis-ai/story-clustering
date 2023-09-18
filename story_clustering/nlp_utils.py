@@ -22,15 +22,13 @@ def tokanize_text(text: str) -> list[str]:
     return text_content_tokanized
 
 
-def compute_tf(baseForm, words, text):
+def compute_tf(baseForm, text):
     model = PolyFuzz(TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3)))
 
-    if not baseForm.strip().isalpha() or len(baseForm.strip()) <= 2 or baseForm in stopwords_list:
+    if not baseForm.strip().isalpha() or baseForm in stopwords_list:
         return 1
     n_words = len(baseForm.strip().split(" "))
-    all_words = list(words)
-    all_words.append(baseForm)
-    model.match(tokanize_text(text), all_words).group(link_min_similarity=0.75)
+    model.match(tokanize_text(text), [baseForm]).group(link_min_similarity=0.75)
     df = model.get_matches()
     if len(df) == 0:
         # keyword not appearing in text

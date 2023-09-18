@@ -3,9 +3,9 @@ from .keywords_organizer import KeywordGraph
 
 
 class Event:
-    def __init__(self, keyGraph: KeywordGraph = None):
+    def __init__(self, keyGraph: KeywordGraph | None = None):
         self.max_id = 1
-        self.keyGraph: KeywordGraph = keyGraph
+        self.keyGraph = keyGraph
         self.docs = {}
         self.similarities = {}
         self.centroid = None
@@ -27,7 +27,7 @@ class Event:
                     kk.tf += k.tf
                     kk.df += k.df
                 else:
-                    self.centroid.set_keyword(Keyword(k.baseForm, k.word, k.tf, k.df))
+                    self.centroid.set_keyword(Keyword(k.baseForm, k.tf, k.df))
 
         self.centroid.calc_tf_vector_size()
         self.centroid.publish_time = timestamp

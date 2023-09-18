@@ -43,15 +43,14 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 continue
             for tag in nitem_agg["tags"].values():
                 baseform = replace_umlauts_with_digraphs(tag["name"])
-                words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
-                keyword = Keyword(baseform=baseform, words=words, tf=tag.get("tf", 0), df=tag.get("df", 0))
+                keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0))
                 keywords[baseform] = keyword
 
                 if keyword.baseForm not in doc.content:
                     continue
 
                 if keyword.tf == 0:
-                    keyword.tf = compute_tf(keyword.baseForm, keyword.words, doc.content)
+                    keyword.tf = compute_tf(keyword.baseForm, doc.content)
             doc.keywords = keywords
             corpus.docs[doc.doc_id] = doc
 
@@ -136,8 +135,7 @@ def get_or_add_keywordNode(tag: dict, graphNodes: dict, df: int) -> KeywordNode:
         node.keyword.increase_df(df)
         return node
 
-    words = [replace_umlauts_with_digraphs(w) for w in tag["sub_forms"]]
-    keyword = Keyword(baseform=baseform, words=words, documents=None, tf=tag.get("tf", 0), df=tag.get("df", df))
+    keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", df))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode

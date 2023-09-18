@@ -9,10 +9,9 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, words: list[str], documents: set  = None, tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, documents: set = set(), tf: float = 0, df: float = 0):
         self.baseForm = baseform
-        self.words = words
-        self.documents = documents or set()
+        self.documents = documents
         self.tf = tf
         self.df = df
 
@@ -23,7 +22,7 @@ class Keyword:
         self.df += k
 
     def reprJSON(self):
-        return {"baseForm": self.baseForm, "words": self.words, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
+        return {"baseForm": self.baseForm, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
 # class KeywordEncoder(json.JSONEncoder):

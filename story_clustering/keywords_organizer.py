@@ -138,7 +138,7 @@ class KeywordGraph:
 
         def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
             if keyword.baseForm not in self.graphNodes:
-                new_keyword = Keyword(keyword.baseForm, keyword.words, keyword.documents, tf=0, df=corpus.DF.get(keyword.baseForm, 0))
+                new_keyword = Keyword(keyword.baseForm, keyword.documents, tf=0, df=corpus.DF.get(keyword.baseForm, 0))
                 self.graphNodes[keyword.baseForm] = KeywordNode(keyword=new_keyword)
             return self.graphNodes[keyword.baseForm]
 

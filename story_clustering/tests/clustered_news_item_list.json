@@ -55,18 +55,15 @@
     "tags": {
       "tech wizard": {
         "name": "tech wizard",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       },
       "cybersecurity": {
         "name": "cybersecurity",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       },
       "remedy": {
         "name": "remedy",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       }
     },
     "id": 4
@@ -147,18 +144,15 @@
     "tags": {
       "European software": {
         "name": "European software",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       },
       "vulnerability": {
         "name": "vulnerability",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       },
       "patches": {
         "name": "patches",
-        "tag_type": "MISC",
-        "sub_forms": []
+        "tag_type": "MISC"
       }
     },
     "id": 7
@@ -199,17 +193,11 @@
     "tags": {
       "CVE-2020-1234": {
         "name": "CVE-2020-1234",
-        "tag_type": "CVE",
-        "sub_forms": [
-          "CVE"
-        ]
+        "tag_type": "CVE"
       },
       "Security": {
         "name": "Security",
-        "tag_type": "MISC",
-        "sub_forms": [
-          "securities"
-        ]
+        "tag_type": "MISC"
       }
     },
     "id": 1
@@ -250,17 +238,11 @@
     "tags": {
       "CVE-2020-4321": {
         "name": "CVE-2020-4321",
-        "tag_type": "CVE",
-        "sub_forms": [
-          "CVE"
-        ]
+        "tag_type": "CVE"
       },
       "Software": {
         "name": "Software",
-        "tag_type": "MISC",
-        "sub_forms": [
-          "softwares"
-        ]
+        "tag_type": "MISC"
       }
     },
     "id": 2
