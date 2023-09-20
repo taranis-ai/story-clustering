@@ -407,10 +407,10 @@ clustered_news_item_list = merge_multiple(
     ],
 )
 
-news_item_tags_1 = {"Cyber": {"name": "Cyber", "tag_type": "CySec", "sub_forms": ["CyberSecurity"]}}
-news_item_tags_2 = {"Security": {"name": "Security", "tag_type": "Misc", "sub_forms": ["securities"]}}
+news_item_tags_1 = {"Cyber": {"name": "Cyber", "tag_type": "CySec"}}
+news_item_tags_2 = {"Security": {"name": "Security", "tag_type": "Misc"}}
 news_item_tags_3 = {"New Orleans": {"name": "New Orleans", "tag_type": "LOC"}}
-news_item_tags_4 = {"CVE": {"name": "CVE", "tag_type": "CySec", "sub_forms": ["cves"]}}
+news_item_tags_4 = {"CVE": {"name": "CVE", "tag_type": "CySec"}}
 news_item_tags_5 = {"CVE-2021-1234": {"name": "CVE-2021-1234", "tag_type": "CVE"}}
 
 

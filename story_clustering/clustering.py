@@ -7,7 +7,7 @@ from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf
 from story_clustering import sentence_transformer, logger
 
-SimilarityThreshold = 0.44
+SimilarityThreshold = 0.55
 
 
 def replace_umlauts_with_digraphs(s: str) -> str:
@@ -39,7 +39,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             doc.publish_time = nitem.get("news_item_data.published", None)
             doc.language = nitem["news_item_data"]["language"]
             keywords = {}
-            if len(nitem_agg["tags"]) < 10:
+            if len(nitem_agg["tags"]) < 5:
                 continue
             for tag in nitem_agg["tags"].values():
                 baseform = replace_umlauts_with_digraphs(tag["name"])
