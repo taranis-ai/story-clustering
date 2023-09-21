@@ -3,7 +3,7 @@ from .keywords_organizer import KeywordGraph
 
 
 class Event:
-    def __init__(self, keyGraph: KeywordGraph | None = None):
+    def __init__(self, keyGraph: KeywordGraph  = None):
         self.max_id = 1
         self.keyGraph = keyGraph
         self.docs = {}

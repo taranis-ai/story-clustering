@@ -8,7 +8,11 @@ from .nlp_utils import compute_tf
 from story_clustering import sentence_transformer, logger
 
 SimilarityThreshold = 0.55
-
+HIGH_PRIORITY = 10
+MID_HIGH_PRIORITY = 8
+MID_PRIORITY = 5
+MID_LOW_PRIORITY = 3
+LOW_PRIORITY = 1
 
 def replace_umlauts_with_digraphs(s: str) -> str:
     return s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
@@ -49,8 +53,9 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 if keyword.baseForm not in doc.content:
                     continue
 
-                if keyword.tf == 0:
-                    keyword.tf = compute_tf(keyword.baseForm, doc.content)
+                
+                keyword.tf = compute_tf_with_boost(keyword.baseForm, doc.content, tag_type=tag.get("type", None))
+                
             doc.keywords = keywords
             corpus.docs[doc.doc_id] = doc
 
@@ -58,6 +63,24 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     logger.debug(f"Corpus size: {len(corpus.docs)}")
     return corpus
 
+def compute_tf_with_boost(baseform, content, tag_type) -> int:
+    # initialize the term frequency so that special keywords are more relevant
+    tf = 0
+    if tag_type == "APT" or tag_type == "cves" :
+        tf = HIGH_PRIORITY
+    elif  tag_type == "Company" or tag_type == "sha256s" or tag_type == "sha1s"  or tag_type == "registry_key_paths" or tag_type == "md5s" \
+        or tag_type == "bitcoin_addresses":
+        tf = MID_HIGH_PRIORITY
+    elif tag_type == "Country" or tag_type == "CVE_VENDOR":
+        tf = MID_PRIORITY
+    elif tag_type == "PER" or tag_type == "LOC" or tag_type == "ORG":
+        tf = MID_LOW_PRIORITY 
+    else:
+        tf = LOW_PRIORITY
+    
+    # add the term 
+    tf += compute_tf(baseform, content)
+    return tf
 
 def initial_clustering(new_news_items: list):
     corpus = create_corpus(new_news_items)
