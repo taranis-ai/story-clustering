@@ -10,6 +10,9 @@ def idf(df: float, size: int):
     return math.log(size / (df + 1)) / math.log(2)
 
 
+def replace_umlauts_with_digraphs(s: str) -> str:
+    return s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+
 # calculate word's tf-idf
 def tfidf(tf, idf):
     return 0 if tf == 0 or idf == 0 else tf * idf
@@ -18,7 +21,7 @@ def tfidf(tf, idf):
 def tokanize_text(text: str) -> list[str]:
     tokenizer = RegexpTokenizer(r"\w+")
     text_content_tokanized = tokenizer.tokenize(text)
-    text_content_tokanized = [w.lower() for w in text_content_tokanized if w.lower() not in stopwords_list]
+    text_content_tokanized = [replace_umlauts_with_digraphs(w) for w in text_content_tokanized if w.lower() not in stopwords_list]
     return text_content_tokanized
 
 
@@ -28,7 +31,8 @@ def compute_tf(baseForm, text):
     if not baseForm.strip().isalpha() or baseForm in stopwords_list:
         return 1
     n_words = len(baseForm.strip().split(" "))
-    model.match(tokanize_text(text), [baseForm]).group(link_min_similarity=0.75)
+    tokenized_text = tokanize_text(text)
+    model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
     df = model.get_matches()
     if len(df) == 0:
         # keyword not appearing in text

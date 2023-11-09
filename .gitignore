@@ -37,3 +37,7 @@ src/.env
 *.njsproj
 *.sln
 *.sw?
+
+/data
+story_clustering/data
+__main__.py

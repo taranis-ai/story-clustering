@@ -4,7 +4,7 @@ from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
 from .eventdetector import extract_events_from_corpus
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
-from .nlp_utils import compute_tf
+from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
 from story_clustering import sentence_transformer, logger
 
 SimilarityThreshold = 0.55
@@ -14,8 +14,7 @@ MID_PRIORITY = 5
 MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
 
-def replace_umlauts_with_digraphs(s: str) -> str:
-    return s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -24,7 +23,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     Args:
         new_news_items (list[dict]): list of dict with following keys
             {'id': str, 'link': str, 'text': str, 'title':str,'date': 'YYYY-MM-DD', 'lang': str,
-            'tags': [{'baseForm': str, 'words': list[str]}]}
+            'tags': [{'name': str, 'tag_type': str}]}
     Returns:
         corpus: Corpus of documents
     """
@@ -45,16 +44,15 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             keywords = {}
             if len(nitem_agg["tags"]) < 5:
                 continue
-            for tag in nitem_agg["tags"].values():
+            for tag in nitem_agg["tags"]:
+                #print(tag["name"])
+                if (tag["name"] not in doc.content):
+                    continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
                 keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0))
                 keywords[baseform] = keyword
-
-                if keyword.baseForm not in doc.content:
-                    continue
-
                 
-                keyword.tf = compute_tf_with_boost(keyword.baseForm, doc.content, tag_type=tag.get("type", None))
+                keyword.tf = compute_tf_with_boost(baseform, doc.content, tag_type=tag.get("type", None))
                 
             doc.keywords = keywords
             corpus.docs[doc.doc_id] = doc
