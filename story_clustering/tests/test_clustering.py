@@ -1,4 +1,4 @@
-expected_results = {"event_clusters": [[13, 27], [93], [1414, 11, 12, 23, 1337], [137], [4242]]}
+expected_results = {'event_clusters': [[13], [27, 93], [1414], [11], [12], [137], [4242]]}
 
 
 def test_create_corpus():

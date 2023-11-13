@@ -100,8 +100,8 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
     # add to g the new nodes and edges from already_clusterd_events
     for cluster in already_clusterd_events:
         tags = cluster["tags"]
-        for keyword_1 in tags.values():
-            for keyword_2 in tags.values():
+        for keyword_1 in tags:
+            for keyword_2 in tags:
                 if keyword_1 != keyword_2:
                     # doc frequency is the number of documents in the cluster
                     df = len(cluster["news_items"])
