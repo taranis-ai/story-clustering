@@ -32,7 +32,10 @@ def compute_tf(baseForm, text):
         return 1
     n_words = len(baseForm.strip().split(" "))
     tokenized_text = tokanize_text(text)
-    model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
+    try:
+        model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
+    except:
+        return 0
     df = model.get_matches()
     if len(df) == 0:
         # keyword not appearing in text
