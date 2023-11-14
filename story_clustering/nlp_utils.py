@@ -35,7 +35,7 @@ def compute_tf(baseForm, text):
     try:
         model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
     except:
-        return 0
+        return 1
     df = model.get_matches()
     if len(df) == 0:
         # keyword not appearing in text
