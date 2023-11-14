@@ -44,8 +44,8 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
             keywords = {}
             if len(nitem_agg["tags"]) < 5:
                 continue
-            for tag in nitem_agg["tags"]:
-                #print(tag["name"])
+            for tag in nitem_agg["tags"].values():
+                # print(tag["name"])
                 if (tag["name"] not in doc.content):
                     continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
@@ -100,8 +100,8 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
     # add to g the new nodes and edges from already_clusterd_events
     for cluster in already_clusterd_events:
         tags = cluster["tags"]
-        for keyword_1 in tags:
-            for keyword_2 in tags:
+        for keyword_1 in tags.values():
+            for keyword_2 in tags.values():
                 if keyword_1 != keyword_2:
                     # doc frequency is the number of documents in the cluster
                     df = len(cluster["news_items"])
