@@ -173,7 +173,7 @@ class KeywordGraph:
                         node2.edges[edge_id] = edge
 
         filter_and_remove_edges()
-        self.graphNodes = {k: v for k, v in self.graphNodes.items() if v.edges}
+        self.graphNodes = {k: v for k, v in self.graphNodes.items() if len(v.edges)>0}
 
 
 class CommunityDetector:
