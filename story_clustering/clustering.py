@@ -7,7 +7,7 @@ from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
 from story_clustering import sentence_transformer, logger
 
-SimilarityThreshold = 0.55
+SimilarityThreshold = 0.44
 HIGH_PRIORITY = 10
 MID_HIGH_PRIORITY = 8
 MID_PRIORITY = 5
@@ -49,7 +49,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 if (tag["name"] not in doc.content):
                     continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
-                keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0))
+                keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
                 keywords[baseform] = keyword
                 
                 keyword.tf = compute_tf_with_boost(baseform, doc.content, tag_type=tag.get("type", None))
@@ -134,7 +134,8 @@ def cluster_stories_from_events(events: list[Event]) -> list[list[Event]]:
 
 def to_json_events(events: list[Event]) -> dict:
     all_events = [list(event.docs.keys()) for event in events if event.docs]
-    return {"event_clusters": all_events}
+    #keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
+    return {"event_clusters": all_events} #, "events_keywords":keywords}
 
 
 def to_json_stories(stories: list[list[Event]]) -> dict:

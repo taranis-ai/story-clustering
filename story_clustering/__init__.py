@@ -18,7 +18,8 @@ class IgnoreSpecificLogFilter(logging.Filter):
 
 bert_logger.addFilter(IgnoreSpecificLogFilter())
 
-sentence_transformer = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
+#sentence_transformer = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
+sentence_transformer = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
 logger = logging.getLogger("story_clustering")
 logger.setLevel(logging.DEBUG)

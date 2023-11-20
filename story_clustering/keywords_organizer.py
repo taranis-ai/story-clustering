@@ -138,7 +138,7 @@ class KeywordGraph:
 
         def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
             if keyword.baseForm not in self.graphNodes:
-                new_keyword = Keyword(keyword.baseForm, keyword.documents, tf=0, df=corpus.DF.get(keyword.baseForm, 0))
+                new_keyword = Keyword(baseform=keyword.baseForm, documents=set(), tf=0, df=corpus.DF.get(keyword.baseForm, 0))
                 self.graphNodes[keyword.baseForm] = KeywordNode(keyword=new_keyword)
             return self.graphNodes[keyword.baseForm]
 
@@ -146,7 +146,8 @@ class KeywordGraph:
             to_remove: list["KeywordEdge"] = []
             for node in self.graphNodes.values():
                 for edge in list(node.edges.values()):
-                    MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
+                    #MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
+                    MI = edge.df / (corpus.DF[edge.n1.keyword.baseForm]+ corpus.DF[edge.n2.keyword.baseForm])
                     if edge.df < MinEdgeDF or MI < MinEdgeCorrelation:
                         to_remove.append(edge)
             for edge in to_remove:
@@ -163,6 +164,8 @@ class KeywordGraph:
                 for k2 in document.keywords.values():
                     if k1.baseForm < k2.baseForm:
                         node2 = get_or_create_node(k2)
+                        node2.keyword.documents.add(document.doc_id)
+                        node2.keyword.increase_tf(k2.tf)
                         edge_id = KeywordEdge.get_id(node1, node2)
                         edge = node1.edges.get(edge_id, KeywordEdge(node1, node2, edge_id))
                         edge.df += 1
@@ -205,7 +208,7 @@ class CommunityDetector:
                 gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
         gr_copy = gr.copy()
-        communities = nx.community.louvain_communities(gr_copy, seed=123)
+        communities = nx.community.louvain_communities(gr_copy, seed=123,resolution=5)
         # communities = nx.community.girvan_newman(G)
 
         key_communities = []
