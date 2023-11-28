@@ -29,9 +29,9 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     """
     corpus = Corpus()
     for nitem_agg in new_news_items:
+        doc = Document(doc_id=nitem_agg["id"]) # updated to use aggregate_id
         for nitem in nitem_agg["news_items"]:
-            doc = Document(doc_id=nitem["id"])
-
+            
             doc.url = nitem.get("news_item_data.link", None)
             doc.content = nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
             if not doc.content:
