@@ -7,8 +7,8 @@ def test_create_corpus():
 
     corpus = create_corpus(news_item_list)
     assert len(corpus.docs) == 8
-    assert corpus.docs[13].title == "Test News Item 13"
-    assert "cve-2021-5678" in corpus.docs[27].keywords.keys()
+    assert corpus.docs[1].title == "Test News Item 13"
+    assert "cve-2021-5678" in corpus.docs[2].keywords.keys()
 
 
 def test_initial_clustering():
