@@ -207,16 +207,20 @@ class CommunityDetector:
             for e in self.nodes[word].edges.values():
                 gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
+        # check if there are any 
+        
         gr_copy = gr.copy()
-        communities = nx.community.louvain_communities(gr_copy, seed=123,resolution=5)
+        communities = nx.community.louvain_communities(gr_copy, seed=42,resolution=5)
         # communities = nx.community.girvan_newman(G)
 
         key_communities = []
         for c in communities:
             if len(c) > 1:
-                subgraph = gr.subgraph(c)
+                subgraph =  nx.Graph(gr.subgraph(c))
+                subgraph.remove_nodes_from(list(nx.isolates(subgraph)))
+                #print(f"Print nodes: {subgraph.nodes()}")
+                #print(f"Print edges: {subgraph.edges()}")
                 key_communities.append(self.get_keywords_keygraphs(subgraph, keywords_dict))
-
         return key_communities
 
     def get_keywords_keygraphs(self, subgraph, keywords_dict):

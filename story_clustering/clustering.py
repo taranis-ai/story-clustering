@@ -2,12 +2,12 @@ import torch
 from sentence_transformers import util
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extract_events_from_corpus
+from .eventdetector import extract_events_from_corpus, SimilarityThreshold
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
 from story_clustering import sentence_transformer, logger
 
-SimilarityThreshold = 0.44
+
 HIGH_PRIORITY = 10
 MID_HIGH_PRIORITY = 8
 MID_PRIORITY = 5

@@ -41,3 +41,4 @@ src/.env
 /data
 story_clustering/data
 __main__.py
+notebook
