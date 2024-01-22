@@ -10,6 +10,7 @@ from .nlp_utils import tfidf, idf
 from story_clustering import logger, sentence_transformer
 import numpy as np
 
+SimilarityThreshold = 0.5
 
 def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph  = None) -> list[Event]:
     if not graph:
@@ -76,8 +77,10 @@ def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, DF
         for edge in node.edges.values():
             edge.compute_cps()
             nTF += max(edge.cp1, edge.cp2)
-        node.keyword.tf = nTF / len(node.edges)
-
+        if len(node.edges) > 0:
+            node.keyword.tf = nTF / len(node.edges)
+        else:
+            node.keyword.tf = 0
         if node.keyword.baseForm in DF:
             # update vector size of community
             vectorsize1 += math.pow(tfidf(node.keyword.tf, idf(DF[node.keyword.baseForm], docSize)), 2)
@@ -132,8 +135,8 @@ def compute_similarity(text_1, text_2):
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
-    sent_text_2 = [s for s in sent_text_2 if s != ""][:5]
-    sent_text_1 = [s for s in sent_text_1 if s != ""][:5]
+    sent_text_2 = [s+"." for s in sent_text_2 if s != ""][:5]
+    sent_text_1 = [s+"." for s in sent_text_1 if s != ""][:5]
 
     em_1 = Tensor(sentence_transformer.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False))
     em_2 = Tensor(sentence_transformer.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False))
@@ -145,10 +148,10 @@ def compute_similarity(text_1, text_2):
 
 
 def same_event_text(text_1, text_2):
-    return compute_similarity(text_1, text_2) >= 0.44
+    return compute_similarity(text_1, text_2) >= SimilarityThreshold
 
 
 def same_event(d1: Document, d2: Document) -> bool:
     text_1 = d1.content
     text_2 = d2.content
-    return compute_similarity(text_1, text_2) >= 0.44
+    return compute_similarity(text_1, text_2) >= SimilarityThreshold
