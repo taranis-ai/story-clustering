@@ -130,8 +130,10 @@ class KeywordGraph:
     This class defines a keyword graph (KeyGraph)
     """
 
-    def __init__(self):
+    def __init__(self, aggregate_id : int =None):
         self.graphNodes = {}
+        if aggregate_id != None:
+            self.aggregate_id = aggregate_id
 
     def build_graph(self, corpus: "Corpus"):
         self.graphNodes = {}

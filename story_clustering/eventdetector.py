@@ -32,6 +32,12 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], DF: dict[s
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
+def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], DF: dict[str, float], communities: list[KeywordGraph]):
+    for d in docs.values():
+        d.tfidfVectorSizeWithKeygraph = sum(
+            math.pow(tfidf(k.tf, idf(DF[k.baseForm], len(docs))), 2) for k in d.keywords.values() for graph in communities if k.baseForm in graph.graphNodes
+        )
+        d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
 def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> list[Event]:
     result = []
@@ -121,6 +127,8 @@ def split_events(event: Event) -> list[Event]:
             if d2 in processed_doc_keys:
                 continue
             if same_event(sub_event.docs[d1], event.docs[d2]):
+                # put aggregate_id to NONE
+                sub_event.keyGraph.aggregate_id = None
                 sub_event.docs[d2] = event.docs[d2]
                 sub_event.similarities[d2] = event.similarities[d2]
                 processed_doc_keys.add(d2)

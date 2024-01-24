@@ -2,7 +2,7 @@ import torch
 from sentence_transformers import util
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extract_events_from_corpus, SimilarityThreshold
+from .eventdetector import extract_events_from_corpus, extract_topic_by_keyword_communities, calc_docs_tfidf_vector_size_with_graph_2, SimilarityThreshold
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
 from story_clustering import sentence_transformer, logger
@@ -90,7 +90,66 @@ def initial_clustering(new_news_items: list):
     return to_json_events(events)
 
 
-def incremental_clustering(new_news_items: list, already_clusterd_events: list):
+def compute_df(keyword_baseform:str,cluster_news_items:list) -> int:
+    df = 0
+    for nitem in cluster_news_items:
+        content =  nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
+        if not content:
+            continue
+        if keyword_baseform.lower() in content:
+            df += 1
+    if df > 0: 
+        return df
+    return 1
+        
+
+def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
+    graph = KeywordGraph(aggregate_id=cluster["id"])
+    tags = cluster["tags"]
+    for keyword_1 in tags.values():
+        baseform1 = replace_umlauts_with_digraphs(keyword_1["name"])
+        if baseform1 in corpus.DF:
+            corpus.DF[baseform1] += compute_df(keyword_1["name"], cluster["news_items"])
+        else:
+            corpus.DF[baseform1] = compute_df(keyword_1["name"], cluster["news_items"])
+        for keyword_2 in tags.values():
+            if keyword_1 != keyword_2:
+                baseform2 = replace_umlauts_with_digraphs(keyword_2["name"])
+                if baseform2 in corpus.DF:
+                    corpus.DF[baseform2] += compute_df(keyword_2["name"], cluster["news_items"])
+                else:
+                    corpus.DF[baseform2] = compute_df(keyword_2["name"], cluster["news_items"])
+                # doc frequency is the number of documents in the cluster
+                #df = len(cluster["news_items"])
+                keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.DF[baseform1])
+                keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.DF[baseform2])
+                # add edge and increase edge df
+                update_or_create_keywordEdge(keyNode1, keyNode2)
+        
+                
+    return graph
+    
+
+def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
+    corpus = create_corpus(new_news_items)
+    corpus.update_df()
+    
+    # create keygraph for each cluster
+    existing_communities = []
+    for cluster in already_clustered_events:
+        existing_communities.append(create_keygraph(cluster, corpus))
+    
+    
+    calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
+    
+    updated_events = extract_topic_by_keyword_communities(corpus, existing_communities)
+    return to_json_events(updated_events)
+    
+
+
+
+
+def incremental_clustering(new_news_items: list, already_clustered_events: list):
     corpus = create_corpus(new_news_items)
 
     # create keyGraph from corpus
@@ -98,7 +157,7 @@ def incremental_clustering(new_news_items: list, already_clusterd_events: list):
     graph.build_graph(corpus=corpus)
 
     # add to g the new nodes and edges from already_clusterd_events
-    for cluster in already_clusterd_events:
+    for cluster in already_clustered_events:
         tags = cluster["tags"]
         for keyword_1 in tags.values():
             for keyword_2 in tags.values():
@@ -133,7 +192,18 @@ def cluster_stories_from_events(events: list[Event]) -> list[list[Event]]:
 
 
 def to_json_events(events: list[Event]) -> dict:
-    all_events = [list(event.docs.keys()) for event in events if event.docs]
+    all_events = []
+    for event in events:
+        docs_in_event = list()
+        if event.docs:
+            docs_in_event = list(event.docs.keys())
+        if event.keyGraph.aggregate_id:
+            if event.keyGraph.aggregate_id not in docs_in_event:
+                docs_in_event.append(event.keyGraph.aggregate_id)
+        if len(docs_in_event) > 0:
+            all_events.append(docs_in_event)
+    #all_events = [list(event.docs.keys()) for event in events if event.docs]
+
     #keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
     return {"event_clusters": all_events} #, "events_keywords":keywords}
 
