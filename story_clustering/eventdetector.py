@@ -11,6 +11,7 @@ from story_clustering import logger, sentence_transformer
 import numpy as np
 
 SimilarityThreshold = 0.5
+DiffSimilarityThreshold = 0.3
 
 def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph  = None) -> list[Event]:
     if not graph:
@@ -39,11 +40,15 @@ def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], DF: dict
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
-def extract_topic_by_keyword_communities(corpus: Corpus, communities: list) -> list[Event]:
+def extract_topic_by_keyword_communities(corpus: Corpus, communities: list, doc_size = None) -> list[Event]:
     result = []
+    if doc_size == None:
+        doc_size = len(corpus.docs)
 
     max_comm = {
-        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs)) for community in communities])
+        #doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs)) for community in communities])
+        #for doc in corpus.docs.values()
+        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, doc_size) for community in communities])
         for doc in corpus.docs.values()
     }
     for i, community in enumerate(communities):
@@ -126,12 +131,22 @@ def split_events(event: Event) -> list[Event]:
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-            if same_event(sub_event.docs[d1], event.docs[d2]):
-                # put aggregate_id to NONE
-                sub_event.keyGraph.aggregate_id = None
+            if sub_event.keyGraph.aggregate_id == None:
+                if same_event(sub_event.docs[d1], event.docs[d2]):
+                    # put aggregate_id to NONE
+                    sub_event.docs[d2] = event.docs[d2]
+                    sub_event.similarities[d2] = event.similarities[d2]
+                    processed_doc_keys.add(d2)
+            else:
+                if same_new_event(sub_event.docs[d1], event.docs[d2], sub_event.keyGraph.text):
+                    # put aggregate_id to NONE
+                    sub_event.keyGraph.aggregate_id = None
+                    sub_event.keyGraph.text = None
                 sub_event.docs[d2] = event.docs[d2]
                 sub_event.similarities[d2] = event.similarities[d2]
                 processed_doc_keys.add(d2)
+                    
+                
 
         sub_event.refine_key_graph()
         split_events_list.append(sub_event)
@@ -163,3 +178,8 @@ def same_event(d1: Document, d2: Document) -> bool:
     text_1 = d1.content
     text_2 = d2.content
     return compute_similarity(text_1, text_2) >= SimilarityThreshold
+
+def same_new_event(d1:Document, d2:Document, keygraph_text) -> bool:
+    sim_1 = compute_similarity(d1.content,d2.content)
+    sim_2 = compute_similarity(d2.content,keygraph_text)
+    return (sim_1 - sim_2) >= DiffSimilarityThreshold

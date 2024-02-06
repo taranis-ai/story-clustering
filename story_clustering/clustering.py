@@ -46,7 +46,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 continue
             for tag in nitem_agg["tags"].values():
                 # print(tag["name"])
-                if (tag["name"] not in doc.content):
+                if (tag["name"] not in doc.content) and (tag["name"].lower() not in doc.content):
                     continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
                 keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
@@ -105,22 +105,26 @@ def compute_df(keyword_baseform:str,cluster_news_items:list) -> int:
 
 def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
     graph = KeywordGraph(aggregate_id=cluster["id"])
+    # as text we use for now the content of first item
+    graph.text = cluster["news_items"][0]["news_item_data"]["content"]
     tags = cluster["tags"]
+    
+    ## update corpus DF for each of the tags
+    ## use corpus.DF[baseform] to update the df of each keyword 
     for keyword_1 in tags.values():
         baseform1 = replace_umlauts_with_digraphs(keyword_1["name"])
         if baseform1 in corpus.DF:
             corpus.DF[baseform1] += compute_df(keyword_1["name"], cluster["news_items"])
         else:
             corpus.DF[baseform1] = compute_df(keyword_1["name"], cluster["news_items"])
+    
+    
+    for keyword_1 in tags.values():
+        baseform1 = replace_umlauts_with_digraphs(keyword_1["name"])
         for keyword_2 in tags.values():
             if keyword_1 != keyword_2:
                 baseform2 = replace_umlauts_with_digraphs(keyword_2["name"])
-                if baseform2 in corpus.DF:
-                    corpus.DF[baseform2] += compute_df(keyword_2["name"], cluster["news_items"])
-                else:
-                    corpus.DF[baseform2] = compute_df(keyword_2["name"], cluster["news_items"])
-                # doc frequency is the number of documents in the cluster
-                #df = len(cluster["news_items"])
+
                 keyNode1 = get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.DF[baseform1])
                 keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.DF[baseform2])
                 # add edge and increase edge df
@@ -133,16 +137,18 @@ def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
 def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
     corpus = create_corpus(new_news_items)
     corpus.update_df()
+    docs_size = len(corpus.docs)
     
     # create keygraph for each cluster
     existing_communities = []
     for cluster in already_clustered_events:
         existing_communities.append(create_keygraph(cluster, corpus))
+        docs_size += len(cluster["news_items"])
     
     
     calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
     
-    updated_events = extract_topic_by_keyword_communities(corpus, existing_communities)
+    updated_events = extract_topic_by_keyword_communities(corpus, existing_communities, docs_size)
     return to_json_events(updated_events)
     
 
@@ -195,11 +201,12 @@ def to_json_events(events: list[Event]) -> dict:
     all_events = []
     for event in events:
         docs_in_event = list()
-        if event.docs:
-            docs_in_event = list(event.docs.keys())
         if event.keyGraph.aggregate_id:
             if event.keyGraph.aggregate_id not in docs_in_event:
                 docs_in_event.append(event.keyGraph.aggregate_id)
+        if event.docs:
+            docs_in_event.extend(list(event.docs.keys()))
+        
         if len(docs_in_event) > 0:
             all_events.append(docs_in_event)
     #all_events = [list(event.docs.keys()) for event in events if event.docs]
@@ -224,7 +231,8 @@ def get_or_add_keywordNode(tag: dict, graphNodes: dict, df: int) -> KeywordNode:
     baseform = replace_umlauts_with_digraphs(tag["name"])
     if baseform in graphNodes:
         node = graphNodes[baseform]
-        node.keyword.increase_df(df)
+        #node.keyword.increase_df(df)
+        node.keyword.df = df
         return node
 
     keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", df))
