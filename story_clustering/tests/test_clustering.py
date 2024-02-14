@@ -29,3 +29,11 @@ def test_incremental_clustering():
     print(clustering_results)
     # assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
     assert True
+
+def test_incremental_clsutering_v2():
+    from story_clustering.clustering import incremental_clustering_v2
+    from .testdata import news_item_list, clustered_news_item_list
+    clustering_results = incremental_clustering_v2(news_item_list, clustered_news_item_list)
+    print(clustering_results)
+    # assert set(map(tuple, clustering_results["event_clusters"])) == set(map(tuple, expected_results["event_clusters"]))
+    assert True

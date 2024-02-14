@@ -42,3 +42,4 @@ src/.env
 story_clustering/data
 __main__.py
 notebook
+story_clustering/main_aux.py

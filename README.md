@@ -17,7 +17,7 @@ The method `initial_clustering` in `clustering.py` takes as input a dictionary o
 ("story_clusters" : list of list of documents ids) 
 
 ## Incremental clustering
-The incremental clustering method takes as input a dictionary of `news_items_aggregate`, containing new news items to be clustered, and `clustered_news_items_aggregate`, containing already clustered items, and tries to cluster the new documents to the existing clusters or create new ones. See `tests/testdata.py` for the actual input formats. This method also 
+The method `incremental_clustering_v2` takes as input a dictionary of `news_items_aggregate`, containing new news items to be clustered, and `clustered_news_items_aggregate`, containing already clustered items, and tries to cluster the new documents to the existing clusters or create new ones. See `tests/testdata.py` for the actual input formats. This method also 
 outputs a dictionary containing two keys:
 ("event_clusters" : list of list of documents ids) and 
 ("story_clusters" : list of list of documents ids) 
