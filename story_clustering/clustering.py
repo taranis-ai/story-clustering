@@ -134,8 +134,10 @@ def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
     return graph
     
 
-def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
-    corpus = create_corpus(new_news_items)
+
+
+def create_communities_incr_clustering(corpus: Corpus, already_clustered_events: list):
+    
     corpus.update_df()
     docs_size = len(corpus.docs)
     
@@ -144,9 +146,18 @@ def incremental_clustering_v2(new_news_items: list, already_clustered_events: li
     for cluster in already_clustered_events:
         existing_communities.append(create_keygraph(cluster, corpus))
         docs_size += len(cluster["news_items"])
-    
-    
+        
     calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
+    
+    return existing_communities, docs_size
+
+
+
+def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
+    
+    corpus = create_corpus(new_news_items)
+    
+    existing_communities, docs_size = create_communities_incr_clustering(corpus,already_clustered_events)
     
     updated_events = extract_topic_by_keyword_communities(corpus, existing_communities, docs_size)
     return to_json_events(updated_events)
@@ -154,7 +165,7 @@ def incremental_clustering_v2(new_news_items: list, already_clustered_events: li
 
 
 
-
+@DeprecationWarning
 def incremental_clustering(new_news_items: list, already_clustered_events: list):
     corpus = create_corpus(new_news_items)
 
