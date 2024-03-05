@@ -25,11 +25,6 @@ class Keyword:
         return {"baseForm": self.baseForm, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
-# class KeywordEncoder(json.JSONEncoder):
-#    def default(self, o: Any) -> Any:
-#        return {'baseForm': o.baseForm, 'tf': o.tf, 'df': o.df, 'documents': list(o.documents) }
-
-
 class Document:
     """
     A class to represent a document in a corpus
@@ -50,20 +45,31 @@ class Document:
         title: str = None,
         content: str = None,
         keywords: dict = None,
-        publish_date=None,
+        publish_time=None,
+        tf_vector_size: float = -1,
+        tfidf_vector_size: float = -1,
+        tfidfVectorSizeWithKeygraph: float = -1,
     ):
         self.doc_id = doc_id
         self.url = url
-        self.publish_time = publish_date
+        self.publish_time = publish_time
         self.language = language
         self.title = title
         if title is not None:
             self.segTitle = title.strip().split(" ")
         self.content = content
         self.keywords = keywords
-        self.tf_vector_size: float = -1
-        self.tfidf_vector_size: float = -1
-        self.tfidfVectorSizeWithKeygraph: float = -1
+        self.tf_vector_size = tf_vector_size
+        self.tfidf_vector_size = tfidf_vector_size
+        self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
+
+        # for doc_id, doc in enumerate(docs):
+        #     self.docs[doc_id] = doc
+        #     for keyword in doc.keywords().values():
+        #         if keyword.baseForm() in self.DF:
+        #             self.DF[keyword.baseForm()] += 1
+        #         else:
+        #             self.DF[keyword.baseForm()] = 1
 
     def contains_keyword(self, kw):
         return kw in self.keywords
@@ -118,31 +124,10 @@ class Document:
             "language": self.language,
             "title": self.title,
             "content": self.content,
-            "keywords": [k.reprJSON() for k in self.keywords.values()],
+            "keywords": {k: v.reprJSON() for k, v in self.keywords.items()},
             "tf_vector_size": self.tf_vector_size,
             "tfidf_vector_size": self.tfidf_vector_size,
             "tfidfVectorSizeWithKeygraph": self.tfidfVectorSizeWithKeygraph,
-        }
-
-
-class KeywordEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        return {"baseForm": o.baseForm, "tf": o.tf, "df": o.df, "documents": list(o.documents)}
-
-
-class DocumentEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        return {
-            "doc_id": o.doc_id,
-            "url": o.url,
-            "publish_time": o.publish_time,
-            "language": o.language,
-            "title": o.title,
-            "content": o.content,
-            "keywords": json.dumps(o.keywords, cls=KeywordEncoder),
-            "tf_vector_size": o.tf_vector_size,
-            "tfidf_vector_size": o.tfidf_vector_size,
-            "tfidfVectorSizeWithKeygraph": o.tfidfVectorSizeWithKeygraph,
         }
 
 
@@ -156,27 +141,17 @@ class Corpus:
     DF: dict (String -> double)
         Words' DF
 
-    Methods:
-    ----------
     """
 
-    def __init__(self, docs=None, df=None):
-        """
-        Args:
-            docs (_type_, optional): _description_. Defaults to None.
-            df (_type_, optional): _description_. Defaults to None.
-        """
+    def __init__(self, docs: dict[int:dict] | None = None, DF=None):
+        print("INITTIALIZING CORPUS")
+        print(type(docs))
+
+        self.DF = {} if DF is None else DF
         self.docs = {}
-        self.DF = {} if df is None else df
-        if docs is None:
-            return
-        for doc_id, doc in enumerate(docs):
-            self.docs[doc_id] = doc
-            for keyword in doc.keywords().values():
-                if keyword.baseForm() in self.DF:
-                    self.DF[keyword.baseForm()] += 1
-                else:
-                    self.DF[keyword.baseForm()] = 1
+        if docs:
+            for doc in docs.values():
+                self.docs[doc["doc_id"]] = Document(**doc)
 
     def update_df(self):
         self.DF = {}
@@ -185,7 +160,7 @@ class Corpus:
                 self.DF[k.baseForm] = self.DF[k.baseForm] + 1 if k.baseForm in self.DF else 1
 
     def reprJSON(self):
-        return {"docs": self.docs, "DF": self.DF}
+        return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.DF}
 
 
 class CorpusEncoder(json.JSONEncoder):

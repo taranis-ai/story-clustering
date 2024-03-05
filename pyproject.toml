@@ -53,5 +53,6 @@ target-version = ["py311"]
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:.*_app_ctx_stack.*:DeprecationWarning",
-    "ignore::DeprecationWarning"
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning"
 ]

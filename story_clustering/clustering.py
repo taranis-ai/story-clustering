@@ -2,7 +2,12 @@ import torch
 from sentence_transformers import util
 from .document_representation import Keyword, Document, Corpus
 from .event_organizer import Event
-from .eventdetector import extract_events_from_corpus, extract_topic_by_keyword_communities, calc_docs_tfidf_vector_size_with_graph_2, SimilarityThreshold
+from .eventdetector import (
+    extract_events_from_corpus,
+    extract_topic_by_keyword_communities,
+    calc_docs_tfidf_vector_size_with_graph_2,
+    SimilarityThreshold,
+)
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
 from story_clustering import sentence_transformer, logger
@@ -13,8 +18,6 @@ MID_HIGH_PRIORITY = 8
 MID_PRIORITY = 5
 MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
-
-
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -29,9 +32,9 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     """
     corpus = Corpus()
     for nitem_agg in new_news_items:
-        doc = Document(doc_id=nitem_agg["id"]) # updated to use aggregate_id
+        doc = Document(doc_id=nitem_agg["id"])  # updated to use aggregate_id
         for nitem in nitem_agg["news_items"]:
-            
+
             doc.url = nitem.get("news_item_data.link", None)
             doc.content = nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
             if not doc.content:
@@ -51,9 +54,9 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 baseform = replace_umlauts_with_digraphs(tag["name"])
                 keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
                 keywords[baseform] = keyword
-                
+
                 keyword.tf = compute_tf_with_boost(baseform, doc.content, tag_type=tag.get("type", None))
-                
+
             doc.keywords = keywords
             corpus.docs[doc.doc_id] = doc
 
@@ -61,24 +64,32 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     logger.debug(f"Corpus size: {len(corpus.docs)}")
     return corpus
 
+
 def compute_tf_with_boost(baseform, content, tag_type) -> int:
     # initialize the term frequency so that special keywords are more relevant
     tf = 0
-    if tag_type == "APT" or tag_type == "cves" :
+    if tag_type == "APT" or tag_type == "cves":
         tf = HIGH_PRIORITY
-    elif  tag_type == "Company" or tag_type == "sha256s" or tag_type == "sha1s"  or tag_type == "registry_key_paths" or tag_type == "md5s" \
-        or tag_type == "bitcoin_addresses":
+    elif (
+        tag_type == "Company"
+        or tag_type == "sha256s"
+        or tag_type == "sha1s"
+        or tag_type == "registry_key_paths"
+        or tag_type == "md5s"
+        or tag_type == "bitcoin_addresses"
+    ):
         tf = MID_HIGH_PRIORITY
     elif tag_type == "Country" or tag_type == "CVE_VENDOR":
         tf = MID_PRIORITY
     elif tag_type == "PER" or tag_type == "LOC" or tag_type == "ORG":
-        tf = MID_LOW_PRIORITY 
+        tf = MID_LOW_PRIORITY
     else:
         tf = LOW_PRIORITY
-    
-    # add the term 
+
+    # add the term
     tf += compute_tf(baseform, content)
     return tf
+
 
 def initial_clustering(new_news_items: list):
     corpus = create_corpus(new_news_items)
@@ -90,35 +101,34 @@ def initial_clustering(new_news_items: list):
     return to_json_events(events)
 
 
-def compute_df(keyword_baseform:str,cluster_news_items:list) -> int:
+def compute_df(keyword_baseform: str, cluster_news_items: list) -> int:
     df = 0
     for nitem in cluster_news_items:
-        content =  nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
+        content = nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
         if not content:
             continue
         if keyword_baseform.lower() in content:
             df += 1
-    if df > 0: 
+    if df > 0:
         return df
     return 1
-        
 
-def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
+
+def create_keygraph(cluster: list, corpus: Corpus) -> KeywordGraph:
     graph = KeywordGraph(aggregate_id=cluster["id"])
     # as text we use for now the content of first item
     graph.text = cluster["news_items"][0]["news_item_data"]["content"]
     tags = cluster["tags"]
-    
-    ## update corpus DF for each of the tags
-    ## use corpus.DF[baseform] to update the df of each keyword 
+
+    # update corpus DF for each of the tags
+    # use corpus.DF[baseform] to update the df of each keyword
     for keyword_1 in tags.values():
         baseform1 = replace_umlauts_with_digraphs(keyword_1["name"])
         if baseform1 in corpus.DF:
             corpus.DF[baseform1] += compute_df(keyword_1["name"], cluster["news_items"])
         else:
             corpus.DF[baseform1] = compute_df(keyword_1["name"], cluster["news_items"])
-    
-    
+
     for keyword_1 in tags.values():
         baseform1 = replace_umlauts_with_digraphs(keyword_1["name"])
         for keyword_2 in tags.values():
@@ -129,40 +139,34 @@ def create_keygraph(cluster:list, corpus: Corpus) -> KeywordGraph:
                 keyNode2 = get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.DF[baseform2])
                 # add edge and increase edge df
                 update_or_create_keywordEdge(keyNode1, keyNode2)
-        
-                
-    return graph
-    
 
+    return graph
 
 
 def create_communities_incr_clustering(corpus: Corpus, already_clustered_events: list):
-    
+
     corpus.update_df()
     docs_size = len(corpus.docs)
-    
+
     # create keygraph for each cluster
     existing_communities = []
     for cluster in already_clustered_events:
         existing_communities.append(create_keygraph(cluster, corpus))
         docs_size += len(cluster["news_items"])
-        
+
     calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
-    
+
     return existing_communities, docs_size
 
 
-
 def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
-    
+
     corpus = create_corpus(new_news_items)
-    
-    existing_communities, docs_size = create_communities_incr_clustering(corpus,already_clustered_events)
-    
+
+    existing_communities, docs_size = create_communities_incr_clustering(corpus, already_clustered_events)
+
     updated_events = extract_topic_by_keyword_communities(corpus, existing_communities, docs_size)
     return to_json_events(updated_events)
-    
-
 
 
 @DeprecationWarning
@@ -217,13 +221,13 @@ def to_json_events(events: list[Event]) -> dict:
                 docs_in_event.append(event.keyGraph.aggregate_id)
         if event.docs:
             docs_in_event.extend(list(event.docs.keys()))
-        
+
         if len(docs_in_event) > 0:
             all_events.append(docs_in_event)
-    #all_events = [list(event.docs.keys()) for event in events if event.docs]
+    # all_events = [list(event.docs.keys()) for event in events if event.docs]
 
-    #keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
-    return {"event_clusters": all_events} #, "events_keywords":keywords}
+    # keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
+    return {"event_clusters": all_events}  # , "events_keywords":keywords}
 
 
 def to_json_stories(stories: list[list[Event]]) -> dict:
@@ -242,7 +246,7 @@ def get_or_add_keywordNode(tag: dict, graphNodes: dict, df: int) -> KeywordNode:
     baseform = replace_umlauts_with_digraphs(tag["name"])
     if baseform in graphNodes:
         node = graphNodes[baseform]
-        #node.keyword.increase_df(df)
+        # node.keyword.increase_df(df)
         node.keyword.df = df
         return node
 
