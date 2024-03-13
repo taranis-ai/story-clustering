@@ -52,7 +52,7 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 if (tag["name"] not in doc.content) and (tag["name"].lower() not in doc.content):
                     continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
-                keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
+                keyword = Keyword(baseForm=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
                 keywords[baseform] = keyword
 
                 keyword.tf = compute_tf_with_boost(baseform, doc.content, tag_type=tag.get("type", None))
@@ -250,7 +250,7 @@ def get_or_add_keywordNode(tag: dict, graphNodes: dict, df: int) -> KeywordNode:
         node.keyword.df = df
         return node
 
-    keyword = Keyword(baseform=baseform, tf=tag.get("tf", 0), df=tag.get("df", df))
+    keyword = Keyword(baseForm=baseform, tf=tag.get("tf", 0), df=tag.get("df", df))
     keywordNode = KeywordNode(keyword=keyword)
     graphNodes[keyword.baseForm] = keywordNode
     return keywordNode

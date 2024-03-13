@@ -9,8 +9,8 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, documents: set = set(), tf: float = 0, df: float = 0):
-        self.baseForm = baseform
+    def __init__(self, baseForm: str, documents: set = set(), tf: float = 0, df: float = 0):
+        self.baseForm = baseForm
         self.documents = documents
         self.tf = tf
         self.df = df
@@ -44,7 +44,7 @@ class Document:
         language: str = None,
         title: str = None,
         content: str = None,
-        keywords: dict = None,
+        keywords: dict[str, Keyword] = None,
         publish_time=None,
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
@@ -58,18 +58,11 @@ class Document:
         if title is not None:
             self.segTitle = title.strip().split(" ")
         self.content = content
-        self.keywords = keywords
+        if keywords:
+            self.keywords = {k: Keyword(**v) for k, v in keywords.items()}
         self.tf_vector_size = tf_vector_size
         self.tfidf_vector_size = tfidf_vector_size
         self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
-
-        # for doc_id, doc in enumerate(docs):
-        #     self.docs[doc_id] = doc
-        #     for keyword in doc.keywords().values():
-        #         if keyword.baseForm() in self.DF:
-        #             self.DF[keyword.baseForm()] += 1
-        #         else:
-        #             self.DF[keyword.baseForm()] = 1
 
     def contains_keyword(self, kw):
         return kw in self.keywords
@@ -144,14 +137,16 @@ class Corpus:
     """
 
     def __init__(self, docs: dict[int:dict] | None = None, DF=None):
-        print("INITTIALIZING CORPUS")
-        print(type(docs))
-
         self.DF = {} if DF is None else DF
         self.docs = {}
         if docs:
             for doc in docs.values():
                 self.docs[doc["doc_id"]] = Document(**doc)
+                for key, keyword in self.docs[doc["doc_id"]].keywords.items():
+                    if keyword.baseForm in self.DF:
+                        self.DF[keyword.baseForm] += 1
+                    else:
+                        self.DF[keyword.baseForm] = 1
 
     def update_df(self):
         self.DF = {}

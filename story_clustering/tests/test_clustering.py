@@ -42,7 +42,7 @@ def test_incremental_clsutering_v2():
 
 
 def test_dump_corpus():
-    from story_clustering.clustering import create_corpus
+    from story_clustering.clustering import create_corpus, extract_events_from_corpus
     from story_clustering.document_representation import CorpusEncoder, Corpus, Document
 
     from .testdata import news_item_list
@@ -58,3 +58,6 @@ def test_dump_corpus():
     assert isinstance(rehydrated_corpus, Corpus)
     assert isinstance(rehydrated_corpus.docs[1], Document)
     assert rehydrated_corpus.docs[1].title == "Test News Item 13"
+    events = extract_events_from_corpus(corpus=rehydrated_corpus)
+    assert isinstance(events, list)
+    assert len(events) == 8

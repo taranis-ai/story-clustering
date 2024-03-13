@@ -130,7 +130,7 @@ class KeywordGraph:
     This class defines a keyword graph (KeyGraph)
     """
 
-    def __init__(self, aggregate_id : int =None):
+    def __init__(self, aggregate_id: int = None):
         self.graphNodes = {}
         self.aggregate_id = aggregate_id
 
@@ -139,7 +139,7 @@ class KeywordGraph:
 
         def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
             if keyword.baseForm not in self.graphNodes:
-                new_keyword = Keyword(baseform=keyword.baseForm, documents=set(), tf=0, df=corpus.DF.get(keyword.baseForm, 0))
+                new_keyword = Keyword(baseForm=keyword.baseForm, documents=set(), tf=0, df=corpus.DF.get(keyword.baseForm, 0))
                 self.graphNodes[keyword.baseForm] = KeywordNode(keyword=new_keyword)
             return self.graphNodes[keyword.baseForm]
 
@@ -147,8 +147,8 @@ class KeywordGraph:
             to_remove: list["KeywordEdge"] = []
             for node in self.graphNodes.values():
                 for edge in list(node.edges.values()):
-                    #MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
-                    MI = edge.df / (corpus.DF[edge.n1.keyword.baseForm]+ corpus.DF[edge.n2.keyword.baseForm])
+                    # MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
+                    MI = edge.df / (corpus.DF[edge.n1.keyword.baseForm] + corpus.DF[edge.n2.keyword.baseForm])
                     if edge.df < MinEdgeDF or MI < MinEdgeCorrelation:
                         to_remove.append(edge)
             for edge in to_remove:
@@ -174,7 +174,7 @@ class KeywordGraph:
                         node2.edges[edge_id] = edge
 
         filter_and_remove_edges()
-        self.graphNodes = {k: v for k, v in self.graphNodes.items() if len(v.edges)>0}
+        self.graphNodes = {k: v for k, v in self.graphNodes.items() if len(v.edges) > 0}
 
 
 class CommunityDetector:
@@ -208,19 +208,19 @@ class CommunityDetector:
             for e in self.nodes[word].edges.values():
                 gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
 
-        # check if there are any 
-        
+        # check if there are any
+
         gr_copy = gr.copy()
-        communities = nx.community.louvain_communities(gr_copy, seed=42,resolution=5)
+        communities = nx.community.louvain_communities(gr_copy, seed=42, resolution=5)
         # communities = nx.community.girvan_newman(G)
 
         key_communities = []
         for c in communities:
             if len(c) > 1:
-                subgraph =  nx.Graph(gr.subgraph(c))
+                subgraph = nx.Graph(gr.subgraph(c))
                 subgraph.remove_nodes_from(list(nx.isolates(subgraph)))
-                #print(f"Print nodes: {subgraph.nodes()}")
-                #print(f"Print edges: {subgraph.edges()}")
+                # print(f"Print nodes: {subgraph.nodes()}")
+                # print(f"Print edges: {subgraph.edges()}")
                 key_communities.append(self.get_keywords_keygraphs(subgraph, keywords_dict))
         return key_communities
 
