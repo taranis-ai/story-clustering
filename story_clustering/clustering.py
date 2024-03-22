@@ -159,6 +159,35 @@ def create_communities_incr_clustering(corpus: Corpus, already_clustered_events:
     return existing_communities, docs_size
 
 
+def merge_cluster(new_cluster,already_clustered_events):
+    super_cluster_id = None
+    super_cluster_match = -1
+    # use polyfuzz to find the intersection 
+    keywords_new_cluster = new_cluster.keygraph.keywords.keys()
+    for cluster in already_clustered_events:
+        existing_keywords = []
+        for tag in cluster["tags"].values():
+            baseform = replace_umlauts_with_digraphs(tag["name"])
+            existing_keywords.append(baseform)
+        if find_matches(keywords_new_cluster,existing_keywords) > POLYFUZZ_THRESHOLD:
+            if same_event_result(new_cluster_content,existing_cluster_content) > super_cluster_match:
+                super_cluster_match = same_event_result(new_cluster_content,existing_cluster_content)
+                super_cluster_id = cluster["id"]
+    
+    return super_cluster_id
+
+
+def incremental_clustering_v3(new_news_items: list, already_clustered_events: list):
+    new_clusters = initial_clustering(new_news_items)
+    # create communities from existing clusters
+    for new_cluster in new_clusters["event_clusters"]:
+        super_cluster_id = merge_cluster(new_cluster,already_clustered_events)
+        if super_cluster_id is not None:
+            new_cluster.insert(0, super_cluster_id)
+
+    return new_clusters
+    
+
 def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
 
     corpus = create_corpus(new_news_items)
