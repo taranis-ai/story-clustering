@@ -4,6 +4,7 @@ from polyfuzz.models import TFIDF
 from nltk.tokenize import RegexpTokenizer
 from story_clustering import stopwords_list
 
+POLYFUZZ_THRESHOLD = 3
 
 # calculate word's inverse document frequency
 def idf(df: float, size: int):
@@ -46,3 +47,20 @@ def compute_tf(baseForm, text):
     values.loc[:, ("Similarity")] = 1
     tf = max(values["Similarity"].sum(), 1)
     return tf / n_words
+
+def find_keywords_matches(keywords_lst1:list[str],keywords_lst2:list[str]) -> int:
+    model = PolyFuzz(TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3)))
+
+    if len(keywords_lst1) == 0 or len(keywords_lst2) == 0:
+        return 0
+    try:
+        model.match(keywords_lst1, keywords_lst2).group(link_min_similarity=0.75)
+    except:
+        return 0
+    df = model.get_matches()
+    if len(df) == 0:
+        return 0
+    values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]
+    #if len(values) == 0:
+    #    return 0
+    return values / min(len(keywords_lst1),len(keywords_lst2))

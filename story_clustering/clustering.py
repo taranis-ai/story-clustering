@@ -6,10 +6,11 @@ from .eventdetector import (
     extract_events_from_corpus,
     extract_topic_by_keyword_communities,
     calc_docs_tfidf_vector_size_with_graph_2,
+    compute_similarity,
     SimilarityThreshold,
 )
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
-from .nlp_utils import compute_tf, replace_umlauts_with_digraphs
+from .nlp_utils import compute_tf, replace_umlauts_with_digraphs, find_keywords_matches, POLYFUZZ_THRESHOLD
 from story_clustering import sentence_transformer, logger
 
 
@@ -18,6 +19,8 @@ MID_HIGH_PRIORITY = 8
 MID_PRIORITY = 5
 MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
+
+
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -91,13 +94,15 @@ def compute_tf_with_boost(baseform, content, tag_type) -> int:
     return tf
 
 
-def initial_clustering(new_news_items: list):
+def initial_clustering(new_news_items: list, inc_clustering: bool = None):
     corpus = create_corpus(new_news_items)
 
     # stories = cluster_stories_from_events(events)
     # new_aggregates = new_aggregates | to_json_stories(stories)
 
     events = extract_events_from_corpus(corpus=corpus)
+    if inc_clustering:
+        return events
     return to_json_events(events)
 
 
@@ -163,24 +168,28 @@ def merge_cluster(new_cluster,already_clustered_events):
     super_cluster_id = None
     super_cluster_match = -1
     # use polyfuzz to find the intersection 
-    keywords_new_cluster = new_cluster.keygraph.keywords.keys()
+    keywords_new_cluster = list(new_cluster.keyGraph.graphNodes.keys())
     for cluster in already_clustered_events:
         existing_keywords = []
         for tag in cluster["tags"].values():
             baseform = replace_umlauts_with_digraphs(tag["name"])
             existing_keywords.append(baseform)
-        if find_matches(keywords_new_cluster,existing_keywords) > POLYFUZZ_THRESHOLD:
-            if same_event_result(new_cluster_content,existing_cluster_content) > super_cluster_match:
-                super_cluster_match = same_event_result(new_cluster_content,existing_cluster_content)
+        if find_keywords_matches(keywords_new_cluster,existing_keywords) > POLYFUZZ_THRESHOLD:
+            
+            new_cluster_content = new_cluster["news_items"][0]["news_item_data"]["content"] or new_cluster["news_items"][0]["news_item_data"]["review"]
+            existing_cluster_content = cluster["news_items"][0]["news_item_data"]["content"] or cluster["news_items"][0]["news_item_data"]["review"]
+            matching_score = compute_similarity(new_cluster_content,existing_cluster_content)
+            if  matching_score >= SimilarityThreshold  and matching_score > super_cluster_match:
+                super_cluster_match = matching_score
                 super_cluster_id = cluster["id"]
     
     return super_cluster_id
 
 
 def incremental_clustering_v3(new_news_items: list, already_clustered_events: list):
-    new_clusters = initial_clustering(new_news_items)
+    new_clusters = initial_clustering(new_news_items, inc_clustering=True)
     # create communities from existing clusters
-    for new_cluster in new_clusters["event_clusters"]:
+    for new_cluster in new_clusters:
         super_cluster_id = merge_cluster(new_cluster,already_clustered_events)
         if super_cluster_id is not None:
             new_cluster.insert(0, super_cluster_id)

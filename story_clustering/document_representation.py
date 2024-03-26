@@ -136,7 +136,7 @@ class Corpus:
 
     """
 
-    def __init__(self, docs: dict[int:dict] | None = None, DF=None):
+    def __init__(self, docs: dict[int:dict] = None, DF=None):
         self.DF = {} if DF is None else DF
         self.docs = {}
         if docs:

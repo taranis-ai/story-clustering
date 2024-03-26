@@ -245,3 +245,4 @@ def same_new_event(d1: Document, d2: Document, keygraph_text) -> bool:
     sim_1 = compute_similarity(d1.content, d2.content)
     sim_2 = compute_similarity(d2.content, keygraph_text)
     return (sim_1 - sim_2) >= DiffSimilarityThreshold
+
