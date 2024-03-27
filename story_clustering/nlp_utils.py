@@ -61,6 +61,8 @@ def find_keywords_matches(keywords_lst1:list[str],keywords_lst2:list[str]) -> in
     if len(df) == 0:
         return 0
     values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]
+    values.loc[:, ("Similarity")] = 1
+    shared_keywords = max(values["Similarity"].sum(), 1)
     #if len(values) == 0:
     #    return 0
-    return values / min(len(keywords_lst1),len(keywords_lst2))
+    return shared_keywords #/ min(len(keywords_lst1),len(keywords_lst2))
