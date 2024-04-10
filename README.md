@@ -1,6 +1,6 @@
 # Story Clustering
 
-This code takes newsitems in the format as provided by [Taranis-NG](https://github) and clusters them into Stories.
+This code takes newsitems in the format as provided by [Taranis AI](https://github.com/taranis-ai/taranis-ai) and clusters them into Stories.
 
 
 # Description and Use
@@ -38,10 +38,5 @@ pip install .[dev]
 ## Use
 See `notebook\test_story_clustering.ipynb` for examples on how to use the clustering methods.
 
-
-
 ## License
 EUROPEAN UNION PUBLIC LICENCE v. 1.2
-
-
-
