@@ -1,7 +1,7 @@
 import json
 
-expected_results = {"event_clusters": [[1], [2], [3], [4], [5], [6], [7], [8]]}
-expected_results_inc = {"event_clusters": [[1, 1], [2, 2], [3], [4], [5], [6], [7], [8]]}
+expected_results = {"event_clusters": [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"]]}
+expected_results_inc = {"event_clusters": [["1", "1"], ["2", "2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"]]}
 
 
 def test_create_corpus():
@@ -10,8 +10,8 @@ def test_create_corpus():
 
     corpus = create_corpus(news_item_list)
     assert len(corpus.docs) == 8
-    assert corpus.docs[1].title == "Test News Item 13"
-    assert "cve-2021-5678" in corpus.docs[2].keywords.keys()
+    assert corpus.docs["1"].title == "Test News Item 13"
+    assert "cve-2021-5678" in corpus.docs["2"].keywords.keys()
 
 
 def test_initial_clustering():
@@ -56,8 +56,8 @@ def test_dump_corpus():
     assert isinstance(corpus_dict["docs"], dict)
     rehydrated_corpus = Corpus(**corpus_dict)
     assert isinstance(rehydrated_corpus, Corpus)
-    assert isinstance(rehydrated_corpus.docs[1], Document)
-    assert rehydrated_corpus.docs[1].title == "Test News Item 13"
+    assert isinstance(rehydrated_corpus.docs["1"], Document)
+    assert rehydrated_corpus.docs["1"].title == "Test News Item 13"
     events = extract_events_from_corpus(corpus=rehydrated_corpus)
     assert isinstance(events, list)
     assert len(events) == 8

@@ -39,7 +39,7 @@ class Document:
 
     def __init__(
         self,
-        doc_id: int = None,
+        doc_id: str = None,
         url: str = None,
         language: str = None,
         title: str = None,

@@ -47,12 +47,10 @@ def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], DF: dict
 
 def extract_topic_by_keyword_communities(corpus: Corpus, communities: list, doc_size=None) -> list[Event]:
     result = []
-    if doc_size == None:
+    if doc_size is None:
         doc_size = len(corpus.docs)
 
     max_comm = {
-        # doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs)) for community in communities])
-        # for doc in corpus.docs.values()
         doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, doc_size) for community in communities])
         for doc in corpus.docs.values()
     }
@@ -70,7 +68,6 @@ def process_community(community_id: int, community: KeywordGraph, corpus: Corpus
     # doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
-
         if max_comm[doc.doc_id] == community_id:
             cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.DF, len(corpus.docs))
             # doc_similarity[doc.doc_id] = cosineSimilarity
@@ -121,7 +118,7 @@ def split_events_incr_clustering(event: Event) -> list[Event]:
     e_docs_ids_list = list(event.docs.keys())
 
     if len(event.docs) == 1:
-        if event.keyGraph.aggregate_id != None:
+        if event.keyGraph.aggregate_id is not None:
             doc_id = list(event.docs.keys())[0]
             if not same_event_cluster(event.docs[doc_id], event.keyGraph.text):
                 event.keyGraph.aggregate_id = None
@@ -139,15 +136,14 @@ def split_events_incr_clustering(event: Event) -> list[Event]:
         sub_event.docs[d1] = event.docs[d1]
         sub_event.similarities[d1] = event.similarities[d1]
 
-        if event.keyGraph.aggregate_id != None:
-            if not same_event_cluster(sub_event.docs[d1], event.keyGraph.text):
-                sub_event.keyGraph.aggregate_id = None
-                sub_event.keyGraph.text = None
+        if event.keyGraph.aggregate_id is not None and not same_event_cluster(sub_event.docs[d1], event.keyGraph.text):
+            sub_event.keyGraph.aggregate_id = None
+            sub_event.keyGraph.text = None
 
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-            if sub_event.keyGraph.aggregate_id == None:
+            if sub_event.keyGraph.aggregate_id is None:
                 if same_event(sub_event.docs[d1], event.docs[d2]):
                     # put aggregate_id to NONE
                     sub_event.docs[d2] = event.docs[d2]
@@ -189,7 +185,7 @@ def split_events(event: Event) -> list[Event]:
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-            if sub_event.keyGraph.aggregate_id == None:
+            if sub_event.keyGraph.aggregate_id is None:
                 if same_event(sub_event.docs[d1], event.docs[d2]):
                     # put aggregate_id to NONE
                     sub_event.docs[d2] = event.docs[d2]
@@ -214,8 +210,8 @@ def compute_similarity(text_1, text_2):
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
-    sent_text_2 = [s + "." for s in sent_text_2 if s != ""][:5]
-    sent_text_1 = [s + "." for s in sent_text_1 if s != ""][:5]
+    sent_text_2 = [f"{s}." for s in sent_text_2 if s != ""][:5]
+    sent_text_1 = [f"{s}." for s in sent_text_1 if s != ""][:5]
 
     em_1 = Tensor(sentence_transformer.encode(sent_text_1, convert_to_tensor=True, show_progress_bar=False))
     em_2 = Tensor(sentence_transformer.encode(sent_text_2, convert_to_tensor=True, show_progress_bar=False))
@@ -245,4 +241,3 @@ def same_new_event(d1: Document, d2: Document, keygraph_text) -> bool:
     sim_1 = compute_similarity(d1.content, d2.content)
     sim_2 = compute_similarity(d2.content, keygraph_text)
     return (sim_1 - sim_2) >= DiffSimilarityThreshold
-

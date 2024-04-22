@@ -28,7 +28,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["black", "pytest"]
+dev = ["black", "pytest", "ruff"]
 
 [project.urls]
 "Source Code" = "https://github.com/ait-cs-IaaS/story-clustering"
@@ -49,6 +49,10 @@ packages = ["story_clustering"]
 [tool.black]
 line-length = "142"
 target-version = ["py311"]
+
+[tool.ruff]
+line-length = 142
+target-version = "py311"
 
 [tool.pytest.ini_options]
 filterwarnings = [

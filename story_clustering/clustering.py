@@ -10,7 +10,12 @@ from .eventdetector import (
     SimilarityThreshold,
 )
 from .keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
-from .nlp_utils import compute_tf, replace_umlauts_with_digraphs, find_keywords_matches, POLYFUZZ_THRESHOLD
+from .nlp_utils import (
+    compute_tf,
+    replace_umlauts_with_digraphs,
+    find_keywords_matches,
+    POLYFUZZ_THRESHOLD,
+)
 from story_clustering import sentence_transformer, logger
 
 
@@ -19,8 +24,6 @@ MID_HIGH_PRIORITY = 8
 MID_PRIORITY = 5
 MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
-
-
 
 
 def create_corpus(new_news_items: list[dict]) -> Corpus:
@@ -37,16 +40,15 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
     for nitem_agg in new_news_items:
         doc = Document(doc_id=nitem_agg["id"])  # updated to use aggregate_id
         for nitem in nitem_agg["news_items"]:
-
-            doc.url = nitem.get("news_item_data.link", None)
-            doc.content = nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
+            doc.url = nitem.get("link", None)
+            doc.content = nitem["content"] or nitem["review"]
             if not doc.content:
                 continue
-            doc.title = nitem["news_item_data"]["title"]
+            doc.title = nitem["title"]
             if doc.title is not None:
                 doc.segTitle = doc.title.strip().split(" ")
-            doc.publish_time = nitem.get("news_item_data.published", None)
-            doc.language = nitem["news_item_data"]["language"]
+            doc.publish_time = nitem.get(".published", None)
+            doc.language = nitem["language"]
             keywords = {}
             if len(nitem_agg["tags"]) < 5:
                 continue
@@ -55,7 +57,12 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
                 if (tag["name"] not in doc.content) and (tag["name"].lower() not in doc.content):
                     continue
                 baseform = replace_umlauts_with_digraphs(tag["name"])
-                keyword = Keyword(baseForm=baseform, tf=tag.get("tf", 0), df=tag.get("df", 0), documents=set())
+                keyword = Keyword(
+                    baseForm=baseform,
+                    tf=tag.get("tf", 0),
+                    df=tag.get("df", 0),
+                    documents=set(),
+                )
                 keywords[baseform] = keyword
 
                 keyword.tf = compute_tf_with_boost(baseform, doc.content, tag_type=tag.get("type", None))
@@ -71,20 +78,20 @@ def create_corpus(new_news_items: list[dict]) -> Corpus:
 def compute_tf_with_boost(baseform, content, tag_type) -> int:
     # initialize the term frequency so that special keywords are more relevant
     tf = 0
-    if tag_type == "APT" or tag_type == "cves":
+    if tag_type in ["APT", "cves"]:
         tf = HIGH_PRIORITY
-    elif (
-        tag_type == "Company"
-        or tag_type == "sha256s"
-        or tag_type == "sha1s"
-        or tag_type == "registry_key_paths"
-        or tag_type == "md5s"
-        or tag_type == "bitcoin_addresses"
-    ):
+    elif tag_type in [
+        "Company",
+        "sha256s",
+        "sha1s",
+        "registry_key_paths",
+        "md5s",
+        "bitcoin_addresses",
+    ]:
         tf = MID_HIGH_PRIORITY
-    elif tag_type == "Country" or tag_type == "CVE_VENDOR":
+    elif tag_type in ["Country", "CVE_VENDOR"]:
         tf = MID_PRIORITY
-    elif tag_type == "PER" or tag_type == "LOC" or tag_type == "ORG":
+    elif tag_type in ["PER", "LOC", "ORG"]:
         tf = MID_LOW_PRIORITY
     else:
         tf = LOW_PRIORITY
@@ -109,7 +116,7 @@ def initial_clustering(new_news_items: list, inc_clustering: bool = None):
 def compute_df(keyword_baseform: str, cluster_news_items: list) -> int:
     df = 0
     for nitem in cluster_news_items:
-        content = nitem["news_item_data"]["content"] or nitem["news_item_data"]["review"]
+        content = nitem["content"] or nitem["review"]
         if not content:
             continue
         if keyword_baseform.lower() in content:
@@ -122,7 +129,7 @@ def compute_df(keyword_baseform: str, cluster_news_items: list) -> int:
 def create_keygraph(cluster: list, corpus: Corpus) -> KeywordGraph:
     graph = KeywordGraph(aggregate_id=cluster["id"])
     # as text we use for now the content of first item
-    graph.text = cluster["news_items"][0]["news_item_data"]["content"]
+    graph.text = cluster["news_items"][0]["content"]
     tags = cluster["tags"]
 
     # update corpus DF for each of the tags
@@ -149,7 +156,6 @@ def create_keygraph(cluster: list, corpus: Corpus) -> KeywordGraph:
 
 
 def create_communities_incr_clustering(corpus: Corpus, already_clustered_events: list):
-
     corpus.update_df()
     docs_size = len(corpus.docs)
 
@@ -164,28 +170,26 @@ def create_communities_incr_clustering(corpus: Corpus, already_clustered_events:
     return existing_communities, docs_size
 
 
-def merge_cluster(new_cluster: Event,already_clustered_events):
-    super_cluster_id = None
+def merge_cluster(new_cluster: Event, already_clustered_events):
     super_cluster_match = -1
-    # use polyfuzz to find the intersection 
+    # use polyfuzz to find the intersection
     keywords_new_cluster = list(new_cluster.keyGraph.graphNodes.keys())
+    super_cluster_id = None
     for cluster in already_clustered_events:
         existing_keywords = []
         for tag in cluster["tags"].values():
             baseform = replace_umlauts_with_digraphs(tag["name"])
             existing_keywords.append(baseform)
-        if find_keywords_matches(keywords_new_cluster,existing_keywords) > POLYFUZZ_THRESHOLD:
-            
-            new_cluster_content =  list(new_cluster.docs.values())[0].title + " "+ list(new_cluster.docs.values())[0].content
-            #new_cluster["news_items"][0]["news_item_data"]["content"] or new_cluster["news_items"][0]["news_item_data"]["review"]
+        if find_keywords_matches(keywords_new_cluster, existing_keywords) > POLYFUZZ_THRESHOLD:
+            new_cluster_content = f"{list(new_cluster.docs.values())[0].title} {list(new_cluster.docs.values())[0].content}"
             existing_cluster_content = cluster["title"] + cluster["description"]
             if len(cluster["news_items"]) > 0:
-                existing_cluster_content = cluster["news_items"][0]["news_item_data"]["content"] or cluster["news_items"][0]["news_item_data"]["review"]
-            matching_score = compute_similarity(new_cluster_content,existing_cluster_content)
-            if  matching_score >= SimilarityThreshold  and matching_score > super_cluster_match:
+                existing_cluster_content = cluster["news_items"][0]["content"] or cluster["news_items"][0]["review"]
+            matching_score = compute_similarity(new_cluster_content, existing_cluster_content)
+            if matching_score >= SimilarityThreshold and matching_score > super_cluster_match:
                 super_cluster_match = matching_score
                 super_cluster_id = cluster["id"]
-    
+
     return super_cluster_id
 
 
@@ -193,17 +197,15 @@ def incremental_clustering_v3(new_news_items: list, already_clustered_events: li
     events = initial_clustering(new_news_items, inc_clustering=True)
     # create communities from existing clusters
     for ev in events:
-        super_cluster_id = merge_cluster(ev,already_clustered_events)
+        super_cluster_id = merge_cluster(ev, already_clustered_events)
         if super_cluster_id is not None:
             ev.keyGraph.aggregate_id = super_cluster_id
             print(f"Merged to cluster: {super_cluster_id}")
-           
 
     return to_json_events(events)
-    
+
 
 def incremental_clustering_v2(new_news_items: list, already_clustered_events: list):
-
     corpus = create_corpus(new_news_items)
 
     existing_communities, docs_size = create_communities_incr_clustering(corpus, already_clustered_events)
@@ -258,7 +260,7 @@ def cluster_stories_from_events(events: list[Event]) -> list[list[Event]]:
 def to_json_events(events: list[Event]) -> dict:
     all_events = []
     for event in events:
-        docs_in_event = list()
+        docs_in_event = []
         if event.keyGraph.aggregate_id:
             if event.keyGraph.aggregate_id not in docs_in_event:
                 docs_in_event.append(event.keyGraph.aggregate_id)
