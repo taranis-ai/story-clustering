@@ -1,19 +1,18 @@
 [project]
 name = "taranis_story_clustering"
-description = "Story Clustering Bot for Taranis-NG"
+description = "Story Clustering Bot for Taranis AI"
 readme = "README.md"
 license = {file = "LICENSE.md"}
 maintainers = [{ name = "AIT", email = "benjamin.akhras@ait.ac.at" }]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Security",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "sentence_transformers",
     "transformers",
@@ -28,10 +27,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["black", "pytest", "ruff"]
+dev = ["pytest", "ruff"]
 
 [project.urls]
-"Source Code" = "https://github.com/ait-cs-IaaS/story-clustering"
+"Source Code" = "https://github.com/taranis-ai/story-clustering"
 
 [build-system]
 requires = [
@@ -46,13 +45,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["story_clustering"]
 
-[tool.black]
-line-length = "142"
-target-version = ["py311"]
-
 [tool.ruff]
 line-length = 142
-target-version = "py311"
+target-version = "py312"
 
 [tool.pytest.ini_options]
 filterwarnings = [
