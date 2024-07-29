@@ -1,6 +1,6 @@
 import copy
 
-base_aggregate = {
+base_story = {
     "title": "Test Aggregate",
     "description": "Test Aggregate",
     "created": "2023-08-01T17:01:04.801870",
@@ -25,12 +25,12 @@ base_aggregate = {
 }
 
 
-news_item_aggregate_1 = {
+story_1 = {
     "id": "1",
     "news_items": [
         {
             "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
-            "news_item_aggregate_id": "1",
+            "story_id": "1",
             "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
             "title": "Test News Item 13",
             "content": "Microsoft announced a security update addressing CVE-2020-1234. Experts at Google found vulnerabilities impacting Linux systems. Cisco advises users to update their security protocols to prevent potential breaches. The security community is on alert for new threats.",
@@ -40,26 +40,26 @@ news_item_aggregate_1 = {
         }
     ],
     "tags": {
-        "Microsoft": {"name": "Microsoft", "tag_type": "MISC"},
-        "security": {"name": "security", "tag_type": "MISC"},
-        "CVE-2020-1234": {"name": "CVE-2020-1234", "tag_type": "CVE"},
-        "Google": {"name": "Google", "tag_type": "MISC"},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
-        "Linux": {"name": "Linux", "tag_type": "MISC"},
-        "Cisco": {"name": "Cisco", "tag_type": "MISC"},
-        "protocols": {"name": "protocols", "tag_type": "MISC"},
-        "breaches": {"name": "breaches", "tag_type": "MISC"},
-        "community": {"name": "community", "tag_type": "MISC"},
+        "Microsoft": "MISC",
+        "security": "MISC",
+        "CVE-2020-1234": "CVE",
+        "Google": "MISC",
+        "vulnerabilities": "MISC",
+        "Linux": "MISC",
+        "Cisco": "MISC",
+        "protocols": "MISC",
+        "breaches": "MISC",
+        "community": "MISC",
     },
 }
 
 
-news_item_aggregate_2 = {
+story_2 = {
     "id": "2",
     "news_items": [
         {
             "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
-            "news_item_aggregate_id": "2",
+            "story_id": "2",
             "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
             "title": "Test News Item 27",
             "content": "Intel collaborates with Oracle to mitigate CVE-2021-5678 vulnerabilities in cloud infrastructures. Meanwhile, Apple is focusing on enhancing security measures against cyber threats, urging customers to update systems.",
@@ -69,25 +69,25 @@ news_item_aggregate_2 = {
         }
     ],
     "tags": {
-        "Intel": {"name": "Intel", "tag_type": "MISC"},
-        "Oracle": {"name": "Oracle", "tag_type": "MISC"},
-        "CVE-2021-5678": {"name": "CVE-2021-5678", "tag_type": "CVE"},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
-        "cloud": {"name": "cloud", "tag_type": "MISC"},
-        "infrastructures": {"name": "infrastructures", "tag_type": "MISC"},
-        "Apple": {"name": "Apple", "tag_type": "MISC"},
-        "security": {"name": "security", "tag_type": "MISC"},
-        "cyber": {"name": "cyber", "tag_type": "MISC"},
-        "systems": {"name": "systems", "tag_type": "MISC"},
+        "Intel": "MISC",
+        "Oracle": "MISC",
+        "CVE-2021-5678": "CVE",
+        "vulnerabilities": "MISC",
+        "cloud": "MISC",
+        "infrastructures": "MISC",
+        "Apple": "MISC",
+        "security": "MISC",
+        "cyber": "MISC",
+        "systems": "MISC",
     },
 }
 
-news_item_aggregate_3 = {
+story_3 = {
     "id": "3",
     "news_items": [
         {
             "id": "533086da-c8c1-4f8e-b3ee-103268983580",
-            "news_item_aggregate_id": "3",
+            "story_id": "3",
             "hash": "f4c7b52ecfe6ab612db30e7fa534b470fd11493fc92f30575577b356b2a1abc7",
             "title": "Test News Item",
             "content": "IBM has partnered with NVIDIA to tackle the vulnerabilities found in AI modules. In addition, Amazon is improving its security posture to counteract cyber attacks on AWS platforms.",
@@ -97,25 +97,25 @@ news_item_aggregate_3 = {
         }
     ],
     "tags": {
-        "IBM": {"name": "IBM", "tag_type": "MISC"},
-        "NVIDIA": {"name": "NVIDIA", "tag_type": "MISC"},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
-        "AI": {"name": "AI", "tag_type": "MISC"},
-        "modules": {"name": "modules", "tag_type": "MISC"},
-        "Amazon": {"name": "Amazon", "tag_type": "MISC"},
-        "security": {"name": "security", "tag_type": "MISC"},
-        "cyber": {"name": "cyber", "tag_type": "MISC"},
-        "attacks": {"name": "attacks", "tag_type": "MISC"},
-        "AWS": {"name": "AWS", "tag_type": "MISC"},
+        "IBM": "MISC",
+        "NVIDIA": "MISC",
+        "vulnerabilities": "MISC",
+        "AI": "MISC",
+        "modules": "MISC",
+        "Amazon": "Vendor",
+        "security": "MISC",
+        "cyber": "MISC",
+        "attacks": "MISC",
+        "AWS": "Vendor",
     },
 }
 
-news_item_aggregate_4 = {
+story_4 = {
     "id": "4",
     "news_items": [
         {
             "id": "f8912dab-h345-6789-01jk-5lmn6789o012",
-            "news_item_aggregate_id": "4",
+            "story_id": "4",
             "hash": "d250dgfg45gh09824j59h56jk7k82l0m53o4p91q5rst9u809v567wx8910y234",
             "title": "Test News Item",
             "content": "Breaking: Local tech wizard claims to have found the solution to the world's biggest cybersecurity threat – turning it off and then back on again! Industries are flabbergasted by the simplicity of the remedy. Next he will fly to the moon with his rocket called 'Thunderbird 3'. His wife, Lady Penelope, a DevOps engineer, will accompany him.",
@@ -125,27 +125,27 @@ news_item_aggregate_4 = {
         }
     ],
     "tags": {
-        "tech wizard": {"name": "tech wizard", "tag_type": "MISC"},
-        "cybersecurity": {"name": "cybersecurity", "tag_type": "MISC"},
-        "remedy": {"name": "remedy", "tag_type": "MISC"},
-        "Industries": {"name": "Industries", "tag_type": "MISC"},
-        "solution": {"name": "solution", "tag_type": "MISC"},
-        "wizard": {"name": "wizard", "tag_type": "MISC"},
-        "rocket": {"name": "rocket", "tag_type": "MISC"},
-        "Thunderbird 3": {"name": "Thunderbird 3", "tag_type": "MISC"},
-        "moon": {"name": "moon", "tag_type": "MISC"},
-        "Lady Penelope": {"name": "Lady Penelope", "tag_type": "MISC"},
-        "DevOps": {"name": "DevOps", "tag_type": "MISC"},
+        "tech wizard": "MISC",
+        "cybersecurity": "CySec",
+        "remedy": "MISC",
+        "Industries": "MISC",
+        "solution": "MISC",
+        "wizard": "MISC",
+        "rocket": "MISC",
+        "Thunderbird 3": "Product",
+        "moon": "MISC",
+        "Lady Penelope": "MISC",
+        "DevOps": "MISC",
     },
 }
 
 
-news_item_aggregate_5 = {
+story_5 = {
     "id": "5",
     "news_items": [
         {
             "id": "c12a3bde-a333-4567-90ab-2ed123f45678",
-            "news_item_aggregate_id": "5",
+            "story_id": "5",
             "hash": "a019afdb34ee098237c58f23ab5e80e7a51c0e91a2abc8e809e234fa3782f121",
             "title": "Test News Item 11",
             "content": "Facebook initiated countermeasures against phishing attacks targeting user data. Following this, Salesforce has been investing in encryption technologies to protect customer information.",
@@ -155,25 +155,25 @@ news_item_aggregate_5 = {
         }
     ],
     "tags": {
-        "Facebook": {"name": "Facebook", "tag_type": "MISC"},
-        "countermeasures": {"name": "countermeasures", "tag_type": "MISC"},
-        "phishing": {"name": "phishing", "tag_type": "MISC"},
-        "attacks": {"name": "attacks", "tag_type": "MISC"},
-        "user": {"name": "user", "tag_type": "MISC"},
-        "data": {"name": "data", "tag_type": "MISC"},
-        "Salesforce": {"name": "Salesforce", "tag_type": "MISC"},
-        "encryption": {"name": "encryption", "tag_type": "MISC"},
-        "technologies": {"name": "technologies", "tag_type": "MISC"},
-        "customer": {"name": "customer", "tag_type": "MISC"},
+        "Facebook": "Vendor",
+        "countermeasures": "MISC",
+        "phishing": "MISC",
+        "attacks": "MISC",
+        "user": "MISC",
+        "data": "MISC",
+        "Salesforce": "Vendor",
+        "encryption": "MISC",
+        "technologies": "MISC",
+        "customer": "MISC",
     },
 }
 
-news_item_aggregate_6 = {
+story_6 = {
     "id": "6",
     "news_items": [
         {
             "id": "d45b6cde-f456-7890-91bc-3ed456f78901",
-            "news_item_aggregate_id": "6",
+            "story_id": "6",
             "hash": "b029bfbb34ef098238c59f34bc5f90f8b52c1e91a3efc9e809e456fb4790f132",
             "title": "Test News Item 12",
             "content": "Adobe is collaborating with SAP to address CVE-2023-7891 vulnerabilities in enterprise solutions. Additionally, Twitter is boosting its defense mechanisms against potential malware attacks targeting its infrastructure.",
@@ -183,25 +183,25 @@ news_item_aggregate_6 = {
         }
     ],
     "tags": {
-        "Adobe": {"name": "Adobe", "tag_type": "MISC"},
-        "SAP": {"name": "SAP", "tag_type": "MISC"},
-        "CVE-2023-7891": {"name": "CVE-2023-7891", "tag_type": "CVE"},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
-        "enterprise": {"name": "enterprise", "tag_type": "MISC"},
-        "solutions": {"name": "solutions", "tag_type": "MISC"},
-        "Twitter": {"name": "Twitter", "tag_type": "MISC"},
-        "mechanisms": {"name": "mechanisms", "tag_type": "MISC"},
-        "malware": {"name": "malware", "tag_type": "MISC"},
-        "infrastructure": {"name": "infrastructure", "tag_type": "MISC"},
+        "Adobe": "MISC",
+        "SAP": "MISC",
+        "CVE-2023-7891": "CVE",
+        "vulnerabilities": "MISC",
+        "enterprise": "MISC",
+        "solutions": "MISC",
+        "Twitter": "MISC",
+        "mechanisms": "MISC",
+        "malware": "MISC",
+        "infrastructure": "MISC",
     },
 }
 
-news_item_aggregate_7 = {
+story_7 = {
     "id": "7",
     "news_items": [
         {
             "id": "e7890cde-g567-1234-56de-4fgh5678i901",
-            "news_item_aggregate_id": "7",
+            "story_id": "7",
             "hash": "c139cfcd35gf098239c58g45ch6g91h9j53d2e91a4fgh9e809e567gh5891i104",
             "title": "Test News Item",
             "content": "HP is partnering with Qualcomm to develop firewall systems that counteract CVE-2023-1234 vulnerabilities in mobile devices. Concurrently, LinkedIn is working to fortify its security framework to shield against data breaches.",
@@ -211,26 +211,26 @@ news_item_aggregate_7 = {
         }
     ],
     "tags": {
-        "HP": {"name": "HP", "tag_type": "MISC"},
-        "Qualcomm": {"name": "Qualcomm", "tag_type": "MISC"},
-        "firewall": {"name": "firewall", "tag_type": "MISC"},
-        "systems": {"name": "systems", "tag_type": "MISC"},
-        "CVE-2023-1234": {"name": "CVE-2023-1234", "tag_type": "CVE"},
-        "vulnerabilities": {"name": "vulnerabilities", "tag_type": "MISC"},
-        "mobile": {"name": "mobile", "tag_type": "MISC"},
-        "devices": {"name": "devices", "tag_type": "MISC"},
-        "LinkedIn": {"name": "LinkedIn", "tag_type": "MISC"},
-        "data": {"name": "data", "tag_type": "MISC"},
+        "HP": "Vendor",
+        "Qualcomm": "MISC",
+        "firewall": "MISC",
+        "systems": "MISC",
+        "CVE-2023-1234": "CVE",
+        "vulnerabilities": "MISC",
+        "mobile": "MISC",
+        "devices": "MISC",
+        "LinkedIn": "Vendor",
+        "data": "MISC",
     },
 }
 
 
-news_item_aggregate_8 = {
+story_8 = {
     "id": "8",
     "news_items": [
         {
             "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-            "news_item_aggregate_id": "8",
+            "story_id": "8",
             "hash": "599fafee5eeb098239c57c78bf5cea6ea52b0e92a1abc9e80964150a3773f135",
             "title": "Test News Item",
             "content": "Dell has teamed up with VMware to combat security threats associated with CVE-2023-5678. At the same time, GitHub is heightening its security stance to fend off phishing scams targeting the platform.",
@@ -240,25 +240,25 @@ news_item_aggregate_8 = {
         }
     ],
     "tags": {
-        "Dell": {"name": "Dell", "tag_type": "MISC"},
-        "VMware": {"name": "VMware", "tag_type": "MISC"},
-        "security": {"name": "security", "tag_type": "MISC"},
-        "threats": {"name": "threats", "tag_type": "MISC"},
-        "CVE-2023-5678": {"name": "CVE-2023-5678", "tag_type": "CVE"},
-        "GitHub": {"name": "GitHub", "tag_type": "MISC"},
-        "stance": {"name": "stance", "tag_type": "MISC"},
-        "phishing": {"name": "phishing", "tag_type": "MISC"},
-        "scams": {"name": "scams", "tag_type": "MISC"},
-        "platform": {"name": "platform", "tag_type": "MISC"},
+        "Dell": "Vendor",
+        "VMware": "Vendor",
+        "security": "MISC",
+        "threats": "MISC",
+        "CVE-2023-5678": "CVE",
+        "GitHub": "MISC",
+        "stance": "MISC",
+        "phishing": "MISC",
+        "scams": "MISC",
+        "platform": "MISC",
     },
 }
 
-news_item_aggregate_9 = {
+story_9 = {
     "id": "9",
     "news_items": [
         {
             "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-            "news_item_aggregate_id": "9",
+            "story_id": "9",
             "hash": "599fafee5eeb098239c57c78bf5cea6ea52b0e92a1abc9e80964150a3773f135",
             "title": "Test News Item 10",
             "content": "An unspecified Software and OS developer from Redmond Washingigton has so many security issues you won't belive the 5th vulnerability - See the list of CVEs only from the last hour below: CVE-....",
@@ -268,19 +268,19 @@ news_item_aggregate_9 = {
         }
     ],
     "tags": {
-        "Software": {"name": "Software", "tag_type": "MISC"},
-        "CVE": {"name": "CVE", "tag_type": "MISC"},
-        "vulnerability": {"name": "vulnerability", "tag_type": "MISC"},
+        "Software": "MISC",
+        "CVE": "MISC",
+        "vulnerability": "MISC",
     },
 }
 
 
-news_item_aggregate_10 = {
+story_10 = {
     "id": "10",
     "news_items": [
         {
             "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-            "news_item_aggregate_id": "10",
+            "story_id": "10",
             "hash": "599fafee5eeb098239c57c78bf5cea6ea52b0e92a1abc9e80964150a3773f135",
             "title": "Test News Item 1337",
             "content": "Follow our new cybersec blog under http://<redacted>.com/blog for news on cybersecurity and the latest vulnerabilities.",
@@ -290,9 +290,9 @@ news_item_aggregate_10 = {
         }
     ],
     "tags": {
-        "Cybersecurity": {"name": "Cybersecurity", "tag_type": "MISC"},
-        "blog": {"name": "blog", "tag_type": "MISC"},
-        "vulnerability": {"name": "vulnerability", "tag_type": "MISC"},
+        "Cybersecurity": "MISC",
+        "blog": "MISC",
+        "vulnerability": "MISC",
     },
 }
 
@@ -312,9 +312,7 @@ def merge_dicts(base_dict: dict, update_dict: dict):
                 base_data = merged_dict[key][0] if key in merged_dict else {}
                 for idx in range(len(value)):
                     value[idx] = merge_dicts(base_data.copy(), value[idx])
-                merged_dict[
-                    key
-                ] = value  # Use the entire news_items list from update_dict
+                merged_dict[key] = value  # Use the entire news_items list from update_dict
             else:
                 merged_dict[key] = value
         else:
@@ -333,45 +331,45 @@ def merge_multiple(base_dict: dict, update_dicts: list[dict]):
     return merged_dicts
 
 
-def cluster_news_items(news_item_aggregates: list[dict]):
-    base_aggregate = copy.deepcopy(news_item_aggregates[0])
-    for news_item_aggregate in news_item_aggregates[1:]:
-        base_aggregate["news_items"].append(news_item_aggregate["news_items"][0])
-    return base_aggregate
+def cluster_news_items(storys: list[dict]):
+    base_story = copy.deepcopy(storys[0])
+    for story in storys[1:]:
+        base_story["news_items"].append(story["news_items"][0])
+    return base_story
 
 
 news_item_list = merge_multiple(
-    base_aggregate,
+    base_story,
     [
-        news_item_aggregate_1,
-        news_item_aggregate_2,
-        news_item_aggregate_3,
-        news_item_aggregate_4,
-        news_item_aggregate_5,
-        news_item_aggregate_6,
-        news_item_aggregate_7,
-        news_item_aggregate_8,
-        news_item_aggregate_9,
-        news_item_aggregate_10,
+        story_1,
+        story_2,
+        story_3,
+        story_4,
+        story_5,
+        story_6,
+        story_7,
+        story_8,
+        story_9,
+        story_10,
     ],
 )
 
 clustered_news_item_list = merge_multiple(
-    base_aggregate,
+    base_story,
     [
-        cluster_news_items([news_item_aggregate_4, news_item_aggregate_7]),
-        cluster_news_items([news_item_aggregate_7, news_item_aggregate_9, news_item_aggregate_10]),
-        news_item_aggregate_1,
-        news_item_aggregate_2,
-        news_item_aggregate_3,
+        cluster_news_items([story_4, story_7]),
+        cluster_news_items([story_7, story_9, story_10]),
+        story_1,
+        story_2,
+        story_3,
     ],
 )
 
-news_item_tags_1 = {"Cyber": {"name": "Cyber", "tag_type": "CySec"}}
-news_item_tags_2 = {"Security": {"name": "Security", "tag_type": "Misc"}}
-news_item_tags_3 = {"New Orleans": {"name": "New Orleans", "tag_type": "LOC"}}
-news_item_tags_4 = {"CVE": {"name": "CVE", "tag_type": "CySec"}}
-news_item_tags_5 = {"CVE-2021-1234": {"name": "CVE-2021-1234", "tag_type": "CVE"}}
+news_item_tags_1 = {"Cyber": "CySec"}
+news_item_tags_2 = {"Security": "Misc"}
+news_item_tags_3 = {"New Orleans": "LOC"}
+news_item_tags_4 = {"CVE": "CySec"}
+news_item_tags_5 = {"CVE-2021-1234": "CVE"}
 
 
 if __name__ == "__main__":

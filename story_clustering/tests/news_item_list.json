@@ -13,7 +13,7 @@
     "news_items": [
       {
         "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
-        "news_item_aggregate_id": "1",
+        "story_id": "1",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -29,14 +29,8 @@
       }
     ],
     "tags": {
-      "CVE-2020-1234": {
-        "name": "CVE-2020-1234",
-        "tag_type": "CVE"
-      },
-      "Security": {
-        "name": "Security",
-        "tag_type": "MISC"
-      }
+      "CVE-2020-1234": "CVE",
+      "Security": "MISC"
     },
     "id": "1"
   },
@@ -54,7 +48,7 @@
     "news_items": [
       {
         "id": "4b9a5a9e-04d7-41fc-928f-99e5ad608ebb",
-        "news_item_aggregate_id": "2",
+        "story_id": "2",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -70,14 +64,8 @@
       }
     ],
     "tags": {
-      "CVE-2020-4321": {
-        "name": "CVE-2020-4321",
-        "tag_type": "CVE"
-      },
-      "Software": {
-        "name": "Software",
-        "tag_type": "MISC"
-      }
+      "CVE-2020-4321": "CVE",
+      "Software": "MISC"
     },
     "id": "2"
   },
@@ -95,7 +83,7 @@
     "news_items": [
       {
         "id": "533086da-c8c1-4f8e-b3ee-103268983580",
-        "news_item_aggregate_id": "3",
+        "story_id": "3",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -127,7 +115,7 @@
     "news_items": [
       {
         "id": "f8912dab-h345-6789-01jk-5lmn6789o012",
-        "news_item_aggregate_id": "4",
+        "story_id": "4",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -143,18 +131,9 @@
       }
     ],
     "tags": {
-      "tech wizard": {
-        "name": "tech wizard",
-        "tag_type": "MISC"
-      },
-      "cybersecurity": {
-        "name": "cybersecurity",
-        "tag_type": "MISC"
-      },
-      "remedy": {
-        "name": "remedy",
-        "tag_type": "MISC"
-      }
+      "tech wizard": "MISC",
+      "cybersecurity": "MISC",
+      "remedy": "MISC"
     },
     "id": "4"
   },
@@ -172,7 +151,7 @@
     "news_items": [
       {
         "id": "c12a3bde-a333-4567-90ab-2ed123f45678",
-        "news_item_aggregate_id": "5",
+        "story_id": "5",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -188,18 +167,9 @@
       }
     ],
     "tags": {
-      "cloud": {
-        "name": "cloud",
-        "tag_type": "MISC"
-      },
-      "data breach": {
-        "name": "data breach",
-        "tag_type": "MISC"
-      },
-      "nation-state": {
-        "name": "nation-state",
-        "tag_type": "MISC"
-      }
+      "cloud": "MISC",
+      "data breach": "MISC",
+      "nation-state": "MISC"
     },
     "id": "5"
   },
@@ -217,7 +187,7 @@
     "news_items": [
       {
         "id": "d45b6cde-f456-7890-91bc-3ed456f78901",
-        "news_item_aggregate_id": "6",
+        "story_id": "6",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -233,18 +203,9 @@
       }
     ],
     "tags": {
-      "malware": {
-        "name": "malware",
-        "tag_type": "MISC"
-      },
-      "Linux": {
-        "name": "Linux servers",
-        "tag_type": "MISC"
-      },
-      "Cybersecurity": {
-        "name": "Cybersecurity",
-        "tag_type": "MISC"
-      }
+      "malware": "MISC",
+      "Linux": "MISC",
+      "Cybersecurity": "MISC"
     },
     "id": "6"
   },
@@ -262,7 +223,7 @@
     "news_items": [
       {
         "id": "e7890cde-g567-1234-56de-4fgh5678i901",
-        "news_item_aggregate_id": "7",
+        "story_id": "7",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -278,18 +239,9 @@
       }
     ],
     "tags": {
-      "European software": {
-        "name": "European software",
-        "tag_type": "MISC"
-      },
-      "vulnerability": {
-        "name": "vulnerability",
-        "tag_type": "MISC"
-      },
-      "patches": {
-        "name": "patches",
-        "tag_type": "MISC"
-      }
+      "European software": "MISC",
+      "vulnerability": "MISC",
+      "patches": "MISC"
     },
     "id": "7"
   },
@@ -307,7 +259,7 @@
     "news_items": [
       {
         "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-        "news_item_aggregate_id": "8",
+        "story_id": "8",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -323,18 +275,9 @@
       }
     ],
     "tags": {
-      "Azure": {
-        "name": "Azure",
-        "tag_type": "MISC"
-      },
-      "Europe": {
-        "name": "Europe",
-        "tag_type": "LOC"
-      },
-      "Microsoft": {
-        "name": "Microsoft",
-        "tag_type": "ORG"
-      }
+      "Azure": "Product",
+      "Europe": "LOC",
+      "Microsoft": "ORG"
     },
     "id": "8"
   },
@@ -352,7 +295,7 @@
     "news_items": [
       {
         "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-        "news_item_aggregate_id": "9",
+        "story_id": "9",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -368,18 +311,9 @@
       }
     ],
     "tags": {
-      "Software": {
-        "name": "Software",
-        "tag_type": "MISC"
-      },
-      "CVE": {
-        "name": "CVE",
-        "tag_type": "MISC"
-      },
-      "vulnerability": {
-        "name": "vulnerability",
-        "tag_type": "MISC"
-      }
+      "Software": "MISC",
+      "CVE": "MISC",
+      "vulnerability": "MISC"
     },
     "id": "9"
   },
@@ -397,7 +331,7 @@
     "news_items": [
       {
         "id": "809f93ef-f00e-423b-89f8-59b917a9e039",
-        "news_item_aggregate_id": "10",
+        "story_id": "10",
         "review": "",
         "author": "",
         "source": "https://url/",
@@ -413,18 +347,9 @@
       }
     ],
     "tags": {
-      "Cybersecurity": {
-        "name": "Cybersecurity",
-        "tag_type": "MISC"
-      },
-      "blog": {
-        "name": "blog",
-        "tag_type": "MISC"
-      },
-      "vulnerability": {
-        "name": "vulnerability",
-        "tag_type": "MISC"
-      }
+      "Cybersecurity": "MISC",
+      "blog": "MISC",
+      "vulnerability": "MISC"
     },
     "id": "10"
   }
