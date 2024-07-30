@@ -40,15 +40,15 @@ story_1 = {
         }
     ],
     "tags": {
-        "Microsoft": "MISC",
+        "Microsoft": "Vendor",
         "security": "MISC",
         "CVE-2020-1234": "CVE",
-        "Google": "MISC",
-        "vulnerabilities": "MISC",
-        "Linux": "MISC",
-        "Cisco": "MISC",
+        "Google": "Vendor",
+        "vulnerabilities": "CySec",
+        "Linux": "Product",
+        "Cisco": "Vendor",
         "protocols": "MISC",
-        "breaches": "MISC",
+        "breaches": "CySec",
         "community": "MISC",
     },
 }
@@ -62,22 +62,22 @@ story_2 = {
             "story_id": "2",
             "hash": "a96e88baaff421165e90ac4bb9059971b86f88d5c2abba36d78a1264fb8e9c87",
             "title": "Test News Item 27",
-            "content": "Intel collaborates with Oracle to mitigate CVE-2021-5678 vulnerabilities in cloud infrastructures. Meanwhile, Apple is focusing on enhancing security measures against cyber threats, urging customers to update systems.",
+            "content": "Intel collaborates with Oracle to mitigate CVE-2021-5678 vulnerabilities in cloud infrastructures. Meanwhile, Apple is focusing on enhancing security measures against cyber threats, urging customers to update systems. All Windows installations will be affected by this.",
             "collected": "2023-08-01T17:01:04.802015",
             "published": "2023-08-01T17:01:04.801998",
             "updated": "2023-08-01T17:00:39.893435",
         }
     ],
     "tags": {
-        "Intel": "MISC",
-        "Oracle": "MISC",
+        "Intel": "Vendor",
+        "Oracle": "Vendor",
         "CVE-2021-5678": "CVE",
         "vulnerabilities": "MISC",
         "cloud": "MISC",
         "infrastructures": "MISC",
-        "Apple": "MISC",
+        "Apple": "Vendor",
         "security": "MISC",
-        "cyber": "MISC",
+        "Windows": "Product",
         "systems": "MISC",
     },
 }
@@ -97,8 +97,8 @@ story_3 = {
         }
     ],
     "tags": {
-        "IBM": "MISC",
-        "NVIDIA": "MISC",
+        "IBM": "Vendor",
+        "NVIDIA": "Vendor",
         "vulnerabilities": "MISC",
         "AI": "MISC",
         "modules": "MISC",
@@ -245,7 +245,7 @@ story_8 = {
         "security": "MISC",
         "threats": "MISC",
         "CVE-2023-5678": "CVE",
-        "GitHub": "MISC",
+        "GitHub": "Vendor",
         "stance": "MISC",
         "phishing": "MISC",
         "scams": "MISC",
@@ -375,9 +375,9 @@ news_item_tags_5 = {"CVE-2021-1234": "CVE"}
 if __name__ == "__main__":
     import json
 
-    news_item_list_json = open("news_item_list.json", "w")
+    news_item_list_json = open("story_list.json", "w")
     json.dump(news_item_list, news_item_list_json, indent=2, sort_keys=False)
-    clustered_news_item_list_json = open("clustered_news_item_list.json", "w")
+    clustered_news_item_list_json = open("clustered_stories_list.json", "w")
     json.dump(
         clustered_news_item_list,
         clustered_news_item_list_json,
