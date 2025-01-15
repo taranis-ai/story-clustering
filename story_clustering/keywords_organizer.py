@@ -130,9 +130,10 @@ class KeywordGraph:
     This class defines a keyword graph (KeyGraph)
     """
 
-    def __init__(self, aggregate_id: int = None):
+    def __init__(self, story_id: str | None = None):
         self.graphNodes = {}
-        self.aggregate_id = aggregate_id
+        self.story_id = story_id
+        self.text: str = ""
 
     def build_graph(self, corpus: "Corpus"):
         self.graphNodes = {}
@@ -211,7 +212,7 @@ class CommunityDetector:
         # check if there are any
 
         gr_copy = gr.copy()
-        communities = nx.community.louvain_communities(gr_copy, seed=42, resolution=5)
+        communities = nx.community.louvain_communities(gr_copy, seed=42, resolution=5)  # type: ignore
         # communities = nx.community.girvan_newman(G)
 
         key_communities = []

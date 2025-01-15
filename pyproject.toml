@@ -15,6 +15,7 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "sentence_transformers",
+    "Flask",
     "transformers",
     "typing_extensions",
     "torch",
@@ -22,7 +23,7 @@ dependencies = [
     "numpy",
     "networkx",
     "polyfuzz",
-    "pytest"
+    "pydantic-settings"
 ]
 dynamic = ["version"]
 

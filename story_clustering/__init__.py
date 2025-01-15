@@ -1,28 +1,21 @@
-import nltk
-import logging
-from nltk.corpus import stopwords
-from sentence_transformers import SentenceTransformer
-
-nltk.download("stopwords")
-
-bert_logger = logging.getLogger("BERTopic")
-
-stopwords_list = stopwords.words("english")
-stopwords_list.extend(stopwords.words("german"))
+from flask import Flask
+from story_clustering import router, clustering
 
 
-class IgnoreSpecificLogFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        return "Ran model with model id" not in record.getMessage()
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object("story_clustering.config.Config")
+
+    with app.app_context():
+        init(app)
+
+    return app
 
 
-bert_logger.addFilter(IgnoreSpecificLogFilter())
+def init(app: Flask):
+    cluster = clustering.Cluster()
+    router.init(app, cluster)
 
-#sentence_transformer = SentenceTransformer("sentence-transformers/paraphrase-MiniLM-L6-v2")
-sentence_transformer = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
-logger = logging.getLogger("story_clustering")
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
-
-logger.info("Story Clustering Setup Complete.")
+if __name__ == "__main__":
+    create_app()

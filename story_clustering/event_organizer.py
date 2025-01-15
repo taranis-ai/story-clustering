@@ -3,7 +3,7 @@ from .keywords_organizer import KeywordGraph
 
 
 class Event:
-    def __init__(self, keyGraph: KeywordGraph  = None):
+    def __init__(self, keyGraph: KeywordGraph):
         self.max_id = 1
         self.keyGraph = keyGraph
         self.docs = {}
@@ -16,7 +16,7 @@ class Event:
     # calculate the centroid document of this document cluster
     # centroid is the concatenation of all docs in this event
     def calc_centroid(self):
-        self.centroid = Document(-1)
+        self.centroid = Document("-1")
         timestamp = float("inf")
         for doc in self.docs.values():
             if doc.publish_time.getTime() < timestamp:

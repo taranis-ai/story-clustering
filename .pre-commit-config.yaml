@@ -1,7 +1,7 @@
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
+    rev: v0.9.1
     hooks:
       - id: ruff
         files: ^story_clustering/
@@ -9,6 +9,6 @@ repos:
         files: ^story_clustering/
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace

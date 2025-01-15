@@ -2,10 +2,10 @@
 
 This code takes newsitems in the format as provided by [Taranis AI](https://github.com/taranis-ai/taranis-ai) and clusters them into Stories.
 
-
-# Description and Use
+## Description and Use
 
 The approach supports the following functionalities:
+
 1) Automatically detect Events.
 2) News items are clustered based on the detected Events.
 3) Documents belonging to related Events are then clustered into Stories.
@@ -13,30 +13,35 @@ The approach supports the following functionalities:
 ## Initial clustering
 
 The method `initial_clustering` in `clustering.py` takes as input a dictionary of `news_items_aggregate` (see `tests/testdapa.py` for the actual input format) and outputs a dictionary containing two keys:
-("event_clusters" : list of list of documents ids) and 
-("story_clusters" : list of list of documents ids) 
+("event_clusters" : list of list of documents ids) and
+("story_clusters" : list of list of documents ids)
 
 ## Incremental clustering
-The method `incremental_clustering_v2` takes as input a dictionary of `news_items_aggregate`, containing new news items to be clustered, and `clustered_news_items_aggregate`, containing already clustered items, and tries to cluster the new documents to the existing clusters or create new ones. See `tests/testdata.py` for the actual input formats. This method also 
+
+The method `incremental_clustering_v2` takes as input a dictionary of `news_items_aggregate`, containing new news items to be clustered, and `clustered_news_items_aggregate`, containing already clustered items, and tries to cluster the new documents to the existing clusters or create new ones. See `tests/testdata.py` for the actual input formats. This method also
 outputs a dictionary containing two keys:
-("event_clusters" : list of list of documents ids) and 
-("story_clusters" : list of list of documents ids) 
+("event_clusters" : list of list of documents ids) and
+("story_clusters" : list of list of documents ids)
 
-## Installation
-The `requirements.txt` file should list all Python libraries that the story-clustering
-depends on, and they will be installed using:
+## Usage
 
-```
-pip install .
+```bash
+flask run
+# or
+granian run
+# or
+docker run -p 5000:5000 ghcr.io/taranis-ai/taranis-story-cluster-bot:latest
 ```
 
 ## Development
-```
-pip install .[dev]
+
+```bash
+uv venv
+uv sync --all-extras --dev
 ```
 
-## Use
 See `notebook\test_story_clustering.ipynb` for examples on how to use the clustering methods.
 
 ## License
+
 EUROPEAN UNION PUBLIC LICENCE v. 1.2

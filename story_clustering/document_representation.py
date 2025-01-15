@@ -1,7 +1,7 @@
 import math
 import json
 from typing import Any
-from .nlp_utils import idf, tfidf
+from story_clustering.nlp_utils import idf, tfidf
 
 
 class Keyword:
@@ -39,12 +39,12 @@ class Document:
 
     def __init__(
         self,
-        doc_id: str = None,
-        url: str = None,
-        language: str = None,
-        title: str = None,
-        content: str = None,
-        keywords: dict[str, Keyword] = None,
+        doc_id: str | None = None,
+        url: str | None = None,
+        language: str | None = None,
+        title: str | None = None,
+        content: str | None = None,
+        keywords: dict[str, Keyword] | None = None,
         publish_time=None,
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
@@ -59,7 +59,7 @@ class Document:
             self.segTitle = title.strip().split(" ")
         self.content = content
         if keywords:
-            self.keywords = {k: Keyword(**v) for k, v in keywords.items()}
+            self.keywords = {k: Keyword(**v) for k, v in keywords.items()}  # type: ignore
         self.tf_vector_size = tf_vector_size
         self.tfidf_vector_size = tfidf_vector_size
         self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
@@ -75,17 +75,13 @@ class Document:
     # compute document's TF vector size
     # Given document's keywords [w1,..,wn] the vector size of a doc is sqrt(tf(wi)^2)
     def calc_tf_vector_size(self):
-        tf_vector_size = 0
-        for k in self.keywords.values():
-            tf_vector_size += math.pow(k.tf, 2)
+        tf_vector_size = sum(math.pow(k.tf, 2) for k in self.keywords.values())
         tf_vector_size = math.sqrt(tf_vector_size)
         self.tf_vector_size = tf_vector_size
         return tf_vector_size
 
     def calc_tfidf_vector_size(self, DF, docSize):
-        tfidf_vector_size = 0
-        for k in self.keywords.values():
-            tfidf_vector_size += math.pow(tfidf(k.tf, idf(DF[k.baseForm], docSize)), 2)
+        tfidf_vector_size = sum(math.pow(tfidf(k.tf, idf(DF[k.baseForm], docSize)), 2) for k in self.keywords.values())
         tfidf_vector_size = math.sqrt(tfidf_vector_size)
         self.tfidf_vector_size = tfidf_vector_size
 
@@ -136,7 +132,7 @@ class Corpus:
 
     """
 
-    def __init__(self, docs: dict[int:dict] = None, DF=None):
+    def __init__(self, docs: dict[int, dict] | None = None, DF=None):
         self.DF = {} if DF is None else DF
         self.docs = {}
         if docs:
