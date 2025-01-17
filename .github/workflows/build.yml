@@ -66,5 +66,5 @@ jobs:
             ghcr.io/${{ env.GHCR_OWNER }}/taranis-story-clustering-bot:${{ github.ref_name }}
           build-args: |
             BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
-          cache-from: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-story-clustering-bot:latest
-          cache-to: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-story-clustering-bot:latest,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-story-clustering-bot-cache:latest
+          cache-to: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-story-clustering-bot-cache:latest,mode=max

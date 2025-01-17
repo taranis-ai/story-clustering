@@ -31,6 +31,6 @@ def init(app: Flask, cluster: Cluster):
     app.url_map.strict_slashes = False
 
     clustering_bp = Blueprint("predict", __name__)
-    clustering_bp.add_url_rule("/cluster", view_func=Clustering.as_view("cluster", cluster=cluster))
+    clustering_bp.add_url_rule("/", view_func=Clustering.as_view("cluster", cluster=cluster))
     clustering_bp.add_url_rule("/health", view_func=HealthCheck.as_view("health"))
     app.register_blueprint(clustering_bp)

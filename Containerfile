@@ -24,7 +24,7 @@ RUN groupadd user && useradd --home-dir /app -g user user && chown -R user:user 
 RUN install -d -o user -g user /app/data
 
 COPY --from=builder --chown=user:user /app/.venv /app/.venv
-COPY --chown=user:user story-clustering README.md app.py LICENSE.md /app/
+COPY --chown=user:user story_clustering README.md app.py LICENSE.md /app/
 
 USER user
 
