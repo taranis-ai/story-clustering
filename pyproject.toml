@@ -16,6 +16,7 @@ requires-python = ">=3.11"
 dependencies = [
     "sentence_transformers",
     "Flask",
+    "granian",
     "transformers",
     "typing_extensions",
     "torch",

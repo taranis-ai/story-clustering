@@ -1,3 +1,3 @@
-from story_clustering.__init__ import create_app
+from story_clustering import create_app
 
-create_app()
+create_app().run()
