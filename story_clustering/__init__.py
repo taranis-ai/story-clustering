@@ -1,5 +1,5 @@
 from flask import Flask
-from story_clustering import router, clustering
+from story_clustering import router
 
 
 def create_app():
@@ -13,8 +13,7 @@ def create_app():
 
 
 def init(app: Flask):
-    cluster = clustering.Cluster()
-    router.init(app, cluster)
+    router.init(app)
 
 
 if __name__ == "__main__":

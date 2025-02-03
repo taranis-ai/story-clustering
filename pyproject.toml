@@ -24,7 +24,8 @@ dependencies = [
     "numpy",
     "networkx",
     "polyfuzz",
-    "pydantic-settings"
+    "pydantic-settings",
+    "python-dotenv"
 ]
 dynamic = ["version"]
 

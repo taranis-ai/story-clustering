@@ -3,6 +3,7 @@ import nltk
 import logging
 from sentence_transformers import util
 
+from story_clustering.predictor import Predictor
 from story_clustering.document_representation import Keyword, Document, Corpus
 from story_clustering.event_organizer import Event
 from story_clustering.eventdetector import (
@@ -32,7 +33,7 @@ MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
 
 
-class Cluster:
+class Cluster(Predictor):
     def __init__(self):
         nltk.download("stopwords")
 
@@ -332,3 +333,6 @@ class Cluster:
         text_1 = " ".join([d.title for d in ev.docs.values()])
         text_2 = " ".join([d.title for e in story for d in e.docs.values()])
         return self.compute_similarity_for_stories(text_1, text_2) >= SimilarityThreshold
+
+    def predict(self, text: str) -> dict[str, str]:
+        return {"NOT_IMPLEMENTED": "Not implemented yet."}
