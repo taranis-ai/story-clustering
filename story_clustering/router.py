@@ -5,6 +5,7 @@ from story_clustering.clustering import Cluster
 from story_clustering.log import logger
 from story_clustering.nlp_utils import separate_stories
 from story_clustering.predictor_factory import PredictorFactory
+from story_clustering.decorators import api_key_required
 
 
 class Clustering(MethodView):
@@ -12,6 +13,7 @@ class Clustering(MethodView):
         super().__init__()
         self.processor = processor
 
+    @api_key_required
     def post(self):
         data = request.get_json()
         stories = data.get("stories", [])
