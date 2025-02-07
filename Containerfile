@@ -39,6 +39,7 @@ ENV GRANIAN_WORKERS=2
 ENV GRANIAN_BLOCKING_THREADS=4
 ENV GRANIAN_INTERFACE=wsgi
 ENV GRANIAN_HOST=0.0.0.0
+ENV MODEL=${MODEL}
 
 # bake models in to the image
 RUN python -c 'from story_clustering.predictor_factory import PredictorFactory; PredictorFactory()'
