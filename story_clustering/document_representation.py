@@ -1,8 +1,31 @@
 import math
 import json
-from typing import Any
+from typing import Any, TypedDict
 from story_clustering.nlp_utils import idf, tfidf
 
+class KeyWordJSON(TypedDict):
+    baseForm: str
+    documents: list
+    tf: float
+    df: float
+
+class DocumentJSON(TypedDict):
+    doc_id: str | None
+    url: str | None
+    publish_time: str | None
+    language: str | None
+    title: str | None
+    content: str | None
+    keywords: dict[str, KeyWordJSON] | None
+    tf_vector_size: float
+    tfidf_vector_size: float
+    tfidfVectorSizeWithKeygraph: float
+
+class CorpusJSON(TypedDict):
+    docs: dict[str, DocumentJSON]
+    DF: dict[str, float]
+    
+    
 
 class Keyword:
     """
@@ -15,13 +38,13 @@ class Keyword:
         self.tf = tf
         self.df = df
 
-    def increase_tf(self, k):
+    def increase_tf(self, k: float):
         self.tf += k
 
-    def increase_df(self, k):
+    def increase_df(self, k: float):
         self.df += k
 
-    def reprJSON(self):
+    def reprJSON(self) -> KeyWordJSON:
         return {"baseForm": self.baseForm, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
@@ -29,7 +52,7 @@ class Document:
     """
     A class to represent a document in a corpus
 
-    tfidfVectorSizeWithKeygraph: double
+    tfidfVectorSizeWithKeygraph: float
         Document TF-IDF vector size float consider keygraph keywords. For keywords that doesn't included in a keygraph,
         we don't calculate the keyword's tf.
         This is used to calculate the similarity between a keygraph and a document. It is the norm of document vector,
@@ -45,7 +68,7 @@ class Document:
         title: str | None = None,
         content: str | None = None,
         keywords: dict[str, Keyword] | None = None,
-        publish_time=None,
+        publish_time: Any | None = None,
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
         tfidfVectorSizeWithKeygraph: float = -1,
@@ -64,7 +87,7 @@ class Document:
         self.tfidf_vector_size = tfidf_vector_size
         self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
 
-    def contains_keyword(self, kw):
+    def contains_keyword(self, kw: str) -> bool:
         return kw in self.keywords
 
     def set_keyword(self, kw: Keyword):
@@ -72,21 +95,26 @@ class Document:
             self.keywords = {}
         self.keywords[kw.baseForm] = kw
 
-    # compute document's TF vector size
-    # Given document's keywords [w1,..,wn] the vector size of a doc is sqrt(tf(wi)^2)
-    def calc_tf_vector_size(self):
+
+    def calc_tf_vector_size(self) -> float:
+        # compute document's TF vector size
+        # Given document's keywords [w1,..,wn] the vector size of a doc is sqrt(tf(wi)^2)
+
         tf_vector_size = sum(math.pow(k.tf, 2) for k in self.keywords.values())
         tf_vector_size = math.sqrt(tf_vector_size)
         self.tf_vector_size = tf_vector_size
         return tf_vector_size
 
-    def calc_tfidf_vector_size(self, DF, docSize):
+    def calc_tfidf_vector_size(self, DF: dict[str, float], docSize: int):
+        # Calculate the vector size of the tfidf-vector as sqrt(sum(tfidf_i^2)) = ||tfidf-vector||_2
+        # where tfidf-vector contains the tfidf values of each keyword
+
         tfidf_vector_size = sum(math.pow(tfidf(k.tf, idf(DF[k.baseForm], docSize)), 2) for k in self.keywords.values())
         tfidf_vector_size = math.sqrt(tfidf_vector_size)
         self.tfidf_vector_size = tfidf_vector_size
 
     @staticmethod
-    def cosine_similarity_by_tf(d1, d2) -> float:
+    def cosine_similarity_by_tf(d1: "Document", d2: "Document") -> float:
         sim = 0
         for k1 in d1.keywords.values():
             if k1.baseForm in d2.keywords:
@@ -105,7 +133,7 @@ class Document:
 
         return sim / d1.tf_vector_size / d2.tf_vector_size
 
-    def reprJSON(self):
+    def reprJSON(self) -> DocumentJSON:
         return {
             "doc_id": self.doc_id,
             "url": self.url,
@@ -125,20 +153,20 @@ class Corpus:
     A class to represent a corpus of documents
     Attributes
     ----------
-    docs: dict (doc_id -> Document)
+    docs: dict[str, dict]
           documents contained in this corpus
-    DF: dict (String -> double)
-        Words' DF
+    DF: dict[str, float]
+        Words' document frequency
 
     """
 
-    def __init__(self, docs: dict[int, dict] | None = None, DF=None):
+    def __init__(self, docs: dict[str, dict] | None = None, DF: dict[str, float] | None = None):
         self.DF = {} if DF is None else DF
         self.docs = {}
         if docs:
             for doc in docs.values():
                 self.docs[doc["doc_id"]] = Document(**doc)
-                for key, keyword in self.docs[doc["doc_id"]].keywords.items():
+                for _, keyword in self.docs[doc["doc_id"]].keywords.items():
                     if keyword.baseForm in self.DF:
                         self.DF[keyword.baseForm] += 1
                     else:
@@ -150,7 +178,7 @@ class Corpus:
             for k in doc.keywords.values():
                 self.DF[k.baseForm] = self.DF[k.baseForm] + 1 if k.baseForm in self.DF else 1
 
-    def reprJSON(self):
+    def reprJSON(self) -> CorpusJSON:
         return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.DF}
 
 
