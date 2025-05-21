@@ -9,8 +9,8 @@ from nltk.corpus import stopwords
 POLYFUZZ_THRESHOLD = 3
 
 
-# calculate word's inverse document frequency
-def idf(df: float, size: int):
+def idf(df: float, size: int) -> float:
+    # calculate word's inverse document frequency
     return math.log(size / (df + 1)) / math.log(2)
 
 
@@ -18,16 +18,16 @@ def replace_umlauts_with_digraphs(s: str) -> str:
     return s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
 
 
-# calculate word's tf-idf
-def tfidf(tf, idf):
+def tfidf(tf: float, idf: float) -> float:
+    # calculate word's tf-idf
     return 0 if tf == 0 or idf == 0 else tf * idf
 
 
-def tokanize_text(text: str) -> list[str]:
+def tokenize_text(text: str) -> list[str]:
     tokenizer = RegexpTokenizer(r"\w+")
-    text_content_tokanized = tokenizer.tokenize(text)
-    text_content_tokanized = [replace_umlauts_with_digraphs(w) for w in text_content_tokanized if w.lower() not in get_stop_words()]
-    return text_content_tokanized
+    text_content_tokenized = tokenizer.tokenize(text)
+    text_content_tokenized = [replace_umlauts_with_digraphs(w) for w in text_content_tokenized if w.lower() not in get_stop_words()]
+    return text_content_tokenized
 
 
 def compute_tf(baseForm: str, text: str) -> int:
@@ -36,16 +36,16 @@ def compute_tf(baseForm: str, text: str) -> int:
     if not baseForm.strip().isalpha() or baseForm in get_stop_words():
         return 1
     n_words = len(baseForm.strip().split(" "))
-    tokenized_text = tokanize_text(text)
+    tokenized_text = tokenize_text(text)
     try:
         model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
     except Exception:
         return 1
-    df = model.get_matches()
-    if len(df) == 0:
+    match_df = model.get_matches()
+    if len(match_df) == 0:
         # keyword not appearing in text
         return 0
-    values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]  # type: ignore
+    values = match_df[(match_df["Group"].notnull()) & (match_df["Similarity"] >= 0.65)]  # type: ignore
     if len(values) == 0:
         return 0
     values.loc[:, ("Similarity")] = 1
@@ -62,10 +62,10 @@ def find_keywords_matches(keywords_lst1: list[str], keywords_lst2: list[str]) ->
         model.match(keywords_lst1, keywords_lst2).group(link_min_similarity=0.75)
     except Exception:
         return 0
-    df = model.get_matches()
-    if len(df) == 0:
+    match_df = model.get_matches()
+    if len(match_df) == 0:
         return 0
-    values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]  # type: ignore
+    values = match_df[(match_df["Group"].notnull()) & (match_df["Similarity"] >= 0.65)]  # type: ignore
     values.loc[:, ("Similarity")] = 1
     return max(values["Similarity"].sum(), 1)
 
@@ -89,7 +89,7 @@ def get_sentence_transformer(model_name="sentence-transformers/paraphrase-multil
 
 
 @cache
-def get_stop_words(languages=None):
+def get_stop_words(languages: list[str] | None = None) -> set[str]:
     if languages is None:
         languages = ["english", "german"]
     return {word for lang in languages for word in stopwords.words(lang)}
