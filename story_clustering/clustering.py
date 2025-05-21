@@ -142,20 +142,20 @@ class Cluster(Predictor):
         graph = KeywordGraph(story_id=cluster["id"])
         # as text we use for now the content of first item
         graph.text = cluster["news_items"][0]["content"]
-        tags = cluster["tags"]
+        tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
 
         # update corpus DF for each of the tags
         # use corpus.DF[baseform] to update the df of each keyword
-        for keyword_1 in tags.keys():
+        for keyword_1 in tag_names:
             baseform1 = replace_umlauts_with_digraphs(keyword_1)
             if baseform1 in corpus.DF:
                 corpus.DF[baseform1] += self.compute_df(keyword_1, cluster["news_items"])
             else:
                 corpus.DF[baseform1] = self.compute_df(keyword_1, cluster["news_items"])
 
-        for keyword_1 in tags.keys():
+        for keyword_1 in tag_names:
             baseform1 = replace_umlauts_with_digraphs(keyword_1)
-            for keyword_2 in tags.keys():
+            for keyword_2 in tag_names:
                 if keyword_1 != keyword_2:
                     baseform2 = replace_umlauts_with_digraphs(keyword_2)
 
@@ -187,7 +187,8 @@ class Cluster(Predictor):
         super_cluster_id = None
         for cluster in already_clustered_events:
             existing_keywords = []
-            for tag in cluster["tags"].keys():
+            tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
+            for tag in tag_names:
                 baseform = replace_umlauts_with_digraphs(tag)
                 existing_keywords.append(baseform)
             if find_keywords_matches(keywords_new_cluster, existing_keywords) > POLYFUZZ_THRESHOLD:
@@ -232,9 +233,9 @@ class Cluster(Predictor):
 
         # add to g the new nodes and edges from already_clusterd_events
         for cluster in already_clustered_events:
-            tags = cluster["tags"]
-            for keyword_1 in tags.keys():
-                for keyword_2 in tags.keys():
+            tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
+            for keyword_1 in tag_names:
+                for keyword_2 in tag_names:
                     if keyword_1 != keyword_2:
                         # doc frequency is the number of documents in the cluster
                         df = len(cluster["news_items"])
