@@ -77,7 +77,8 @@ class Cluster(Predictor):
                 keywords = {}
                 if len(story["tags"]) < 5:
                     continue
-                for tag, tag_type in story["tags"].items():
+                for tag_dict in story["tags"]:
+                    tag, tag_type = tag_dict.values()
                     if (tag not in doc.content) and (tag.lower() not in doc.content):
                         continue
                     baseform = replace_umlauts_with_digraphs(tag)
