@@ -331,6 +331,17 @@ def merge_multiple(base_dict: dict, update_dicts: list[dict]):
     return merged_dicts
 
 
+def transform_stories(story_list: list) -> list[dict]:
+    # transform the tags of each story to a list of dicts
+    transformed_stories = []
+
+    for story in story_list:
+        transformed_story = copy.deepcopy(story)
+        transformed_story["tags"] = [{"name": key, "tag_type": value} for key, value in story["tags"].items()]
+        transformed_stories.append(transformed_story)
+    return transformed_stories
+
+
 def cluster_news_items(storys: list[dict]):
     base_story = copy.deepcopy(storys[0])
     for story in storys[1:]:
@@ -338,38 +349,42 @@ def cluster_news_items(storys: list[dict]):
     return base_story
 
 
-news_item_list = merge_multiple(
-    base_story,
-    [
-        story_1,
-        story_2,
-        story_3,
-        story_4,
-        story_5,
-        story_6,
-        story_7,
-        story_8,
-        story_9,
-        story_10,
-    ],
+news_item_list = transform_stories(
+    merge_multiple(
+        base_story,
+        [
+            story_1,
+            story_2,
+            story_3,
+            story_4,
+            story_5,
+            story_6,
+            story_7,
+            story_8,
+            story_9,
+            story_10,
+        ],
+    )
 )
 
-clustered_news_item_list = merge_multiple(
-    base_story,
-    [
-        cluster_news_items([story_4, story_7]),
-        cluster_news_items([story_7, story_9, story_10]),
-        story_1,
-        story_2,
-        story_3,
-    ],
+clustered_news_item_list = transform_stories(
+    merge_multiple(
+        base_story,
+        [
+            cluster_news_items([story_4, story_7]),
+            cluster_news_items([story_7, story_9, story_10]),
+            story_1,
+            story_2,
+            story_3,
+        ],
+    )
 )
 
-news_item_tags_1 = {"Cyber": "CySec"}
-news_item_tags_2 = {"Security": "Misc"}
-news_item_tags_3 = {"New Orleans": "LOC"}
-news_item_tags_4 = {"CVE": "CySec"}
-news_item_tags_5 = {"CVE-2021-1234": "CVE"}
+news_item_tags_1 = [{"name": "Cyber", "tag_type": "CySec"}]
+news_item_tags_2 = [{"name": "Security", "tag_type": "Misc"}]
+news_item_tags_3 = [{"name": "New Orleans", "tag_type": "LOC"}]
+news_item_tags_4 = [{"name": "CVE", "tag_type": "CySec"}]
+news_item_tags_5 = [{"name": "CVE-2021-1234", "tag_type": "CVE"}]
 
 
 if __name__ == "__main__":

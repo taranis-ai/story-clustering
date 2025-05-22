@@ -44,6 +44,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
+tag_regex = "^refs/pull/(\\d+)/merge$"
 
 [tool.setuptools]
 packages = ["story_clustering"]
