@@ -20,13 +20,15 @@ class Clustering(MethodView):
 
         if all(len(story["news_items"]) == 1 for story in stories):
             clustering_results = self.processor.initial_clustering(stories)
-            logger.info(f"Initial Clustering done with: {len(stories)} news items")
-            return jsonify({"cluster_ids": clustering_results})
+            msg = f"Initial Clustering done with: {len(stories)} news items"
+            logger.info(msg)
+            return jsonify({"cluster_ids": clustering_results, "message": msg})
 
         already_clustered, to_cluster = separate_stories(stories)
         clustering_results = self.processor.incremental_clustering_v2(to_cluster, already_clustered)
-        logger.info(f"incremental Clustering done with: {len(stories)} news items")
-        return jsonify({"cluster_ids": clustering_results})
+        msg = f"incremental Clustering done with: {len(stories)} news items"
+        logger.info(msg)
+        return jsonify({"cluster_ids": clustering_results, "message": msg})
 
 
 class HealthCheck(MethodView):
