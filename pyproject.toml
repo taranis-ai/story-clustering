@@ -37,14 +37,15 @@ dev = ["pytest", "ruff"]
 
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools>=61",
     "setuptools_scm[toml]>=6.2",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-tag_regex = "^refs/pull/(\\d+)/merge$"
+fallback_version = "0.0.0"
+tag_regex = "^(?:refs/pull/(\\d+)/merge|(?P<version>\\d+\\.\\d+\\.\\d+))$"
 
 [tool.setuptools]
 packages = ["story_clustering"]
