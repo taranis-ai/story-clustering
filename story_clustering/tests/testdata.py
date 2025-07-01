@@ -337,7 +337,7 @@ def transform_stories(story_list: list) -> list[dict]:
 
     for story in story_list:
         transformed_story = copy.deepcopy(story)
-        transformed_story["tags"] = [{"name": key, "tag_type": value} for key, value in story["tags"].items()]
+        transformed_story["tags"] = {key: {"name": key, "tag_type": value} for key, value in story["tags"].items()}
         transformed_stories.append(transformed_story)
     return transformed_stories
 
@@ -380,11 +380,11 @@ clustered_news_item_list = transform_stories(
     )
 )
 
-news_item_tags_1 = [{"name": "Cyber", "tag_type": "CySec"}]
-news_item_tags_2 = [{"name": "Security", "tag_type": "Misc"}]
-news_item_tags_3 = [{"name": "New Orleans", "tag_type": "LOC"}]
-news_item_tags_4 = [{"name": "CVE", "tag_type": "CySec"}]
-news_item_tags_5 = [{"name": "CVE-2021-1234", "tag_type": "CVE"}]
+news_item_tags_1 = {"Cyber": {"name": "Cyber", "tag_type": "CySec"}}
+news_item_tags_2 = {"Security": {"name": "Security", "tag_type": "Misc"}}
+news_item_tags_3 = {"New Orleans": {"name": "New Orleans", "tag_type": "LOC"}}
+news_item_tags_4 = {"CVE": {"name": "CVE", "tag_type": "CySec"}}
+news_item_tags_5 = {"CVE-2021-1234": {"name": "CVE-2021-1234", "tag_type": "CVE"}}
 
 
 if __name__ == "__main__":

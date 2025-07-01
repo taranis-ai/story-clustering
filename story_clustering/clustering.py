@@ -55,9 +55,9 @@ class Cluster(Predictor):
         """Creates a Corpus object from a JSON object denoting all documents
 
         Args:
-            new_news_items (list[dict]): list of dict with following keys
+            new_stories (list[dict]): list of dict with following keys
                 {'id': str, 'link': str, 'text': str, 'title':str,'date': 'YYYY-MM-DD', 'lang': str,
-                'tags': [{'name': str, 'tag_type': str}]}
+                'tags': {"<tag_name>": {"name": "<tag_name>", "tag_type": "<tag_type>"}, ...}
         Returns:
             corpus: Corpus of documents
         """
@@ -77,8 +77,8 @@ class Cluster(Predictor):
                 keywords = {}
                 if len(story["tags"]) < 5:
                     continue
-                for tag_dict in story["tags"]:
-                    tag, tag_type = tag_dict.values()
+                for tag, tag_dict in story["tags"].items():
+                    tag_type = tag_dict.get("tag_type", "")
                     if (tag not in doc.content) and (tag.lower() not in doc.content):
                         continue
                     baseform = replace_umlauts_with_digraphs(tag)
@@ -142,7 +142,7 @@ class Cluster(Predictor):
         graph = KeywordGraph(story_id=cluster["id"])
         # as text we use for now the content of first item
         graph.text = cluster["news_items"][0]["content"]
-        tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
+        tag_names = list(cluster.get("tags", {}).keys())
 
         # update corpus DF for each of the tags
         # use corpus.DF[baseform] to update the df of each keyword
@@ -187,7 +187,7 @@ class Cluster(Predictor):
         super_cluster_id = None
         for cluster in already_clustered_events:
             existing_keywords = []
-            tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
+            tag_names = list(cluster.get("tags", {}).keys())
             for tag in tag_names:
                 baseform = replace_umlauts_with_digraphs(tag)
                 existing_keywords.append(baseform)
@@ -233,7 +233,7 @@ class Cluster(Predictor):
 
         # add to g the new nodes and edges from already_clusterd_events
         for cluster in already_clustered_events:
-            tag_names = [tag_dict.get("name") for tag_dict in cluster.get("tags", [])]
+            tag_names = list(cluster.get("tags", {}).keys())
             for keyword_1 in tag_names:
                 for keyword_2 in tag_names:
                     if keyword_1 != keyword_2:
