@@ -8,17 +8,17 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, documents: set = set(), tf: float = 0, df: float = 0):
+    def __init__(self, baseform: str, documents: set = set(), tf: int = 0, df: int = 0):
         self.baseform = baseform
         self.documents = documents
         self.tf = tf
         self.df = df
 
-    def increase_tf(self, k: float):
-        self.tf += k
+    def increase_tf(self, tf: int):
+        self.tf += tf
 
-    def increase_df(self, k: float):
-        self.df += k
+    def increase_df(self, df: int):
+        self.df += df
 
     def reprJSON(self) -> dict:
         return {"baseForm": self.baseform, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
@@ -121,13 +121,13 @@ class Corpus:
     ----------
     docs: dict (doc_id -> Document)
           documents contained in this corpus
-    df: dict (String -> float)
+    df: dict (String -> int)
         A keywords document frequency
 
     """
 
     def __init__(self, docs: dict[str, dict] | None = None, df=None):
-        self.df: dict[str, float] = {} if df is None else df
+        self.df: dict[str, int] = {} if df is None else df
         self.docs: dict[str, Document] = {}
         if docs:
             for doc in docs.values():
