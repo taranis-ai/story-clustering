@@ -1,7 +1,6 @@
 import math
 import json
 from typing import Any
-from story_clustering.nlp_utils import idf, tfidf
 
 
 class Keyword:
@@ -21,7 +20,7 @@ class Keyword:
     def increase_df(self, k: float):
         self.df += k
 
-    def reprJSON(self):
+    def reprJSON(self) -> dict:
         return {"baseForm": self.baseForm, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
@@ -64,7 +63,7 @@ class Document:
         self.tfidf_vector_size = tfidf_vector_size
         self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
 
-    def contains_keyword(self, kw):
+    def contains_keyword(self, kw: str) -> bool:
         return kw in self.keywords
 
     def set_keyword(self, kw: Keyword):
@@ -72,21 +71,16 @@ class Document:
             self.keywords = {}
         self.keywords[kw.baseForm] = kw
 
-    # compute document's TF vector size
-    # Given document's keywords [w1,..,wn] the vector size of a doc is sqrt(tf(wi)^2)
-    def calc_tf_vector_size(self):
+    def calc_tf_vector_size(self) -> float:
+        # compute documents term frequency (tf) vector size
+        # Given documents keywords [kw_1,..,kw_n] the vector size of the tf is sqrt[sum_i( tf(kw_i)^2 )]
         tf_vector_size = sum(math.pow(k.tf, 2) for k in self.keywords.values())
         tf_vector_size = math.sqrt(tf_vector_size)
         self.tf_vector_size = tf_vector_size
         return tf_vector_size
 
-    def calc_tfidf_vector_size(self, DF, docSize):
-        tfidf_vector_size = sum(math.pow(tfidf(k.tf, idf(DF[k.baseForm], docSize)), 2) for k in self.keywords.values())
-        tfidf_vector_size = math.sqrt(tfidf_vector_size)
-        self.tfidf_vector_size = tfidf_vector_size
-
     @staticmethod
-    def cosine_similarity_by_tf(d1, d2) -> float:
+    def cosine_similarity_by_tf(d1: "Document", d2: "Document") -> float:
         sim = 0
         for k1 in d1.keywords.values():
             if k1.baseForm in d2.keywords:
@@ -105,7 +99,7 @@ class Document:
 
         return sim / d1.tf_vector_size / d2.tf_vector_size
 
-    def reprJSON(self):
+    def reprJSON(self) -> dict:
         return {
             "doc_id": self.doc_id,
             "url": self.url,
