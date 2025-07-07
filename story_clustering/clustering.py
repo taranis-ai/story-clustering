@@ -144,14 +144,14 @@ class Cluster(Predictor):
         graph.text = cluster["news_items"][0]["content"]
         tag_names = list(cluster.get("tags", {}).keys())
 
-        # update corpus DF for each of the tags
-        # use corpus.DF[base_form] to update the df of each keyword
+        # update corpus df for each of the tags
+        # use corpus.df[base_form] to update the df of each keyword
         for keyword_1 in tag_names:
             base_form_1 = replace_umlauts_with_digraphs(keyword_1)
-            if base_form_1 in corpus.DF:
-                corpus.DF[base_form_1] += self.compute_df(keyword_1, cluster["news_items"])
+            if base_form_1 in corpus.df:
+                corpus.df[base_form_1] += self.compute_df(keyword_1, cluster["news_items"])
             else:
-                corpus.DF[base_form_1] = self.compute_df(keyword_1, cluster["news_items"])
+                corpus.df[base_form_1] = self.compute_df(keyword_1, cluster["news_items"])
 
         for keyword_1 in tag_names:
             base_form_1 = replace_umlauts_with_digraphs(keyword_1)
@@ -159,8 +159,8 @@ class Cluster(Predictor):
                 if keyword_1 != keyword_2:
                     base_form_2 = replace_umlauts_with_digraphs(keyword_2)
 
-                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.DF[base_form_1])
-                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.DF[base_form_2])
+                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.df[base_form_1])
+                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.df[base_form_2])
                     # add edge and increase edge df
                     self.update_or_create_keywordEdge(keyNode1, keyNode2)
 
@@ -176,7 +176,7 @@ class Cluster(Predictor):
             existing_communities.append(self.create_keygraph(cluster, corpus))
             docs_size += len(cluster["news_items"])
 
-        calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
+        calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.df, existing_communities)
 
         return existing_communities, docs_size
 
