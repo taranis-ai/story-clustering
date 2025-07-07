@@ -15,10 +15,10 @@ class Keyword:
         self.tf = tf
         self.df = df
 
-    def increase_tf(self, k):
+    def increase_tf(self, k: float):
         self.tf += k
 
-    def increase_df(self, k):
+    def increase_df(self, k: float):
         self.df += k
 
     def reprJSON(self):
@@ -44,7 +44,7 @@ class Document:
         language: str | None = None,
         title: str | None = None,
         content: str | None = None,
-        keywords: dict[str, Keyword] | None = None,
+        keywords: dict[str, dict] | None = None,
         publish_time=None,
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,

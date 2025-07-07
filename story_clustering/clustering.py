@@ -122,8 +122,8 @@ class Cluster(Predictor):
         tf += compute_tf(baseform, content)
         return tf
 
-    def initial_clustering(self, new_news_items: list):
-        corpus = self.create_corpus(new_news_items)
+    def initial_clustering(self, stories: list):
+        corpus = self.create_corpus(stories)
 
         events = extract_events_from_corpus(corpus=corpus)
         return self.to_json_events(events)
