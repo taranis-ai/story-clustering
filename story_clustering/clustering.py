@@ -161,8 +161,8 @@ class Cluster(Predictor):
                 if keyword_1 != keyword_2:
                     baseform_2 = replace_umlauts_with_digraphs(keyword_2)
 
-                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.df[baseform_1])
-                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.df[baseform_2])
+                    keyNode1 = self.get_or_add_keyword_node(keyword_1, graph.graph_nodes, corpus.df[baseform_1])
+                    keyNode2 = self.get_or_add_keyword_node(keyword_2, graph.graph_nodes, corpus.df[baseform_2])
                     # add edge and increase edge df
                     self.update_or_create_keywordEdge(keyNode1, keyNode2)
 
@@ -185,7 +185,7 @@ class Cluster(Predictor):
     def merge_cluster(self, new_cluster: Event, already_clustered_events):
         super_cluster_match = -1
         # use polyfuzz to find the intersection
-        keywords_new_cluster = list(new_cluster.keyGraph.graphNodes.keys())
+        keywords_new_cluster = list(new_cluster.keyGraph.graph_nodes.keys())
         super_cluster_id = None
         for cluster in already_clustered_events:
             existing_keywords = []
@@ -241,8 +241,8 @@ class Cluster(Predictor):
                     if keyword_1 != keyword_2:
                         # doc frequency is the number of documents in the cluster
                         df = len(cluster["news_items"])
-                        keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, df)
-                        keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, df)
+                        keyNode1 = self.get_or_add_keyword_node(keyword_1, graph.graph_nodes, df)
+                        keyNode2 = self.get_or_add_keyword_node(keyword_2, graph.graph_nodes, df)
                         # add edge and increase edge df
                         self.update_or_create_keywordEdge(keyNode1, keyNode2)
 
@@ -277,7 +277,7 @@ class Cluster(Predictor):
                 all_events.append(docs_in_event)
         # all_events = [list(event.docs.keys()) for event in events if event.docs]
 
-        # keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
+        # keywords = [event.keyGraph.graph_nodes.keys() for event in events if event.docs]
         return {"event_clusters": all_events}  # , "events_keywords":keywords}
 
     def to_json_stories(self, stories: list[list[Event]]) -> dict:
@@ -289,17 +289,17 @@ class Cluster(Predictor):
             all_stories.append(s_docs)
         return {"story_clusters": all_stories}
 
-    def get_or_add_keywordNode(self, tag: str, graphNodes: dict, df: int) -> KeywordNode:
+    def get_or_add_keyword_node(self, tag: str, graph_nodes: dict, df: int) -> KeywordNode:
         baseform = replace_umlauts_with_digraphs(tag)
-        if baseform in graphNodes:
-            node = graphNodes[baseform]
+        if baseform in graph_nodes:
+            node = graph_nodes[baseform]
             # node.keyword.increase_df(df)
             node.keyword.df = df
             return node
 
         keyword = Keyword(baseform=baseform, tf=0, df=df)
         keywordNode = KeywordNode(keyword=keyword)
-        graphNodes[keyword.baseform] = keywordNode
+        graph_nodes[keyword.baseform] = keywordNode
         return keywordNode
 
     def update_or_create_keywordEdge(self, kn1: KeywordNode, kn2: KeywordNode):
