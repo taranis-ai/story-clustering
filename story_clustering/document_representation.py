@@ -8,13 +8,13 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseform: str, documents: set = set(), tf: int = 0, df: int = 0):
+    def __init__(self, baseform: str, documents: set = set(), tf: float = 0, df: int = 0):
         self.baseform = baseform
         self.documents = documents
         self.tf = tf
         self.df = df
 
-    def increase_tf(self, tf: int):
+    def increase_tf(self, tf: float):
         self.tf += tf
 
     def increase_df(self, df: int):
@@ -48,6 +48,7 @@ class Document:
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
         tfidfVectorSizeWithKeygraph: float = -1,
+        processed: bool = False,
     ):
         self.doc_id = doc_id
         self.url = url
@@ -62,6 +63,7 @@ class Document:
         self.tf_vector_size = tf_vector_size
         self.tfidf_vector_size = tfidf_vector_size
         self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
+        self.processed = processed
 
     def contains_keyword(self, kw: str) -> bool:
         return kw in self.keywords
