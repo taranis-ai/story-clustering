@@ -87,18 +87,18 @@ class KeywordEdge:
 
     @staticmethod
     def get_id(n1: KeywordNode, n2: KeywordNode) -> str:
-        if n1.keyword.base_form < n2.keyword.base_form:
-            return f"{n1.keyword.base_form}_{n2.keyword.base_form}"
-        return f"{n2.keyword.base_form}_{n1.keyword.base_form}"
+        if n1.keyword.baseform < n2.keyword.baseform:
+            return f"{n1.keyword.baseform}_{n2.keyword.baseform}"
+        return f"{n2.keyword.baseform}_{n1.keyword.baseform}"
 
     def compute_cps(self):
         self.cp1 = 1.0 * self.df / self.n1.keyword.df
         self.cp2 = 1.0 * self.df / self.n2.keyword.df
 
     def opposite(self, n: KeywordNode):
-        if self.n1.keyword.base_form == n.keyword.base_form:
+        if self.n1.keyword.baseform == n.keyword.baseform:
             return self.n2
-        return self.n1 if self.n2.keyword.base_form == n.keyword.base_form else None
+        return self.n1 if self.n2.keyword.baseform == n.keyword.baseform else None
 
     def compare_betweenness(self, e) -> int:
         if len(self.n1.edges) < 2 or len(self.n2.edges) < 2 or self.betweennessScore < e.betweennessScore:
@@ -139,17 +139,17 @@ class KeywordGraph:
         self.graphNodes = {}
 
         def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
-            if keyword.base_form not in self.graphNodes:
-                new_keyword = Keyword(base_form=keyword.base_form, documents=set(), tf=0, df=corpus.DF.get(keyword.base_form, 0))
-                self.graphNodes[keyword.base_form] = KeywordNode(keyword=new_keyword)
-            return self.graphNodes[keyword.base_form]
+            if keyword.baseform not in self.graphNodes:
+                new_keyword = Keyword(baseform=keyword.baseform, documents=set(), tf=0, df=corpus.df.get(keyword.baseform, 0))
+                self.graphNodes[keyword.baseform] = KeywordNode(keyword=new_keyword)
+            return self.graphNodes[keyword.baseform]
 
         def filter_and_remove_edges():
             to_remove: list["KeywordEdge"] = []
             for node in self.graphNodes.values():
                 for edge in list(node.edges.values()):
                     # MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
-                    MI = edge.df / (corpus.DF[edge.n1.keyword.base_form] + corpus.DF[edge.n2.keyword.base_form])
+                    MI = edge.df / (corpus.df[edge.n1.keyword.baseform] + corpus.df[edge.n2.keyword.baseform])
                     if edge.df < MinEdgeDF or MI < MinEdgeCorrelation:
                         to_remove.append(edge)
             for edge in to_remove:
@@ -164,7 +164,7 @@ class KeywordGraph:
                 node1.keyword.increase_tf(k1.tf)
 
                 for k2 in document.keywords.values():
-                    if k1.base_form < k2.base_form:
+                    if k1.baseform < k2.baseform:
                         node2 = get_or_create_node(k2)
                         node2.keyword.documents.add(document.doc_id)
                         node2.keyword.increase_tf(k2.tf)
@@ -201,13 +201,13 @@ class CommunityDetector:
         gr = nx.Graph()
         keywords_dict = {}
         for i, n in enumerate(self.nodes.values(), start=1):
-            keywords_dict[i] = n.keyword.base_form
+            keywords_dict[i] = n.keyword.baseform
             gr.add_node(i)
         keywords_vals = {v: k for (k, v) in keywords_dict.items()}
         for w1 in gr.nodes():
             word = keywords_dict[w1]
             for e in self.nodes[word].edges.values():
-                gr.add_edge(keywords_vals[e.n1.keyword.base_form], keywords_vals[e.n2.keyword.base_form], weight=e.df)
+                gr.add_edge(keywords_vals[e.n1.keyword.baseform], keywords_vals[e.n2.keyword.baseform], weight=e.df)
 
         # check if there are any
 
@@ -231,7 +231,7 @@ class CommunityDetector:
             word = keywords_dict[i]
             existing_node = self.nodes[word]
             keyword_node = KeywordNode(existing_node.keyword)
-            new_keywords_graph.graphNodes[keyword_node.keyword.base_form] = keyword_node
+            new_keywords_graph.graphNodes[keyword_node.keyword.baseform] = keyword_node
         for u, v, weight in subgraph.edges(data=True):
             w1 = keywords_dict[u]
             w2 = keywords_dict[v]

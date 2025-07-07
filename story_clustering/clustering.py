@@ -64,33 +64,35 @@ class Cluster(Predictor):
         corpus = Corpus()
         for story in new_stories:
             doc = Document(doc_id=story["id"])
-            for nitem in story["news_items"]:
-                doc.url = nitem.get("link", None)
-                doc.content = nitem["content"] or nitem["review"]
+            for news_item in story["news_items"]:
+                doc.url = news_item.get("link", None)
+                doc.content = news_item["content"] or news_item["review"]
                 if not doc.content:
                     continue
-                doc.title = nitem["title"]
+                doc.title = news_item["title"]
                 if doc.title is not None:
                     doc.segTitle = doc.title.strip().split(" ")
-                doc.publish_time = nitem.get(".published", None)
-                doc.language = nitem["language"]
+                doc.publish_time = news_item.get(".published", None)
+                doc.language = news_item["language"]
+
                 keywords = {}
                 if len(story["tags"]) < 5:
                     continue
+
                 for tag, tag_dict in story["tags"].items():
                     tag_type = tag_dict.get("tag_type", "")
                     if (tag not in doc.content) and (tag.lower() not in doc.content):
                         continue
-                    base_form = replace_umlauts_with_digraphs(tag)
+                    baseform = replace_umlauts_with_digraphs(tag)
                     keyword = Keyword(
-                        base_form=base_form,
+                        baseform=baseform,
                         tf=0,
                         df=0,
                         documents=set(),
                     )
-                    keywords[base_form] = keyword
+                    keywords[baseform] = keyword
 
-                    keyword.tf = self.compute_tf_with_boost(base_form, doc.content, tag_type=tag_type)
+                    keyword.tf = self.compute_tf_with_boost(baseform, doc.content, tag_type=tag_type)
 
                 doc.keywords = keywords
                 corpus.docs[doc.doc_id] = doc
@@ -99,7 +101,7 @@ class Cluster(Predictor):
         logger.debug(f"Corpus size: {len(corpus.docs)}")
         return corpus
 
-    def compute_tf_with_boost(self, base_form: str, content: str, tag_type: str) -> int:
+    def compute_tf_with_boost(self, baseform: str, content: str, tag_type: str) -> int:
         tf = 0
         if tag_type in {"APT", "cves"}:
             tf = HIGH_PRIORITY
@@ -119,7 +121,7 @@ class Cluster(Predictor):
         else:
             tf = LOW_PRIORITY
 
-        tf += compute_tf(base_form, content)
+        tf += compute_tf(baseform, content)
         return tf
 
     def initial_clustering(self, stories: list):
@@ -128,13 +130,13 @@ class Cluster(Predictor):
         events = extract_events_from_corpus(corpus=corpus)
         return self.to_json_events(events)
 
-    def compute_df(self, keyword_base_form: str, cluster_news_items: list) -> int:
+    def compute_df(self, keyword_baseform: str, cluster_news_items: list) -> int:
         df = 0
-        for nitem in cluster_news_items:
-            content = nitem["content"] or nitem["review"]
+        for news_item in cluster_news_items:
+            content = news_item["content"] or news_item["review"]
             if not content:
                 continue
-            if keyword_base_form.lower() in content:
+            if keyword_baseform.lower() in content:
                 df += 1
         return df if df > 0 else 1
 
@@ -145,22 +147,22 @@ class Cluster(Predictor):
         tag_names = list(cluster.get("tags", {}).keys())
 
         # update corpus df for each of the tags
-        # use corpus.df[base_form] to update the df of each keyword
+        # use corpus.df[baseform] to update the df of each keyword
         for keyword_1 in tag_names:
-            base_form_1 = replace_umlauts_with_digraphs(keyword_1)
-            if base_form_1 in corpus.df:
-                corpus.df[base_form_1] += self.compute_df(keyword_1, cluster["news_items"])
+            baseform_1 = replace_umlauts_with_digraphs(keyword_1)
+            if baseform_1 in corpus.df:
+                corpus.df[baseform_1] += self.compute_df(keyword_1, cluster["news_items"])
             else:
-                corpus.df[base_form_1] = self.compute_df(keyword_1, cluster["news_items"])
+                corpus.df[baseform_1] = self.compute_df(keyword_1, cluster["news_items"])
 
         for keyword_1 in tag_names:
-            base_form_1 = replace_umlauts_with_digraphs(keyword_1)
+            baseform_1 = replace_umlauts_with_digraphs(keyword_1)
             for keyword_2 in tag_names:
                 if keyword_1 != keyword_2:
-                    base_form_2 = replace_umlauts_with_digraphs(keyword_2)
+                    baseform_2 = replace_umlauts_with_digraphs(keyword_2)
 
-                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.df[base_form_1])
-                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.df[base_form_2])
+                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.df[baseform_1])
+                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.df[baseform_2])
                     # add edge and increase edge df
                     self.update_or_create_keywordEdge(keyNode1, keyNode2)
 
@@ -189,8 +191,8 @@ class Cluster(Predictor):
             existing_keywords = []
             tag_names = list(cluster.get("tags", {}).keys())
             for tag in tag_names:
-                base_form = replace_umlauts_with_digraphs(tag)
-                existing_keywords.append(base_form)
+                baseform = replace_umlauts_with_digraphs(tag)
+                existing_keywords.append(baseform)
             if find_keywords_matches(keywords_new_cluster, existing_keywords) > POLYFUZZ_THRESHOLD:
                 new_cluster_content = f"{list(new_cluster.docs.values())[0].title} {list(new_cluster.docs.values())[0].content}"
                 existing_cluster_content = cluster["title"] + cluster["description"]
@@ -288,16 +290,16 @@ class Cluster(Predictor):
         return {"story_clusters": all_stories}
 
     def get_or_add_keywordNode(self, tag: str, graphNodes: dict, df: int) -> KeywordNode:
-        base_form = replace_umlauts_with_digraphs(tag)
-        if base_form in graphNodes:
-            node = graphNodes[base_form]
+        baseform = replace_umlauts_with_digraphs(tag)
+        if baseform in graphNodes:
+            node = graphNodes[baseform]
             # node.keyword.increase_df(df)
             node.keyword.df = df
             return node
 
-        keyword = Keyword(base_form=base_form, tf=0, df=df)
+        keyword = Keyword(baseform=baseform, tf=0, df=df)
         keywordNode = KeywordNode(keyword=keyword)
-        graphNodes[keyword.base_form] = keywordNode
+        graphNodes[keyword.baseform] = keywordNode
         return keywordNode
 
     def update_or_create_keywordEdge(self, kn1: KeywordNode, kn2: KeywordNode):

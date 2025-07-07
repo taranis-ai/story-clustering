@@ -29,7 +29,7 @@ def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None
 def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[str, float], graphNodes: dict[str, KeywordNode]):
     for d in docs.values():
         d.tfidfVectorSizeWithKeygraph = sum(
-            math.pow(tfidf(k.tf, idf(df[k.base_form], len(docs))), 2) for k in d.keywords.values() if k.base_form in graphNodes
+            math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2) for k in d.keywords.values() if k.baseform in graphNodes
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
@@ -37,10 +37,10 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[s
 def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], df: dict[str, float], communities: list[KeywordGraph]):
     for d in docs.values():
         d.tfidfVectorSizeWithKeygraph = sum(
-            math.pow(tfidf(k.tf, idf(df[k.base_form], len(docs))), 2)
+            math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2)
             for k in d.keywords.values()
             for graph in communities
-            if k.base_form in graph.graphNodes
+            if k.baseform in graph.graphNodes
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
@@ -93,15 +93,15 @@ def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df
             node.keyword.tf = nTF / len(node.edges)
         else:
             node.keyword.tf = 0
-        if node.keyword.base_form in df:
+        if node.keyword.baseform in df:
             # update vector size of community
-            vectorsize1 += math.pow(tfidf(node.keyword.tf, idf(df[node.keyword.base_form], docSize)), 2)
+            vectorsize1 += math.pow(tfidf(node.keyword.tf, idf(df[node.keyword.baseform], docSize)), 2)
 
             # update similarity between document d2 and community
-            if node.keyword.base_form in d2.keywords:
+            if node.keyword.baseform in d2.keywords:
                 number_of_keywords_in_common += 1
-                sim += tfidf(node.keyword.tf, idf(df[node.keyword.base_form], docSize)) * tfidf(
-                    d2.keywords[node.keyword.base_form].tf, idf(df[node.keyword.base_form], docSize)
+                sim += tfidf(node.keyword.tf, idf(df[node.keyword.baseform], docSize)) * tfidf(
+                    d2.keywords[node.keyword.baseform].tf, idf(df[node.keyword.baseform], docSize)
                 )
     vectorsize1 = math.sqrt(vectorsize1)
 

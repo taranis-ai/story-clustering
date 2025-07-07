@@ -22,12 +22,12 @@ class Event:
             if doc.publish_time.getTime() < timestamp:
                 timestamp = doc.publish_time.getTime()
             for k in doc.keywords.values():
-                if k.base_form in self.centroid.keywords and self.centroid.keywords:
-                    kk = self.centroid.keywords[k.base_form]
+                if k.baseform in self.centroid.keywords and self.centroid.keywords:
+                    kk = self.centroid.keywords[k.baseform]
                     kk.tf += k.tf
                     kk.df += k.df
                 else:
-                    self.centroid.set_keyword(Keyword(k.base_form, k.tf, k.df))
+                    self.centroid.set_keyword(Keyword(k.baseform, k.tf, k.df))
 
         self.centroid.calc_tf_vector_size()
         self.centroid.publish_time = timestamp
@@ -38,7 +38,7 @@ class Event:
             return
         for key in self.keyGraph.graphNodes:
             keywordNode = self.keyGraph.graphNodes[key]
-            keyword = keywordNode.keyword.base_form
+            keyword = keywordNode.keyword.baseform
             exist = any(d.contains_keyword(keyword) for d in self.docs.values())
             if not exist:
                 toRemove.append(keyword)
