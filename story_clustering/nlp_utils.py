@@ -9,8 +9,8 @@ from nltk.corpus import stopwords
 POLYFUZZ_THRESHOLD = 3
 
 
-# calculate word's inverse document frequency
 def idf(df: float, size: int):
+    # calculate inverse document frequency
     return math.log(size / (df + 1)) / math.log(2)
 
 
@@ -30,15 +30,15 @@ def tokanize_text(text: str) -> list[str]:
     return text_content_tokanized
 
 
-def compute_tf(baseForm: str, text: str) -> int:
+def compute_tf(base_form: str, text: str) -> int:
     model = PolyFuzz(TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3)))
 
-    if not baseForm.strip().isalpha() or baseForm in get_stop_words():
+    if not base_form.strip().isalpha() or base_form in get_stop_words():
         return 1
-    n_words = len(baseForm.strip().split(" "))
+    n_words = len(base_form.strip().split(" "))
     tokenized_text = tokanize_text(text)
     try:
-        model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
+        model.match(tokenized_text, [base_form]).group(link_min_similarity=0.75)
     except Exception:
         return 1
     df = model.get_matches()

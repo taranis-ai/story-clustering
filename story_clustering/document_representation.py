@@ -8,8 +8,8 @@ class Keyword:
     A class to represent the keyword data type
     """
 
-    def __init__(self, baseForm: str, documents: set = set(), tf: float = 0, df: float = 0):
-        self.baseForm = baseForm
+    def __init__(self, base_form: str, documents: set = set(), tf: float = 0, df: float = 0):
+        self.base_form = base_form
         self.documents = documents
         self.tf = tf
         self.df = df
@@ -21,7 +21,7 @@ class Keyword:
         self.df += k
 
     def reprJSON(self) -> dict:
-        return {"baseForm": self.baseForm, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
+        return {"baseForm": self.base_form, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
 class Document:
@@ -69,7 +69,7 @@ class Document:
     def set_keyword(self, kw: Keyword):
         if not self.keywords:
             self.keywords = {}
-        self.keywords[kw.baseForm] = kw
+        self.keywords[kw.base_form] = kw
 
     def calc_tf_vector_size(self) -> float:
         # compute documents term frequency (tf) vector size
@@ -83,9 +83,9 @@ class Document:
     def cosine_similarity_by_tf(d1: "Document", d2: "Document") -> float:
         sim = 0
         for k1 in d1.keywords.values():
-            if k1.baseForm in d2.keywords:
+            if k1.base_form in d2.keywords:
                 tf1 = k1.tf
-                tf2 = d2.keywords[k1.baseForm].tf
+                tf2 = d2.keywords[k1.base_form].tf
                 sim += tf1 * tf2
 
         if d1.tf_vector_size < 0:
@@ -133,16 +133,16 @@ class Corpus:
             for doc in docs.values():
                 self.docs[doc["doc_id"]] = Document(**doc)
                 for _, keyword in self.docs[doc["doc_id"]].keywords.items():
-                    if keyword.baseForm in self.df:
-                        self.df[keyword.baseForm] += 1
+                    if keyword.base_form in self.df:
+                        self.df[keyword.base_form] += 1
                     else:
-                        self.df[keyword.baseForm] = 1
+                        self.df[keyword.base_form] = 1
 
     def update_df(self):
         self.df = {}
         for doc in self.docs.values():
             for k in doc.keywords.values():
-                self.df[k.baseForm] = self.df[k.baseForm] + 1 if k.baseForm in self.df else 1
+                self.df[k.base_form] = self.df[k.base_form] + 1 if k.base_form in self.df else 1
 
     def reprJSON(self) -> dict:
         return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.df}
