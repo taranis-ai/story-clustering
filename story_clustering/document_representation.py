@@ -121,31 +121,31 @@ class Corpus:
     ----------
     docs: dict (doc_id -> Document)
           documents contained in this corpus
-    DF: dict (String -> double)
-        Words' DF
+    df: dict (String -> float)
+        A keywords document frequency
 
     """
 
-    def __init__(self, docs: dict[int, dict] | None = None, DF=None):
-        self.DF = {} if DF is None else DF
-        self.docs = {}
+    def __init__(self, docs: dict[str, dict] | None = None, df=None):
+        self.df: dict[str, float] = {} if df is None else df
+        self.docs: dict[str, Document] = {}
         if docs:
             for doc in docs.values():
                 self.docs[doc["doc_id"]] = Document(**doc)
-                for key, keyword in self.docs[doc["doc_id"]].keywords.items():
-                    if keyword.baseForm in self.DF:
-                        self.DF[keyword.baseForm] += 1
+                for _, keyword in self.docs[doc["doc_id"]].keywords.items():
+                    if keyword.baseForm in self.df:
+                        self.df[keyword.baseForm] += 1
                     else:
-                        self.DF[keyword.baseForm] = 1
+                        self.df[keyword.baseForm] = 1
 
     def update_df(self):
-        self.DF = {}
+        self.df = {}
         for doc in self.docs.values():
             for k in doc.keywords.values():
-                self.DF[k.baseForm] = self.DF[k.baseForm] + 1 if k.baseForm in self.DF else 1
+                self.df[k.baseForm] = self.df[k.baseForm] + 1 if k.baseForm in self.df else 1
 
-    def reprJSON(self):
-        return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.DF}
+    def reprJSON(self) -> dict:
+        return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.df}
 
 
 class CorpusEncoder(json.JSONEncoder):
@@ -155,4 +155,4 @@ class CorpusEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
         # json_docs = { k : json.dumps(v,cls=DocumentEncoder) for k,v in o.docs.items()}
-        # json_df = json.dumps(o.DF)
+        # json_df = json.dumps(o.df)
