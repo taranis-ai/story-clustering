@@ -1,12 +1,11 @@
 import networkx as nx
 from story_clustering.document_representation import Corpus, Keyword
 
-# min_edge_df = 2
-min_edge_df = 1
-min_edge_correlation = 0.05
-max_cluster_node_size = 5
-min_cluster_node_size = 1
-min_cp_to_duplicate_edge = 0.2
+MIN_EDGE_DF = 1
+MIN_EDGE_CORRELATION = 0.05
+MAX_CLUSTER_NODE_SIZE = 5
+MIN_CLUSTER_NODE_SIZE = 1
+MIN_CP_TO_DUPLICATE_EDGE = 0.2
 
 
 class KeywordNode:
@@ -35,14 +34,14 @@ class KeywordNode:
         removes all edges for this node
     """
 
-    max_id = 0
+    max_id: int = 0
 
-    def __init__(self, keyword) -> None:
-        self.id = self.max_id
+    def __init__(self, keyword: Keyword):
         self.keyword = keyword
-        self.edges = {}
-        self.prev = None
-        self.visited = False
+        self.id: int = self.max_id
+        self.edges: dict[str, KeywordEdge] = {}
+        self.prev: KeywordNode | None = None
+        self.visited: bool = False
 
         # autoincrement max_id
         self.max_id += 1
@@ -73,10 +72,10 @@ class KeywordEdge:
         0 denotes their strengths are the same.
     """
 
-    def __init__(self, n1: KeywordNode, n2: KeywordNode, id: str) -> None:
+    def __init__(self, n1: KeywordNode, n2: KeywordNode, id: str):
         self.n1 = n1
         self.n2 = n2
-        self.id: str = id
+        self.id = id
         self.df: int = 0
         self.cp2: float = 0
         self.cp1: float = 0
@@ -95,12 +94,12 @@ class KeywordEdge:
         self.cp1 = 1.0 * self.df / self.n1.keyword.df
         self.cp2 = 1.0 * self.df / self.n2.keyword.df
 
-    def opposite(self, n: KeywordNode):
+    def opposite(self, n: KeywordNode) -> KeywordNode | None:
         if self.n1.keyword.baseform == n.keyword.baseform:
             return self.n2
         return self.n1 if self.n2.keyword.baseform == n.keyword.baseform else None
 
-    def compare_betweenness(self, e) -> int:
+    def compare_betweenness(self, e: "KeywordEdge") -> int:
         if len(self.n1.edges) < 2 or len(self.n2.edges) < 2 or self.betweenness_score < e.betweenness_score:
             return -1
         if self.betweenness_score > e.betweenness_score:
@@ -109,7 +108,7 @@ class KeywordEdge:
             return -1
         return 1 if self.df < e.df else 0
 
-    def compare_edge_strength(self, e) -> int:
+    def compare_edge_strength(self, e: "KeywordEdge") -> int:
         cp = max(self.cp1, self.cp2)
         ecp = max(e.cp1, e.cp2)
 
@@ -131,26 +130,26 @@ class KeywordGraph:
     """
 
     def __init__(self, story_id: str | None = None):
-        self.graph_nodes = {}
         self.story_id = story_id
+        self.graph_nodes: dict[str, KeywordNode] = {}
         self.text: str = ""
 
     def build_graph(self, corpus: "Corpus"):
         self.graph_nodes = {}
 
-        def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
+        def get_or_create_node(keyword: Keyword) -> KeywordNode:
             if keyword.baseform not in self.graph_nodes:
                 new_keyword = Keyword(baseform=keyword.baseform, documents=set(), tf=0, df=corpus.df.get(keyword.baseform, 0))
                 self.graph_nodes[keyword.baseform] = KeywordNode(keyword=new_keyword)
             return self.graph_nodes[keyword.baseform]
 
         def filter_and_remove_edges():
-            to_remove: list["KeywordEdge"] = []
+            to_remove: list[KeywordEdge] = []
             for node in self.graph_nodes.values():
-                for edge in list(node.edges.values()):
-                    # MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
-                    MI = edge.df / (corpus.df[edge.n1.keyword.baseform] + corpus.df[edge.n2.keyword.baseform])
-                    if edge.df < min_edge_df or MI < min_edge_correlation:
+                for edge in node.edges.values():
+                    # mutual_information = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df)
+                    mutual_information = edge.df / (corpus.df[edge.n1.keyword.baseform] + corpus.df[edge.n2.keyword.baseform])
+                    if edge.df < MIN_EDGE_DF or mutual_information < MIN_EDGE_CORRELATION:
                         to_remove.append(edge)
             for edge in to_remove:
                 edge.n1.edges.pop(edge.id, None)
@@ -193,7 +192,7 @@ class CommunityDetector:
     find_connected_components(nodes): returns a list of sub-graphs representing the connected components
     """
 
-    def __init__(self, nodes: dict) -> None:
+    def __init__(self, nodes: dict[str, KeywordNode]):
         self.nodes = nodes
         # self.communities = self.detectCommunities()
 
@@ -225,7 +224,7 @@ class CommunityDetector:
                 key_communities.append(self.get_keywords_keygraphs(subgraph, keywords_dict))
         return key_communities
 
-    def get_keywords_keygraphs(self, subgraph, keywords_dict):
+    def get_keywords_keygraphs(self, subgraph: nx.Graph, keywords_dict: dict[int, str]) -> KeywordGraph:
         new_keywords_graph = KeywordGraph()
         for i in subgraph.nodes():
             word = keywords_dict[i]
