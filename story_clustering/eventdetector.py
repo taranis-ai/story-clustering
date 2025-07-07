@@ -19,28 +19,28 @@ def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None
         graph.build_graph(corpus)
 
     # extract keyword communities from keyword graph
-    calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.df, graph.graphNodes)
+    calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.df, graph.graph_nodes)
 
-    communities = CommunityDetector(graph.graphNodes).detect_communities_louvain()
+    communities = CommunityDetector(graph.graph_nodes).detect_communities_louvain()
     logger.info(f"Number of communities: {len(communities)}")
     return extract_topic_by_keyword_communities(corpus, communities)
 
 
-def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[str, float], graphNodes: dict[str, KeywordNode]):
+def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[str, int], graph_nodes: dict[str, KeywordNode]):
     for d in docs.values():
         d.tfidfVectorSizeWithKeygraph = sum(
-            math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2) for k in d.keywords.values() if k.baseform in graphNodes
+            math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2) for k in d.keywords.values() if k.baseform in graph_nodes
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
 
-def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], df: dict[str, float], communities: list[KeywordGraph]):
+def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], df: dict[str, int], communities: list[KeywordGraph]):
     for d in docs.values():
         d.tfidfVectorSizeWithKeygraph = sum(
             math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2)
             for k in d.keywords.values()
             for graph in communities
-            if k.baseform in graph.graphNodes
+            if k.baseform in graph.graph_nodes
         )
         d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
 
@@ -63,7 +63,7 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list, doc_
 
 
 def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict):
-    event = Event(keyGraph=community)
+    event = Event(key_graph=community)
     # doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
@@ -78,12 +78,12 @@ def process_community(community_id: int, community: KeywordGraph, corpus: Corpus
     return event
 
 
-def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, float], docSize: int) -> float:
+def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, int], docSize: int) -> float:
     sim = 0
     vectorsize1 = 0
     number_of_keywords_in_common = 0
 
-    for node in community.graphNodes.values():
+    for node in community.graph_nodes.values():
         # calculate community keyword's tf
         nTF = 0
         for edge in node.edges.values():
@@ -117,11 +117,11 @@ def split_events_incr_clustering(event: Event) -> list[Event]:
     e_docs_ids_list = list(event.docs.keys())
 
     if len(event.docs) == 1:
-        if event.keyGraph.story_id is not None:
+        if event.key_graph.story_id is not None:
             doc_id = list(event.docs.keys())[0]
-            if not same_event_cluster(event.docs[doc_id], event.keyGraph.text):
-                event.keyGraph.story_id = None
-                event.keyGraph.text = ""
+            if not same_event_cluster(event.docs[doc_id], event.key_graph.text):
+                event.key_graph.story_id = None
+                event.key_graph.text = ""
 
         event.refine_key_graph()
         return [event]
@@ -131,26 +131,26 @@ def split_events_incr_clustering(event: Event) -> list[Event]:
             continue
 
         processed_doc_keys.add(d1)
-        sub_event = Event(keyGraph=event.keyGraph or None)
+        sub_event = Event(key_graph=event.key_graph or None)
         sub_event.docs[d1] = event.docs[d1]
         sub_event.similarities[d1] = event.similarities[d1]
 
-        if event.keyGraph.story_id is not None and not same_event_cluster(sub_event.docs[d1], event.keyGraph.text):
-            sub_event.keyGraph.story_id = None
-            sub_event.keyGraph.text = ""
+        if event.key_graph.story_id is not None and not same_event_cluster(sub_event.docs[d1], event.key_graph.text):
+            sub_event.key_graph.story_id = None
+            sub_event.key_graph.text = ""
 
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-            if sub_event.keyGraph.story_id is None:
+            if sub_event.key_graph.story_id is None:
                 if same_event(sub_event.docs[d1], event.docs[d2]):
                     sub_event.docs[d2] = event.docs[d2]
                     sub_event.similarities[d2] = event.similarities[d2]
                     processed_doc_keys.add(d2)
             else:
-                if same_new_event(sub_event.docs[d1], event.docs[d2], sub_event.keyGraph.text):
-                    sub_event.keyGraph.story_id = None
-                    sub_event.keyGraph.text = ""
+                if same_new_event(sub_event.docs[d1], event.docs[d2], sub_event.key_graph.text):
+                    sub_event.key_graph.story_id = None
+                    sub_event.key_graph.text = ""
                     sub_event.docs[d2] = event.docs[d2]
                     sub_event.similarities[d2] = event.similarities[d2]
                     processed_doc_keys.add(d2)
@@ -175,22 +175,22 @@ def split_events(event: Event) -> list[Event]:
             continue
 
         processed_doc_keys.add(d1)
-        sub_event = Event(keyGraph=event.keyGraph or None)
+        sub_event = Event(key_graph=event.key_graph or None)
         sub_event.docs[d1] = event.docs[d1]
         sub_event.similarities[d1] = event.similarities[d1]
 
         for d2 in e_docs_ids_list[i + 1 :]:
             if d2 in processed_doc_keys:
                 continue
-            if sub_event.keyGraph.story_id is None:
+            if sub_event.key_graph.story_id is None:
                 if same_event(sub_event.docs[d1], event.docs[d2]):
                     sub_event.docs[d2] = event.docs[d2]
                     sub_event.similarities[d2] = event.similarities[d2]
                     processed_doc_keys.add(d2)
             else:
-                if same_new_event(sub_event.docs[d1], event.docs[d2], sub_event.keyGraph.text):
-                    sub_event.keyGraph.story_id = None
-                    sub_event.keyGraph.text = ""
+                if same_new_event(sub_event.docs[d1], event.docs[d2], sub_event.key_graph.text):
+                    sub_event.key_graph.story_id = None
+                    sub_event.key_graph.text = ""
                 sub_event.docs[d2] = event.docs[d2]
                 sub_event.similarities[d2] = event.similarities[d2]
                 processed_doc_keys.add(d2)

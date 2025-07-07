@@ -3,9 +3,9 @@ from .keywords_organizer import KeywordGraph
 
 
 class Event:
-    def __init__(self, keyGraph: KeywordGraph):
+    def __init__(self, key_graph: KeywordGraph):
         self.max_id = 1
-        self.keyGraph = keyGraph
+        self.key_graph = key_graph
         self.docs = {}
         self.similarities = {}
         self.centroid = None
@@ -33,15 +33,15 @@ class Event:
         self.centroid.publish_time = timestamp
 
     def refine_key_graph(self):
-        toRemove = []
-        if not self.keyGraph:
+        to_remove = []
+        if not self.key_graph:
             return
-        for key in self.keyGraph.graphNodes:
-            keywordNode = self.keyGraph.graphNodes[key]
-            keyword = keywordNode.keyword.baseform
+        for key in self.key_graph.graph_nodes:
+            keyword_node = self.key_graph.graph_nodes[key]
+            keyword = keyword_node.keyword.baseform
             exist = any(d.contains_keyword(keyword) for d in self.docs.values())
             if not exist:
-                toRemove.append(keyword)
+                to_remove.append(keyword)
 
-        for keyword in toRemove:
-            self.keyGraph.graphNodes.pop(keyword)
+        for keyword in to_remove:
+            self.key_graph.graph_nodes.pop(keyword)
