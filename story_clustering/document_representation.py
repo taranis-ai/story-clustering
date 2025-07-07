@@ -1,6 +1,7 @@
 import math
 import json
 from typing import Any
+from datetime import datetime
 
 
 class Keyword:
@@ -44,7 +45,7 @@ class Document:
         title: str | None = None,
         content: str | None = None,
         keywords: dict[str, dict] | None = None,
-        publish_time=None,
+        publish_time: datetime = datetime.now(),
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
         tfidfVectorSizeWithKeygraph: float = -1,
