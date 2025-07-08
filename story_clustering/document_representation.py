@@ -29,7 +29,7 @@ class Document:
     """
     A class to represent a document in a corpus
 
-    tfidfVectorSizeWithKeygraph: double
+    tfidf_vector_size_with_keygraph: float
         Document TF-IDF vector size float consider keygraph keywords. For keywords that doesn't included in a keygraph,
         we don't calculate the keyword's tf.
         This is used to calculate the similarity between a keygraph and a document. It is the norm of document vector,
@@ -48,7 +48,7 @@ class Document:
         publish_time: datetime = datetime.now(),
         tf_vector_size: float = -1,
         tfidf_vector_size: float = -1,
-        tfidfVectorSizeWithKeygraph: float = -1,
+        tfidf_vector_size_with_keygraph: float = -1,
         processed: bool = False,
     ):
         self.doc_id = doc_id
@@ -63,7 +63,7 @@ class Document:
             self.keywords = {k: Keyword(**v) for k, v in keywords.items()}  # type: ignore
         self.tf_vector_size = tf_vector_size
         self.tfidf_vector_size = tfidf_vector_size
-        self.tfidfVectorSizeWithKeygraph = tfidfVectorSizeWithKeygraph
+        self.tfidf_vector_size_with_keygraph = tfidf_vector_size_with_keygraph
         self.processed = processed
 
     def contains_keyword(self, kw: str) -> bool:
@@ -113,7 +113,7 @@ class Document:
             "keywords": {k: v.reprJSON() for k, v in self.keywords.items()},
             "tf_vector_size": self.tf_vector_size,
             "tfidf_vector_size": self.tfidf_vector_size,
-            "tfidfVectorSizeWithKeygraph": self.tfidfVectorSizeWithKeygraph,
+            "tfidf_vector_size_with_keygraph": self.tfidf_vector_size_with_keygraph,
         }
 
 

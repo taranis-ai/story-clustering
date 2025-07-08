@@ -9,8 +9,8 @@ from story_clustering.nlp_utils import tfidf, idf, get_sentence_transformer
 from story_clustering.log import logger
 import numpy as np
 
-SimilarityThreshold = 0.5
-DiffSimilarityThreshold = 0.3
+SIMILARITY_THRESHOLD = 0.5
+DIFF_SIMILARITY_THRESHOLD = 0.3
 
 
 def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None) -> list[Event]:
@@ -27,31 +27,33 @@ def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None
 
 
 def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[str, int], graph_nodes: dict[str, KeywordNode]):
+    # calculate documents tfidf as the RMS of the tfidf-values of the docs keywords, consider only keywords in the graph
+    # sum_i( sqrt[tfidf(kw_i)^2])
     for d in docs.values():
-        d.tfidfVectorSizeWithKeygraph = sum(
+        d.tfidf_vector_size_with_keygraph = sum(
             math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2) for k in d.keywords.values() if k.baseform in graph_nodes
         )
-        d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
+        d.tfidf_vector_size_with_keygraph = math.sqrt(d.tfidf_vector_size_with_keygraph)
 
 
 def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], df: dict[str, int], communities: list[KeywordGraph]):
     for d in docs.values():
-        d.tfidfVectorSizeWithKeygraph = sum(
+        d.tfidf_vector_size_with_keygraph = sum(
             math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2)
             for k in d.keywords.values()
             for graph in communities
             if k.baseform in graph.graph_nodes
         )
-        d.tfidfVectorSizeWithKeygraph = math.sqrt(d.tfidfVectorSizeWithKeygraph)
+        d.tfidf_vector_size_with_keygraph = math.sqrt(d.tfidf_vector_size_with_keygraph)
 
 
-def extract_topic_by_keyword_communities(corpus: Corpus, communities: list, doc_size=None) -> list[Event]:
+def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[KeywordGraph], doc_size=None) -> list[Event]:
     result = []
     if doc_size is None:
         doc_size = len(corpus.docs)
 
     max_comm = {
-        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, doc_size) for community in communities])
+        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, doc_size) for community in communities]).item()
         for doc in corpus.docs.values()
     }
     for i, community in enumerate(communities):
@@ -62,52 +64,50 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list, doc_
     return result
 
 
-def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict):
+def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict[str, int]):
     event = Event(key_graph=community)
     # doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
     for doc in corpus.docs.values():
         if max_comm[doc.doc_id] == community_id:
-            cosineSimilarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, len(corpus.docs))
-            # doc_similarity[doc.doc_id] = cosineSimilarity
+            cosine_similarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, len(corpus.docs))
+            # doc_similarity[doc.doc_id] = cosine_similarity
             # d = corpus.docs[doc.doc_id]
             # if d.doc_id not in event.docs:
             event.docs[doc.doc_id] = doc
-            event.similarities[doc.doc_id] = cosineSimilarity
+            event.similarities[doc.doc_id] = cosine_similarity
             doc.processed = True
     return event
 
 
-def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, int], docSize: int) -> float:
+def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, int], doc_size: int) -> float:
     sim = 0
     vectorsize1 = 0
     number_of_keywords_in_common = 0
 
     for node in community.graph_nodes.values():
         # calculate community keyword's tf
-        nTF = 0
+        n_tf = 0
         for edge in node.edges.values():
             edge.compute_cps()
-            nTF += max(edge.cp1, edge.cp2)
-        if len(node.edges) > 0:
-            node.keyword.tf = nTF / len(node.edges)
-        else:
-            node.keyword.tf = 0
+            n_tf += max(edge.cp1, edge.cp2)
+        node.keyword.tf = n_tf / len(node.edges) if len(node.edges) > 0 else 0
+
         if node.keyword.baseform in df:
             # update vector size of community
-            vectorsize1 += math.pow(tfidf(node.keyword.tf, idf(df[node.keyword.baseform], docSize)), 2)
+            vectorsize1 += math.pow(tfidf(node.keyword.tf, idf(df[node.keyword.baseform], doc_size)), 2)
 
             # update similarity between document d2 and community
             if node.keyword.baseform in d2.keywords:
                 number_of_keywords_in_common += 1
-                sim += tfidf(node.keyword.tf, idf(df[node.keyword.baseform], docSize)) * tfidf(
-                    d2.keywords[node.keyword.baseform].tf, idf(df[node.keyword.baseform], docSize)
+                sim += tfidf(node.keyword.tf, idf(df[node.keyword.baseform], doc_size)) * tfidf(
+                    d2.keywords[node.keyword.baseform].tf, idf(df[node.keyword.baseform], doc_size)
                 )
     vectorsize1 = math.sqrt(vectorsize1)
 
     # return similarity
-    if vectorsize1 > 0 and d2.tfidfVectorSizeWithKeygraph > 0:
-        return sim / vectorsize1 / d2.tfidfVectorSizeWithKeygraph
+    if vectorsize1 > 0 and d2.tfidf_vector_size_with_keygraph > 0:
+        return sim / vectorsize1 / d2.tfidf_vector_size_with_keygraph
     return 0
 
 
@@ -218,14 +218,14 @@ def compute_similarity(text_1: str, text_2: str):
 
 
 def same_event_text(text_1, text_2):
-    return compute_similarity(text_1, text_2) >= SimilarityThreshold
+    return compute_similarity(text_1, text_2) >= SIMILARITY_THRESHOLD
 
 
 def same_event_cluster(d1: Document, cluster_text: str) -> bool:
     text_1 = d1.content
     if not cluster_text or not text_1:
         return False
-    return compute_similarity(text_1, cluster_text) >= SimilarityThreshold
+    return compute_similarity(text_1, cluster_text) >= SIMILARITY_THRESHOLD
 
 
 def same_event(d1: Document, d2: Document) -> bool:
@@ -233,7 +233,7 @@ def same_event(d1: Document, d2: Document) -> bool:
     text_2 = d2.content
     if not text_1 or not text_2:
         return False
-    return compute_similarity(text_1, text_2) >= SimilarityThreshold
+    return compute_similarity(text_1, text_2) >= SIMILARITY_THRESHOLD
 
 
 def same_new_event(d1: Document, d2: Document, keygraph_text) -> bool:
@@ -243,4 +243,4 @@ def same_new_event(d1: Document, d2: Document, keygraph_text) -> bool:
         return False
     sim_1 = compute_similarity(text_1, text_2)
     sim_2 = compute_similarity(text_2, keygraph_text)
-    return (sim_1 - sim_2) >= DiffSimilarityThreshold
+    return (sim_1 - sim_2) >= DIFF_SIMILARITY_THRESHOLD
