@@ -11,7 +11,7 @@ from story_clustering.eventdetector import (
     extract_topic_by_keyword_communities,
     calc_docs_tfidf_vector_size_with_graph_2,
     compute_similarity,
-    SimilarityThreshold,
+    SIMILARITY_THRESHOLD,
 )
 from story_clustering.keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from story_clustering.nlp_utils import (
@@ -199,7 +199,7 @@ class Cluster(Predictor):
                 if len(cluster["news_items"]) > 0:
                     existing_cluster_content = cluster["news_items"][0]["content"] or cluster["news_items"][0]["review"]
                 matching_score = compute_similarity(new_cluster_content, existing_cluster_content)
-                if matching_score >= SimilarityThreshold and matching_score > super_cluster_match:
+                if matching_score >= SIMILARITY_THRESHOLD and matching_score > super_cluster_match:
                     super_cluster_match = matching_score
                     super_cluster_id = cluster["id"]
 
@@ -336,7 +336,7 @@ class Cluster(Predictor):
     def belongs_to_story(self, ev, story) -> bool:
         text_1 = " ".join([d.title for d in ev.docs.values()])
         text_2 = " ".join([d.title for e in story for d in e.docs.values()])
-        return self.compute_similarity_for_stories(text_1, text_2) >= SimilarityThreshold
+        return self.compute_similarity_for_stories(text_1, text_2) >= SIMILARITY_THRESHOLD
 
     def predict(self, text: str) -> dict[str, str]:
         return {"NOT_IMPLEMENTED": "Not implemented yet."}
