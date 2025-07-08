@@ -10,8 +10,8 @@ POLYFUZZ_THRESHOLD = 3
 
 
 def idf(df: float, size: int):
-    # calculate inverse document frequency
-    return math.log(size / (df + 1)) / math.log(2)
+    # calculate inverse document frequency in base 2 with smoothed df
+    return math.log2(size / (df + 1))
 
 
 def replace_umlauts_with_digraphs(s: str) -> str:
