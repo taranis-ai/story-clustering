@@ -185,7 +185,7 @@ class Cluster(Predictor):
     def merge_cluster(self, new_cluster: Event, already_clustered_events):
         super_cluster_match = -1
         # use polyfuzz to find the intersection
-        keywords_new_cluster = list(new_cluster.keyGraph.graph_nodes.keys())
+        keywords_new_cluster = list(new_cluster.key_graph.graph_nodes.keys())
         super_cluster_id = None
         for cluster in already_clustered_events:
             existing_keywords = []
@@ -212,7 +212,7 @@ class Cluster(Predictor):
         for ev in events:
             super_cluster_id = self.merge_cluster(ev, already_clustered_events)
             if super_cluster_id is not None:
-                ev.keyGraph.story_id = super_cluster_id
+                ev.key_graph.story_id = super_cluster_id
                 print(f"Merged to cluster: {super_cluster_id}")
 
         return self.to_json_events(events)
@@ -229,7 +229,7 @@ class Cluster(Predictor):
     def incremental_clustering(self, new_news_items: list, already_clustered_events: list):
         corpus = self.create_corpus(new_news_items)
 
-        # create keyGraph from corpus
+        # create key_graph from corpus
         graph = KeywordGraph()
         graph.build_graph(corpus=corpus)
 
@@ -267,9 +267,9 @@ class Cluster(Predictor):
         all_events = []
         for event in events:
             docs_in_event = []
-            if event.keyGraph.story_id:
-                if event.keyGraph.story_id not in docs_in_event:
-                    docs_in_event.append(event.keyGraph.story_id)
+            if event.key_graph.story_id:
+                if event.key_graph.story_id not in docs_in_event:
+                    docs_in_event.append(event.key_graph.story_id)
             if event.docs:
                 docs_in_event.extend(list(event.docs.keys()))
 
@@ -277,7 +277,7 @@ class Cluster(Predictor):
                 all_events.append(docs_in_event)
         # all_events = [list(event.docs.keys()) for event in events if event.docs]
 
-        # keywords = [event.keyGraph.graph_nodes.keys() for event in events if event.docs]
+        # keywords = [event.key_graph.graph_nodes.keys() for event in events if event.docs]
         return {"event_clusters": all_events}  # , "events_keywords":keywords}
 
     def to_json_stories(self, stories: list[list[Event]]) -> dict:

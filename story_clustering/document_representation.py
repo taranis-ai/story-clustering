@@ -22,7 +22,7 @@ class Keyword:
         self.df += df
 
     def reprJSON(self) -> dict:
-        return {"baseForm": self.baseform, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
+        return {"baseform": self.baseform, "tf": self.tf, "df": self.df, "documents": list(self.documents)}
 
 
 class Document:
