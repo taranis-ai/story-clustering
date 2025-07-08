@@ -148,7 +148,7 @@ class Corpus:
                 self.df[k.baseform] = self.df[k.baseform] + 1 if k.baseform in self.df else 1
 
     def reprJSON(self) -> dict:
-        return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "DF": self.df}
+        return {"docs": {doc_id: doc.reprJSON() for doc_id, doc in self.docs.items()}, "df": self.df}
 
 
 class CorpusEncoder(json.JSONEncoder):
