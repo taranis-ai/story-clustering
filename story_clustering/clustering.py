@@ -142,12 +142,13 @@ class Cluster(Predictor):
 
     def create_keygraph(self, story: dict, corpus: Corpus) -> KeywordGraph:
         graph = KeywordGraph(story_id=story["id"])
+        
         # as text we use for now the content of first item
         graph.text = story["news_items"][0]["content"]
         tag_names = list(story.get("tags", {}).keys())
 
         # update corpus df for each of the tags
-        # use corpus.df[baseform] to update the df of each keywordt
+        # use corpus.df[baseform] to update the df of each keyword
         for keyword_1 in tag_names:
             baseform_1 = replace_umlauts_with_digraphs(keyword_1)
             if baseform_1 in corpus.df:
