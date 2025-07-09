@@ -88,7 +88,6 @@ def process_community(community_id: int, community: KeywordGraph, corpus: Corpus
 def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, int], doc_size: int) -> float:
     sim = 0
     vectorsize1 = 0
-    number_of_keywords_in_common = 0
 
     for node in community.graph_nodes.values():
         # calculate community keyword's tf
@@ -104,7 +103,6 @@ def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df
 
             # update similarity between document d2 and community
             if node.keyword.baseform in d2.keywords:
-                number_of_keywords_in_common += 1
                 sim += tfidf(node.keyword.tf, idf(df[node.keyword.baseform], doc_size)) * tfidf(
                     d2.keywords[node.keyword.baseform].tf, idf(df[node.keyword.baseform], doc_size)
                 )
