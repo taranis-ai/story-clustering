@@ -155,7 +155,6 @@ class Cluster(Predictor):
             else:
                 corpus.df[baseform_1] = self.compute_df(keyword_1, story["news_items"])
 
-        # TODO Combine loops
         for keyword_1 in tag_names:
             baseform_1 = replace_umlauts_with_digraphs(keyword_1)
             for keyword_2 in tag_names:
