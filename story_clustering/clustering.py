@@ -170,7 +170,6 @@ class Cluster(Predictor):
         return graph
 
     def create_communities_incr_clustering(self, corpus: Corpus, already_clustered_stories: list[dict]) -> tuple[list[KeywordGraph], int]:
-        corpus.update_df()  # TODO remove
         docs_size = len(corpus.docs)
 
         # create keygraph for each cluster
