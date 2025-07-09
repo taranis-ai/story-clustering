@@ -27,8 +27,9 @@ def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None
 
 
 def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[str, int], graph_nodes: dict[str, KeywordNode]):
-    # calculate documents tfidf as the RMS of the tfidf-values of the docs keywords, consider only keywords in the graph
-    # sum_i( sqrt[tfidf(kw_i)^2])
+    # calculate the tfidf value for each document in docs
+    # the individual tfidf values are the norm of the docs tfidf-vector i.e. (tfidf(keyword1), tfidif(keyword2), ...)
+    # consider only keywords that exist as nodes in the graph
     for d in docs.values():
         d.tfidf_vector_size_with_keygraph = sum(
             math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2) for k in d.keywords.values() if k.baseform in graph_nodes
@@ -37,6 +38,10 @@ def calc_docs_tfidf_vector_size_with_graph(docs: dict[str, Document], df: dict[s
 
 
 def calc_docs_tfidf_vector_size_with_graph_2(docs: dict[str, Document], df: dict[str, int], communities: list[KeywordGraph]):
+    # calculate the tfidf value for each document in docs
+    # the individual tfidf values are the norm of the docs keywords tfidf-vector i.e. (tfidf(keyword1), tfidif(keyword2), ...)
+    # each keyword is counted once for each community it appears in
+
     for d in docs.values():
         d.tfidf_vector_size_with_keygraph = sum(
             math.pow(tfidf(k.tf, idf(df[k.baseform], len(docs))), 2)
@@ -64,7 +69,7 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[Keywo
     return result
 
 
-def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict[str, int]):
+def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict[str, int]) -> Event:
     event = Event(key_graph=community)
     # doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
 
@@ -201,7 +206,7 @@ def split_events(event: Event) -> list[Event]:
     return split_events_list
 
 
-def compute_similarity(text_1: str, text_2: str):
+def compute_similarity(text_1: str, text_2: str) -> float:
     sent_text_1 = text_1.replace("\n", " ").split(".")
     sent_text_2 = text_2.replace("\n", " ").split(".")
 
@@ -217,7 +222,7 @@ def compute_similarity(text_1: str, text_2: str):
     return avg.item()
 
 
-def same_event_text(text_1, text_2):
+def same_event_text(text_1, text_2) -> bool:
     return compute_similarity(text_1, text_2) >= SIMILARITY_THRESHOLD
 
 
@@ -236,7 +241,7 @@ def same_event(d1: Document, d2: Document) -> bool:
     return compute_similarity(text_1, text_2) >= SIMILARITY_THRESHOLD
 
 
-def same_new_event(d1: Document, d2: Document, keygraph_text) -> bool:
+def same_new_event(d1: Document, d2: Document, keygraph_text: str) -> bool:
     text_1 = d1.content
     text_2 = d2.content
     if not text_1 or not text_2:
