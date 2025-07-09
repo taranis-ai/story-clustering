@@ -8,7 +8,7 @@ class Event:
         self.key_graph = key_graph
         self.max_id: int = 1
         self.docs: dict[str, Document] = {}
-        self.similarities = {}
+        self.similarities: dict[str, float] = {}
         self.centroid: Document = Document("-1")
 
     def calc_centroid(self):

@@ -57,32 +57,27 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[Keywo
     if doc_size is None:
         doc_size = len(corpus.docs)
 
-    max_comm = {
-        doc.doc_id: np.argmax([tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, doc_size) for community in communities]).item()
+    # for each document, get the similarities with every community
+    doc_comm_similarities: dict[str, list] = {
+        doc.doc_id: [tfidf_cosine_similarity_graph_2doc(comm, doc, corpus.df, doc_size) for comm in communities]
         for doc in corpus.docs.values()
     }
-    for i, community in enumerate(communities):
-        logger.info(f"Processing community {i}/{len(communities)}")
-        event = process_community(i, community, corpus, max_comm)
-        logger.info(f"Community {i}/{len(communities)} - contains {len(event.docs)}")
+
+    # create an event out of each community, add the docs that are most similar to it
+    for idx, community in enumerate(communities):
+        logger.info(f"Processing community {idx}/{len(communities)}")
+        event = Event(key_graph=community)
+
+        for doc in corpus.docs.values():
+            if np.argmax(doc_comm_similarities[doc.doc_id]).item() == idx:
+                event.docs[doc.doc_id] = doc
+                event.similarities[doc.doc_id] = doc_comm_similarities[doc.doc_id][idx].item()
+                doc.processed = True
+
+        logger.info(f"Community {idx}/{len(communities)} - contains {len(event.docs)}")
         result.extend(split_events_incr_clustering(event))
+
     return result
-
-
-def process_community(community_id: int, community: KeywordGraph, corpus: Corpus, max_comm: dict[str, int]) -> Event:
-    event = Event(key_graph=community)
-    # doc_similarity: dict[str, float] = defaultdict(lambda: -1.0)
-
-    for doc in corpus.docs.values():
-        if max_comm[doc.doc_id] == community_id:
-            cosine_similarity = tfidf_cosine_similarity_graph_2doc(community, doc, corpus.df, len(corpus.docs))
-            # doc_similarity[doc.doc_id] = cosine_similarity
-            # d = corpus.docs[doc.doc_id]
-            # if d.doc_id not in event.docs:
-            event.docs[doc.doc_id] = doc
-            event.similarities[doc.doc_id] = cosine_similarity
-            doc.processed = True
-    return event
 
 
 def tfidf_cosine_similarity_graph_2doc(community: KeywordGraph, d2: Document, df: dict[str, int], doc_size: int) -> float:
