@@ -71,7 +71,7 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[Keywo
         for doc in corpus.docs.values():
             if np.argmax(doc_comm_similarities[doc.doc_id]).item() == idx:
                 event.docs[doc.doc_id] = doc
-                event.similarities[doc.doc_id] = doc_comm_similarities[doc.doc_id][idx].item()
+                event.similarities[doc.doc_id] = doc_comm_similarities[doc.doc_id][idx]
                 doc.processed = True
 
         logger.info(f"Community {idx}/{len(communities)} - contains {len(event.docs)}")
