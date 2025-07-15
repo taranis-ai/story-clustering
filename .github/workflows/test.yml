@@ -1,0 +1,20 @@
+name: Test bot
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "**"
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    name: Run Python Tests
+    uses: taranis-ai/github-actions/.github/workflows/python-uv.yml@master
+
