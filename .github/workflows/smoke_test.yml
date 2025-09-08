@@ -1,0 +1,14 @@
+name: Smoke test
+on:
+  workflow_dispatch:
+  pull_request_review:
+    types: [submitted]
+  push:
+
+jobs:
+  test_docker_deployment:
+    if: ${{ github.event.review.state == 'approved' || github.event_name == 'workflow_dispatch' || true }}
+    uses: taranis-ai/github-actions/.github/workflows/smoke-test.yml@smoke-test
+    with:
+      tag: ${{ github.ref_name }}
+      repo_name: ${{ github.event.repository.name }}
