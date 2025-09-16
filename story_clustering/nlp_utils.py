@@ -9,9 +9,9 @@ from nltk.corpus import stopwords
 POLYFUZZ_THRESHOLD = 3
 
 
-# calculate word's inverse document frequency
 def idf(df: float, size: int):
-    return math.log(size / (df + 1)) / math.log(2)
+    # calculate inverse document frequency in base 2 with smoothed df
+    return math.log2(size / (df + 1))
 
 
 def replace_umlauts_with_digraphs(s: str) -> str:
@@ -30,22 +30,23 @@ def tokanize_text(text: str) -> list[str]:
     return text_content_tokanized
 
 
-def compute_tf(baseForm: str, text: str) -> int:
+def compute_tf(baseform: str, text: str) -> int:
     model = PolyFuzz(TFIDF(model_id="TF-IDF-Sklearn", clean_string=False, n_gram_range=(3, 3)))
 
-    if not baseForm.strip().isalpha() or baseForm in get_stop_words():
+    if not baseform.strip().isalpha() or baseform in get_stop_words():
         return 1
-    n_words = len(baseForm.strip().split(" "))
+    n_words = len(baseform.strip().split(" "))
     tokenized_text = tokanize_text(text)
     try:
-        model.match(tokenized_text, [baseForm]).group(link_min_similarity=0.75)
+        model.match(tokenized_text, [baseform]).group(link_min_similarity=0.75)
     except Exception:
         return 1
-    df = model.get_matches()
-    if len(df) == 0:
+    dataframe = model.get_matches()
+    if len(dataframe) == 0:
         # keyword not appearing in text
         return 0
-    values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]  # type: ignore
+
+    values = dataframe[(dataframe["Group"].notnull()) & (dataframe["Similarity"] >= 0.65)]  # type: ignore
     if len(values) == 0:
         return 0
     values.loc[:, ("Similarity")] = 1
@@ -62,10 +63,10 @@ def find_keywords_matches(keywords_lst1: list[str], keywords_lst2: list[str]) ->
         model.match(keywords_lst1, keywords_lst2).group(link_min_similarity=0.75)
     except Exception:
         return 0
-    df = model.get_matches()
-    if len(df) == 0:
+    dataframe = model.get_matches()
+    if len(dataframe) == 0:
         return 0
-    values = df[(df["Group"].notnull()) & (df["Similarity"] >= 0.65)]  # type: ignore
+    values = dataframe[(dataframe["Group"].notnull()) & (dataframe["Similarity"] >= 0.65)]  # type: ignore
     values.loc[:, ("Similarity")] = 1
     return max(values["Similarity"].sum(), 1)
 

@@ -1,12 +1,11 @@
 import networkx as nx
 from story_clustering.document_representation import Corpus, Keyword
 
-# MinEdgeDF = 2
-MinEdgeDF = 1
-MinEdgeCorrelation = 0.05
-MaxClusterNodeSize = 5
-MinClusterNodeSize = 1
-MinCpToDuplicateEdge = 0.2
+MIN_EDGE_DF = 1
+MIN_EDGE_CORRELATION = 0.05
+MAX_CLUSTER_NODE_SIZE = 5
+MIN_CLUSTER_NODE_SIZE = 1
+MIN_CP_TO_DUPLICATE_EDGE = 0.2
 
 
 class KeywordNode:
@@ -35,17 +34,17 @@ class KeywordNode:
         removes all edges for this node
     """
 
-    maxID = 0
+    max_id: int = 0
 
-    def __init__(self, keyword) -> None:
-        self.id = self.maxID
+    def __init__(self, keyword: Keyword):
         self.keyword = keyword
-        self.edges = {}
-        self.prev = None
-        self.visited = False
+        self.id: int = self.max_id
+        self.edges: dict[str, KeywordEdge] = {}
+        self.prev: KeywordNode | None = None
+        self.visited: bool = False
 
-        # autoincrement maxID
-        self.maxID += 1
+        # autoincrement max_id
+        self.max_id += 1
 
 
 class KeywordEdge:
@@ -73,43 +72,43 @@ class KeywordEdge:
         0 denotes their strengths are the same.
     """
 
-    def __init__(self, n1: KeywordNode, n2: KeywordNode, id: str) -> None:
+    def __init__(self, n1: KeywordNode, n2: KeywordNode, id: str):
         self.n1 = n1
         self.n2 = n2
-        self.id: str = id
+        self.id = id
         self.df: int = 0
         self.cp2: float = 0
         self.cp1: float = 0
-        self.betweennessScore: float = 0
+        self.betweenness_score: float = 0
 
     def increase_df(self):
         self.df += 1
 
     @staticmethod
     def get_id(n1: KeywordNode, n2: KeywordNode) -> str:
-        if n1.keyword.baseForm < n2.keyword.baseForm:
-            return f"{n1.keyword.baseForm}_{n2.keyword.baseForm}"
-        return f"{n2.keyword.baseForm}_{n1.keyword.baseForm}"
+        if n1.keyword.baseform < n2.keyword.baseform:
+            return f"{n1.keyword.baseform}_{n2.keyword.baseform}"
+        return f"{n2.keyword.baseform}_{n1.keyword.baseform}"
 
     def compute_cps(self):
         self.cp1 = 1.0 * self.df / self.n1.keyword.df
         self.cp2 = 1.0 * self.df / self.n2.keyword.df
 
-    def opposite(self, n: KeywordNode):
-        if self.n1.keyword.baseForm == n.keyword.baseForm:
+    def opposite(self, n: KeywordNode) -> KeywordNode | None:
+        if self.n1.keyword.baseform == n.keyword.baseform:
             return self.n2
-        return self.n1 if self.n2.keyword.baseForm == n.keyword.baseForm else None
+        return self.n1 if self.n2.keyword.baseform == n.keyword.baseform else None
 
-    def compare_betweenness(self, e) -> int:
-        if len(self.n1.edges) < 2 or len(self.n2.edges) < 2 or self.betweennessScore < e.betweennessScore:
+    def compare_betweenness(self, e: "KeywordEdge") -> int:
+        if len(self.n1.edges) < 2 or len(self.n2.edges) < 2 or self.betweenness_score < e.betweenness_score:
             return -1
-        if self.betweennessScore > e.betweennessScore:
+        if self.betweenness_score > e.betweenness_score:
             return 1
         if self.df > e.df:
             return -1
         return 1 if self.df < e.df else 0
 
-    def compare_edge_strength(self, e) -> int:
+    def compare_edge_strength(self, e: "KeywordEdge") -> int:
         cp = max(self.cp1, self.cp2)
         ecp = max(e.cp1, e.cp2)
 
@@ -131,26 +130,26 @@ class KeywordGraph:
     """
 
     def __init__(self, story_id: str | None = None):
-        self.graphNodes = {}
         self.story_id = story_id
+        self.graph_nodes: dict[str, KeywordNode] = {}
         self.text: str = ""
 
     def build_graph(self, corpus: "Corpus"):
-        self.graphNodes = {}
+        self.graph_nodes = {}
 
-        def get_or_create_node(keyword: "Keyword") -> "KeywordNode":
-            if keyword.baseForm not in self.graphNodes:
-                new_keyword = Keyword(baseForm=keyword.baseForm, documents=set(), tf=0, df=corpus.DF.get(keyword.baseForm, 0))
-                self.graphNodes[keyword.baseForm] = KeywordNode(keyword=new_keyword)
-            return self.graphNodes[keyword.baseForm]
+        def get_or_create_node(keyword: Keyword) -> KeywordNode:
+            if keyword.baseform not in self.graph_nodes:
+                new_keyword = Keyword(baseform=keyword.baseform, documents=set(), tf=0, df=corpus.df.get(keyword.baseform, 0))
+                self.graph_nodes[keyword.baseform] = KeywordNode(keyword=new_keyword)
+            return self.graph_nodes[keyword.baseform]
 
         def filter_and_remove_edges():
-            to_remove: list["KeywordEdge"] = []
-            for node in self.graphNodes.values():
-                for edge in list(node.edges.values()):
-                    # MI = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df - edge.df)
-                    MI = edge.df / (corpus.DF[edge.n1.keyword.baseForm] + corpus.DF[edge.n2.keyword.baseForm])
-                    if edge.df < MinEdgeDF or MI < MinEdgeCorrelation:
+            to_remove: list[KeywordEdge] = []
+            for node in self.graph_nodes.values():
+                for edge in node.edges.values():
+                    # mutual_information = edge.df / (edge.n1.keyword.df + edge.n2.keyword.df)
+                    mutual_information = edge.df / (corpus.df[edge.n1.keyword.baseform] + corpus.df[edge.n2.keyword.baseform])
+                    if edge.df < MIN_EDGE_DF or mutual_information < MIN_EDGE_CORRELATION:
                         to_remove.append(edge)
             for edge in to_remove:
                 edge.n1.edges.pop(edge.id, None)
@@ -164,7 +163,7 @@ class KeywordGraph:
                 node1.keyword.increase_tf(k1.tf)
 
                 for k2 in document.keywords.values():
-                    if k1.baseForm < k2.baseForm:
+                    if k1.baseform < k2.baseform:
                         node2 = get_or_create_node(k2)
                         node2.keyword.documents.add(document.doc_id)
                         node2.keyword.increase_tf(k2.tf)
@@ -175,7 +174,7 @@ class KeywordGraph:
                         node2.edges[edge_id] = edge
 
         filter_and_remove_edges()
-        self.graphNodes = {k: v for k, v in self.graphNodes.items() if len(v.edges) > 0}
+        self.graph_nodes = {k: v for k, v in self.graph_nodes.items() if len(v.edges) > 0}
 
 
 class CommunityDetector:
@@ -193,7 +192,7 @@ class CommunityDetector:
     find_connected_components(nodes): returns a list of sub-graphs representing the connected components
     """
 
-    def __init__(self, nodes: dict) -> None:
+    def __init__(self, nodes: dict[str, KeywordNode]):
         self.nodes = nodes
         # self.communities = self.detectCommunities()
 
@@ -201,13 +200,13 @@ class CommunityDetector:
         gr = nx.Graph()
         keywords_dict = {}
         for i, n in enumerate(self.nodes.values(), start=1):
-            keywords_dict[i] = n.keyword.baseForm
+            keywords_dict[i] = n.keyword.baseform
             gr.add_node(i)
         keywords_vals = {v: k for (k, v) in keywords_dict.items()}
         for w1 in gr.nodes():
             word = keywords_dict[w1]
             for e in self.nodes[word].edges.values():
-                gr.add_edge(keywords_vals[e.n1.keyword.baseForm], keywords_vals[e.n2.keyword.baseForm], weight=e.df)
+                gr.add_edge(keywords_vals[e.n1.keyword.baseform], keywords_vals[e.n2.keyword.baseform], weight=e.df)
 
         # check if there are any
 
@@ -225,19 +224,19 @@ class CommunityDetector:
                 key_communities.append(self.get_keywords_keygraphs(subgraph, keywords_dict))
         return key_communities
 
-    def get_keywords_keygraphs(self, subgraph, keywords_dict):
+    def get_keywords_keygraphs(self, subgraph: nx.Graph, keywords_dict: dict[int, str]) -> KeywordGraph:
         new_keywords_graph = KeywordGraph()
         for i in subgraph.nodes():
             word = keywords_dict[i]
             existing_node = self.nodes[word]
             keyword_node = KeywordNode(existing_node.keyword)
-            new_keywords_graph.graphNodes[keyword_node.keyword.baseForm] = keyword_node
+            new_keywords_graph.graph_nodes[keyword_node.keyword.baseform] = keyword_node
         for u, v, weight in subgraph.edges(data=True):
             w1 = keywords_dict[u]
             w2 = keywords_dict[v]
-            edge_id = KeywordEdge.get_id(new_keywords_graph.graphNodes[w1], new_keywords_graph.graphNodes[w2])
-            keyword_edge = KeywordEdge(new_keywords_graph.graphNodes[w1], new_keywords_graph.graphNodes[w2], id=edge_id)
+            edge_id = KeywordEdge.get_id(new_keywords_graph.graph_nodes[w1], new_keywords_graph.graph_nodes[w2])
+            keyword_edge = KeywordEdge(new_keywords_graph.graph_nodes[w1], new_keywords_graph.graph_nodes[w2], id=edge_id)
             keyword_edge.df = weight["weight"]
-            new_keywords_graph.graphNodes[w1].edges[edge_id] = keyword_edge
-            new_keywords_graph.graphNodes[w2].edges[edge_id] = keyword_edge
+            new_keywords_graph.graph_nodes[w1].edges[edge_id] = keyword_edge
+            new_keywords_graph.graph_nodes[w2].edges[edge_id] = keyword_edge
         return new_keywords_graph

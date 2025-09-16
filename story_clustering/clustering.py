@@ -11,7 +11,7 @@ from story_clustering.eventdetector import (
     extract_topic_by_keyword_communities,
     calc_docs_tfidf_vector_size_with_graph_2,
     compute_similarity,
-    SimilarityThreshold,
+    SIMILARITY_THRESHOLD,
 )
 from story_clustering.keywords_organizer import KeywordGraph, KeywordEdge, KeywordNode
 from story_clustering.nlp_utils import (
@@ -64,26 +64,28 @@ class Cluster(Predictor):
         corpus = Corpus()
         for story in new_stories:
             doc = Document(doc_id=story["id"])
-            for nitem in story["news_items"]:
-                doc.url = nitem.get("link", None)
-                doc.content = nitem["content"] or nitem["review"]
+            for news_item in story["news_items"]:
+                doc.url = news_item.get("link", None)
+                doc.content = news_item["content"] or news_item["review"]
                 if not doc.content:
                     continue
-                doc.title = nitem["title"]
+                doc.title = news_item["title"]
                 if doc.title is not None:
                     doc.segTitle = doc.title.strip().split(" ")
-                doc.publish_time = nitem.get(".published", None)
-                doc.language = nitem["language"]
+                doc.publish_time = news_item.get(".published", None)
+                doc.language = news_item["language"]
+
                 keywords = {}
                 if len(story["tags"]) < 5:
                     continue
+
                 for tag, tag_dict in story["tags"].items():
                     tag_type = tag_dict.get("tag_type", "")
                     if (tag not in doc.content) and (tag.lower() not in doc.content):
                         continue
                     baseform = replace_umlauts_with_digraphs(tag)
                     keyword = Keyword(
-                        baseForm=baseform,
+                        baseform=baseform,
                         tf=0,
                         df=0,
                         documents=set(),
@@ -122,68 +124,68 @@ class Cluster(Predictor):
         tf += compute_tf(baseform, content)
         return tf
 
-    def initial_clustering(self, new_news_items: list):
-        corpus = self.create_corpus(new_news_items)
-
+    def initial_clustering(self, stories: list[dict]) -> dict[str, list]:
+        corpus = self.create_corpus(stories)
         events = extract_events_from_corpus(corpus=corpus)
+
         return self.to_json_events(events)
 
     def compute_df(self, keyword_baseform: str, cluster_news_items: list) -> int:
         df = 0
-        for nitem in cluster_news_items:
-            content = nitem["content"] or nitem["review"]
+        for news_item in cluster_news_items:
+            content = news_item["content"] or news_item["review"]
             if not content:
                 continue
             if keyword_baseform.lower() in content:
                 df += 1
         return df if df > 0 else 1
 
-    def create_keygraph(self, cluster: dict, corpus: Corpus) -> KeywordGraph:
-        graph = KeywordGraph(story_id=cluster["id"])
+    def create_keygraph(self, story: dict, corpus: Corpus) -> KeywordGraph:
+        graph = KeywordGraph(story_id=story["id"])
+        
         # as text we use for now the content of first item
-        graph.text = cluster["news_items"][0]["content"]
-        tag_names = list(cluster.get("tags", {}).keys())
+        graph.text = story["news_items"][0]["content"]
+        tag_names = list(story.get("tags", {}).keys())
 
-        # update corpus DF for each of the tags
-        # use corpus.DF[baseform] to update the df of each keyword
+        # update corpus df for each of the tags
+        # use corpus.df[baseform] to update the df of each keyword
         for keyword_1 in tag_names:
-            baseform1 = replace_umlauts_with_digraphs(keyword_1)
-            if baseform1 in corpus.DF:
-                corpus.DF[baseform1] += self.compute_df(keyword_1, cluster["news_items"])
+            baseform_1 = replace_umlauts_with_digraphs(keyword_1)
+            if baseform_1 in corpus.df:
+                corpus.df[baseform_1] += self.compute_df(keyword_1, story["news_items"])
             else:
-                corpus.DF[baseform1] = self.compute_df(keyword_1, cluster["news_items"])
+                corpus.df[baseform_1] = self.compute_df(keyword_1, story["news_items"])
 
         for keyword_1 in tag_names:
-            baseform1 = replace_umlauts_with_digraphs(keyword_1)
+            baseform_1 = replace_umlauts_with_digraphs(keyword_1)
             for keyword_2 in tag_names:
                 if keyword_1 != keyword_2:
-                    baseform2 = replace_umlauts_with_digraphs(keyword_2)
+                    baseform_2 = replace_umlauts_with_digraphs(keyword_2)
 
-                    keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, corpus.DF[baseform1])
-                    keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, corpus.DF[baseform2])
+                    key_node_1 = self.get_or_add_keyword_node(keyword_1, graph.graph_nodes, corpus.df[baseform_1])
+                    key_node_2 = self.get_or_add_keyword_node(keyword_2, graph.graph_nodes, corpus.df[baseform_2])
                     # add edge and increase edge df
-                    self.update_or_create_keywordEdge(keyNode1, keyNode2)
+                    self.update_or_create_keyword_edge(key_node_1, key_node_2)
 
         return graph
 
-    def create_communities_incr_clustering(self, corpus: Corpus, already_clustered_events: list):
-        corpus.update_df()
+    def create_communities_incr_clustering(self, corpus: Corpus, already_clustered_stories: list[dict]) -> tuple[list[KeywordGraph], int]:
         docs_size = len(corpus.docs)
 
         # create keygraph for each cluster
         existing_communities = []
-        for cluster in already_clustered_events:
-            existing_communities.append(self.create_keygraph(cluster, corpus))
-            docs_size += len(cluster["news_items"])
+        for story in already_clustered_stories:
+            existing_communities.append(self.create_keygraph(story, corpus))
+            docs_size += len(story["news_items"])
 
-        calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.DF, existing_communities)
+        calc_docs_tfidf_vector_size_with_graph_2(corpus.docs, corpus.df, existing_communities)
 
         return existing_communities, docs_size
 
     def merge_cluster(self, new_cluster: Event, already_clustered_events):
         super_cluster_match = -1
         # use polyfuzz to find the intersection
-        keywords_new_cluster = list(new_cluster.keyGraph.graphNodes.keys())
+        keywords_new_cluster = list(new_cluster.key_graph.graph_nodes.keys())
         super_cluster_id = None
         for cluster in already_clustered_events:
             existing_keywords = []
@@ -197,7 +199,7 @@ class Cluster(Predictor):
                 if len(cluster["news_items"]) > 0:
                     existing_cluster_content = cluster["news_items"][0]["content"] or cluster["news_items"][0]["review"]
                 matching_score = compute_similarity(new_cluster_content, existing_cluster_content)
-                if matching_score >= SimilarityThreshold and matching_score > super_cluster_match:
+                if matching_score >= SIMILARITY_THRESHOLD and matching_score > super_cluster_match:
                     super_cluster_match = matching_score
                     super_cluster_id = cluster["id"]
 
@@ -210,15 +212,15 @@ class Cluster(Predictor):
         for ev in events:
             super_cluster_id = self.merge_cluster(ev, already_clustered_events)
             if super_cluster_id is not None:
-                ev.keyGraph.story_id = super_cluster_id
+                ev.key_graph.story_id = super_cluster_id
                 print(f"Merged to cluster: {super_cluster_id}")
 
         return self.to_json_events(events)
 
-    def incremental_clustering_v2(self, new_news_items: list, already_clustered_events: list):
-        corpus = self.create_corpus(new_news_items)
+    def incremental_clustering_v2(self, stories_to_cluster: list[dict], already_clustered_stories: list[dict]):
+        corpus = self.create_corpus(stories_to_cluster)
 
-        existing_communities, docs_size = self.create_communities_incr_clustering(corpus, already_clustered_events)
+        existing_communities, docs_size = self.create_communities_incr_clustering(corpus, already_clustered_stories)
 
         updated_events = extract_topic_by_keyword_communities(corpus, existing_communities, docs_size)
         return self.to_json_events(updated_events)
@@ -227,7 +229,7 @@ class Cluster(Predictor):
     def incremental_clustering(self, new_news_items: list, already_clustered_events: list):
         corpus = self.create_corpus(new_news_items)
 
-        # create keyGraph from corpus
+        # create key_graph from corpus
         graph = KeywordGraph()
         graph.build_graph(corpus=corpus)
 
@@ -239,10 +241,10 @@ class Cluster(Predictor):
                     if keyword_1 != keyword_2:
                         # doc frequency is the number of documents in the cluster
                         df = len(cluster["news_items"])
-                        keyNode1 = self.get_or_add_keywordNode(keyword_1, graph.graphNodes, df)
-                        keyNode2 = self.get_or_add_keywordNode(keyword_2, graph.graphNodes, df)
+                        keyNode1 = self.get_or_add_keyword_node(keyword_1, graph.graph_nodes, df)
+                        key_node_2 = self.get_or_add_keyword_node(keyword_2, graph.graph_nodes, df)
                         # add edge and increase edge df
-                        self.update_or_create_keywordEdge(keyNode1, keyNode2)
+                        self.update_or_create_keyword_edge(keyNode1, key_node_2)
 
         events = extract_events_from_corpus(corpus=corpus, graph=graph)
         return self.to_json_events(events)
@@ -261,21 +263,20 @@ class Cluster(Predictor):
                 stories.append(aux)
         return stories
 
-    def to_json_events(self, events: list[Event]) -> dict:
+    def to_json_events(self, events: list[Event]) -> dict[str, list]:
         all_events = []
         for event in events:
             docs_in_event = []
-            if event.keyGraph.story_id:
-                if event.keyGraph.story_id not in docs_in_event:
-                    docs_in_event.append(event.keyGraph.story_id)
+            if event.key_graph.story_id and event.key_graph.story_id not in docs_in_event:
+                docs_in_event.append(event.key_graph.story_id)
             if event.docs:
                 docs_in_event.extend(list(event.docs.keys()))
 
-            if len(docs_in_event) > 0:
+            if docs_in_event:
                 all_events.append(docs_in_event)
         # all_events = [list(event.docs.keys()) for event in events if event.docs]
 
-        # keywords = [event.keyGraph.graphNodes.keys() for event in events if event.docs]
+        # keywords = [event.key_graph.graph_nodes.keys() for event in events if event.docs]
         return {"event_clusters": all_events}  # , "events_keywords":keywords}
 
     def to_json_stories(self, stories: list[list[Event]]) -> dict:
@@ -287,33 +288,33 @@ class Cluster(Predictor):
             all_stories.append(s_docs)
         return {"story_clusters": all_stories}
 
-    def get_or_add_keywordNode(self, tag: str, graphNodes: dict, df: int) -> KeywordNode:
+    def get_or_add_keyword_node(self, tag: str, graph_nodes: dict, df: int) -> KeywordNode:
         baseform = replace_umlauts_with_digraphs(tag)
-        if baseform in graphNodes:
-            node = graphNodes[baseform]
+        if baseform in graph_nodes:
+            node = graph_nodes[baseform]
             # node.keyword.increase_df(df)
             node.keyword.df = df
             return node
 
-        keyword = Keyword(baseForm=baseform, tf=0, df=df)
+        keyword = Keyword(baseform=baseform, tf=0, df=df)
         keywordNode = KeywordNode(keyword=keyword)
-        graphNodes[keyword.baseForm] = keywordNode
+        graph_nodes[keyword.baseform] = keywordNode
         return keywordNode
 
-    def update_or_create_keywordEdge(self, kn1: KeywordNode, kn2: KeywordNode):
-        edgeId = KeywordEdge.get_id(kn1, kn2)
-        if edgeId not in kn1.edges:
-            new_edge = KeywordEdge(kn1, kn2, edgeId)
+    def update_or_create_keyword_edge(self, kn1: KeywordNode, kn2: KeywordNode):
+        edge_id = KeywordEdge.get_id(kn1, kn2)
+        if edge_id not in kn1.edges:
+            new_edge = KeywordEdge(kn1, kn2, edge_id)
             new_edge.df += 1
-            kn1.edges[edgeId] = new_edge
-            kn2.edges[edgeId] = new_edge
+            kn1.edges[edge_id] = new_edge
+            kn2.edges[edge_id] = new_edge
         else:
-            kn1.edges[edgeId].df += 1
+            kn1.edges[edge_id].df += 1
 
-            if kn1.edges[edgeId].df != kn2.edges[edgeId].df:
-                kn2.edges[edgeId].df = kn1.edges[edgeId].df
+            if kn1.edges[edge_id].df != kn2.edges[edge_id].df:
+                kn2.edges[edge_id].df = kn1.edges[edge_id].df
 
-    def compute_similarity_for_stories(self, text_1, text_2):
+    def compute_similarity_for_stories(self, text_1, text_2) -> float:
         sent_text_1 = text_1.replace("\n", " ").split(".")
         sent_text_2 = text_2.replace("\n", " ").split(".")
 
@@ -334,7 +335,7 @@ class Cluster(Predictor):
     def belongs_to_story(self, ev, story) -> bool:
         text_1 = " ".join([d.title for d in ev.docs.values()])
         text_2 = " ".join([d.title for e in story for d in e.docs.values()])
-        return self.compute_similarity_for_stories(text_1, text_2) >= SimilarityThreshold
+        return self.compute_similarity_for_stories(text_1, text_2) >= SIMILARITY_THRESHOLD
 
     def predict(self, text: str) -> dict[str, str]:
         return {"NOT_IMPLEMENTED": "Not implemented yet."}
