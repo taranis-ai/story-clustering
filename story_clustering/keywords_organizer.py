@@ -211,7 +211,7 @@ class CommunityDetector:
         # check if there are any
 
         gr_copy = gr.copy()
-        communities = nx.community.louvain_communities(gr_copy, seed=42, resolution=5)  # type: ignore
+        communities = nx.community.louvain_communities(gr_copy, seed=42, resolution=1)  # type: ignore
         # communities = nx.community.girvan_newman(G)
 
         key_communities = []
