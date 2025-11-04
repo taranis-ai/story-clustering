@@ -18,6 +18,8 @@ dependencies = [
     "numpy",
     "networkx",
     "polyfuzz",
+    "sentence_transformers",
+    "torch"
 ]
 dynamic = ["version"]
 
