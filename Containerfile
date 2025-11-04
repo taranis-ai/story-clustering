@@ -18,7 +18,7 @@ RUN uv venv && \
 
 FROM python:3.13-slim
 
-ARG MODEL="tfidf"
+ARG MODEL="louvain"
 
 WORKDIR /app/
 

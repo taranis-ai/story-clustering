@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        model: [tfidf]
+        model: [louvain]
         os: [blacksmith-2vcpu-ubuntu-2404, blacksmith-2vcpu-ubuntu-2404-arm]
     uses: taranis-ai/github-actions/.github/workflows/build-multiarch-bot-container.yml@master
     with:
@@ -31,9 +31,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        model: [tfidf]
+        model: [louvain]
     uses: taranis-ai/github-actions/.github/workflows/merge-multiarch-bot-container.yml@master
     with:
       ghcr_image: ghcr.io/taranis-ai/taranis-story-clustering
       model: ${{ matrix.model }}
-      latest: ${{ matrix.model == 'tfidf' }}
+      latest: ${{ matrix.model == 'louvain' }}
