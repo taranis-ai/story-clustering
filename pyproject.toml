@@ -1,5 +1,5 @@
 [project]
-name = "taranis_story_clustering"
+name = "story_clustering"
 description = "Story Clustering Bot for Taranis AI"
 readme = "README.md"
 license = {file = "LICENSE.md"}
@@ -7,25 +7,17 @@ maintainers = [{ name = "AIT", email = "benjamin.akhras@ait.ac.at" }]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Security",
 ]
-requires-python = ">=3.11, <3.14"
+requires-python = ">=3.13, <3.14"
 dependencies = [
-    "sentence_transformers",
-    "Flask",
-    "granian",
-    "transformers",
+    "taranis-base-bot",
     "typing_extensions",
-    "torch",
     "nltk",
     "numpy",
     "networkx",
     "polyfuzz",
-    "pydantic-settings",
-    "python-dotenv"
 ]
 dynamic = ["version"]
 
@@ -45,14 +37,14 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 fallback_version = "0.0.0"
-tag_regex = "^refs/pull/(\\d+)/merge$"
+tag_regex = "^(?:refs/pull/\\d+/merge$|v(?P<version>\\d+\\.\\d+\\.\\d+))$"
 
 [tool.setuptools]
 packages = ["story_clustering"]
 
 [tool.ruff]
 line-length = 142
-target-version = "py312"
+target-version = "py313"
 
 [tool.pytest.ini_options]
 filterwarnings = [
