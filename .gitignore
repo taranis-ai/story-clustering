@@ -1,17 +1,17 @@
 # built and cached files
 venv/
+.venv/
 .envrc
 __pycache__/
 *.pyc
-node_modules/
 dist/
 build/
 *.egg-info/
 .installed.cfg
 *.egg
 .pytest_cache/
-celerybeat-schedule
 .hypothesis
+.ruff_cache/
 
 # temporary files of editors
 .DS_Store
@@ -22,7 +22,6 @@ celerybeat-schedule
 
 # sensitive data not to be commited
 .env.local
-docker/.env
 .env.*.local
 src/.env
 *.pem
@@ -37,9 +36,3 @@ src/.env
 *.njsproj
 *.sln
 *.sw?
-
-/data
-story_clustering/data
-__main__.py
-notebook
-story_clustering/main_aux.py

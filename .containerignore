@@ -1,0 +1,13 @@
+venv/
+.venv/
+.envrc
+__pycache__/
+*.pyc
+dist/
+build/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.hypothesis
+.ruff_cache/
