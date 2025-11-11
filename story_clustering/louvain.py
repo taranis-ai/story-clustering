@@ -1,4 +1,4 @@
-from story_clustering.cluster import Cluster
+from story_clustering.clustering import Cluster
 from typing import Any
 
 
