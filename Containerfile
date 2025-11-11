@@ -11,10 +11,11 @@ RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recomme
 
 COPY . /app/
 
+ENV UV_COMPILE_BYTECODE=1
+
 RUN uv venv && \
     export PATH="/app/.venv/bin:$PATH" && \
-    uv sync --frozen && \
-    python -m compileall /app/
+    uv sync --frozen
 
 FROM python:3.13-slim
 
