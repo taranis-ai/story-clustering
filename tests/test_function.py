@@ -1,10 +1,7 @@
 import json
-from taranis_base_bot.log import configure_logger
 
 expected_results = {"event_clusters": [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"]]}
 expected_results_inc = {"event_clusters": [["1", "1"], ["2", "2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"]]}
-
-configure_logger(debug=False, colored=False, syslog_address=None)
 
 
 def test_create_corpus(story_list):
