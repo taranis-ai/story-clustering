@@ -6,7 +6,7 @@ from story_clustering.keywords_organizer import KeywordGraph, CommunityDetector,
 from story_clustering.document_representation import Document, Corpus
 from story_clustering.event_organizer import Event
 from story_clustering.nlp_utils import tfidf, idf, get_sentence_transformer
-from taranis_base_bot.log import get_logger
+from taranis_base_bot.log import logger
 import numpy as np
 
 SIMILARITY_THRESHOLD = 0.5
@@ -22,7 +22,7 @@ def extract_events_from_corpus(corpus: Corpus, graph: KeywordGraph | None = None
     calc_docs_tfidf_vector_size_with_graph(corpus.docs, corpus.df, graph.graph_nodes)
 
     communities = CommunityDetector(graph.graph_nodes).detect_communities_louvain()
-    get_logger().info(f"Number of communities: {len(communities)}")
+    logger.info(f"Number of communities: {len(communities)}")
     return extract_topic_by_keyword_communities(corpus, communities)
 
 
@@ -65,7 +65,7 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[Keywo
 
     # create an event out of each community, add the docs that are most similar to it
     for idx, community in enumerate(communities):
-        get_logger().info(f"Processing community {idx}/{len(communities)}")
+        logger.info(f"Processing community {idx}/{len(communities)}")
         event = Event(key_graph=community)
 
         for doc in corpus.docs.values():
@@ -74,7 +74,7 @@ def extract_topic_by_keyword_communities(corpus: Corpus, communities: list[Keywo
                 event.similarities[doc.doc_id] = doc_comm_similarities[doc.doc_id][idx]
                 doc.processed = True
 
-        get_logger().info(f"Community {idx}/{len(communities)} - contains {len(event.docs)}")
+        logger.info(f"Community {idx}/{len(communities)} - contains {len(event.docs)}")
         result.extend(split_events_incr_clustering(event))
 
     return result

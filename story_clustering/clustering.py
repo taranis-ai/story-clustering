@@ -22,7 +22,7 @@ from story_clustering.nlp_utils import (
     POLYFUZZ_THRESHOLD,
 )
 
-from taranis_base_bot.log import get_logger
+from taranis_base_bot.log import logger
 
 
 HIGH_PRIORITY = 10
@@ -48,7 +48,7 @@ class Cluster:
 
         self.sentence_transformer = get_sentence_transformer()
 
-        get_logger().info("Story Clustering Setup Complete.")
+        logger.info("Story Clustering Setup Complete.")
 
     def create_corpus(self, new_stories: list[dict]) -> Corpus:
         """Creates a Corpus object from a JSON object denoting all documents
@@ -97,7 +97,7 @@ class Cluster:
                 corpus.docs[doc.doc_id] = doc
 
         corpus.update_df()
-        get_logger().debug(f"Corpus size: {len(corpus.docs)}")
+        logger.debug(f"Corpus size: {len(corpus.docs)}")
         return corpus
 
     def compute_tf_with_boost(self, baseform: str, content: str, tag_type: str) -> int:
