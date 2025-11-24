@@ -3,7 +3,6 @@ import nltk
 import logging
 from sentence_transformers import util
 
-from story_clustering.predictor import Predictor
 from story_clustering.document_representation import Keyword, Document, Corpus
 from story_clustering.event_organizer import Event
 from story_clustering.eventdetector import (
@@ -23,7 +22,7 @@ from story_clustering.nlp_utils import (
     POLYFUZZ_THRESHOLD,
 )
 
-from story_clustering.log import logger
+from taranis_base_bot.log import logger
 
 
 HIGH_PRIORITY = 10
@@ -33,7 +32,7 @@ MID_LOW_PRIORITY = 3
 LOW_PRIORITY = 1
 
 
-class Cluster(Predictor):
+class Cluster:
     def __init__(self):
         nltk.download("stopwords")
 
@@ -142,7 +141,7 @@ class Cluster(Predictor):
 
     def create_keygraph(self, story: dict, corpus: Corpus) -> KeywordGraph:
         graph = KeywordGraph(story_id=story["id"])
-        
+
         # as text we use for now the content of first item
         graph.text = story["news_items"][0]["content"]
         tag_names = list(story.get("tags", {}).keys())

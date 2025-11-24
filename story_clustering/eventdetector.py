@@ -6,7 +6,7 @@ from story_clustering.keywords_organizer import KeywordGraph, CommunityDetector,
 from story_clustering.document_representation import Document, Corpus
 from story_clustering.event_organizer import Event
 from story_clustering.nlp_utils import tfidf, idf, get_sentence_transformer
-from story_clustering.log import logger
+from taranis_base_bot.log import logger
 import numpy as np
 
 SIMILARITY_THRESHOLD = 0.5

@@ -4,11 +4,10 @@ repos:
     rev: v0.9.7
     hooks:
       - id: ruff
-        files: ^story_clustering/
       - id: ruff-format
-        files: ^story_clustering/
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+

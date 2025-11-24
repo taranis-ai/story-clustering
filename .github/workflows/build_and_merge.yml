@@ -1,13 +1,11 @@
-name: Test and Build Containers
+name: Build and merge containers
 
 on:
+  workflow_dispatch:
   push:
     branches:
+      - main
       - master
-    tags:
-      - "**"
-  workflow_dispatch:
-  pull_request:
 
 permissions:
   packages: write
@@ -16,20 +14,16 @@ permissions:
   attestations: write
 
 jobs:
-  test:
-    name: Run Python Tests
-    uses: taranis-ai/github-actions/.github/workflows/python-uv.yml@master
-
   build_container:
     name: Build and Push Containers
     strategy:
       fail-fast: false
       matrix:
-        model: [tfidf]
-        os: [ubuntu-latest, ubuntu-24.04-arm]
+        model: [louvain]
+        os: [blacksmith-2vcpu-ubuntu-2404, blacksmith-2vcpu-ubuntu-2404-arm]
     uses: taranis-ai/github-actions/.github/workflows/build-multiarch-bot-container.yml@master
     with:
-      ghcr_image: ghcr.io/taranis-ai/taranis-story-clustering-bot
+      ghcr_image: ghcr.io/taranis-ai/taranis-story-clustering
       model: ${{ matrix.model }}
       os: ${{ matrix.os }}
 
@@ -39,9 +33,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        model: [tfidf]
+        model: [louvain]
     uses: taranis-ai/github-actions/.github/workflows/merge-multiarch-bot-container.yml@master
     with:
-      ghcr_image: ghcr.io/taranis-ai/taranis-story-clustering-bot
+      ghcr_image: ghcr.io/taranis-ai/taranis-story-clustering
       model: ${{ matrix.model }}
-      latest: ${{ matrix.model == 'tfidf' }}
+      latest: ${{ matrix.model == 'louvain' }}
