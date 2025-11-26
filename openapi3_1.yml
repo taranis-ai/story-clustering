@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: Story Clustering Bot for Taranis AI
+  description: |
+    <bot function description>
+
+    This API supports 1 different models:
+      - louvain: <add description>
+
+    The model used is determined by the MODEL environment variable at deployment time.
+  version: 0.0.0
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  contact:
+    name: AIT
+    email: benjamin.akhras@ait.ac.at
+  x-logo:
+    url: https://github.com/taranis-ai
+
+servers:
+  - url: http://localhost:5500
+    description: Local development server
+  - url: http://localhost:8000
+    description: Docker container server
+
+paths:
+  /:
+    post:
+      summary: <summary of bot predict function>
+      description: <detailed description>
+      operationId: <operation id > # e.g. processText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessRequest'
+            examples:
+              # provide examples of inputs
+              test:
+                summary: Example of a valid input
+                value:
+                  text: "Input text example"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SimpleResponse'
+                  - $ref: '#/components/schemas/ExtendedResponse'
+              examples:
+                # provide examples of outputs
+                test:
+                  summary: Example of a valid output
+                  value:
+                    Response: OK
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required field: <add required field name>"
+        '422':
+          description: Unprocessable entity - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid payload schema"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Model inference failed"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /info:
+    get:
+      summary: Get model information
+      description: Returns information about the currently loaded model
+      operationId: getModelInfo
+      responses:
+        '200':
+          description: Model information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelInfo'
+              example:
+                # proivide example model info
+                model_name: "model"
+                model_version: "0.0.0"
+
+components:
+  schemas:
+  # add component schemas
+
+tags:
+  - name: System
+    description: System health and information endpoints
+  # add more tags as needed
