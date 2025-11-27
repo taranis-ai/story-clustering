@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: A Bot classifying News Items into Cybersecurity/Non-Cybersecurity
+  description: |
+    Categorizes news items based on their relevance to cybersecurity.
+
+    This API supports 2 different models:
+      - cybersec_mlp: An MLP-based model for binary classification
+      - bart_mnli: Zero-shot model adapted for cybersecurity classification
+
+    The model used is determined by the MODEL environment variable at deployment time.
+  version: 0.0.0
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  contact:
+    name: AIT
+    email: lukas.linauer@ait.ac.at
+  x-logo:
+    url: https://github.com/taranis-ai
+
+servers:
+  - url: http://localhost:5500
+    description: Local development server
+  - url: http://localhost:8000
+    description: Docker container server
+
+paths:
+  /:
+    post:
+      summary: Classify input text into Cybersecurity/Non-Cybersecurity
+      description: |
+        Accepts text as input, calls the predict function of the deployed model (based on the MODEL environment variable)
+        and returns the classification result as a JSON object in the format {"cybersecurity": <score>,"non-cybersecurity": <score>}
+      operationId: processText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessRequest'
+            examples:
+              general:
+                summary: General text processing
+                value:
+                  text: "Example input text to classify"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleResponse'
+              examples:
+                valid:
+                  summary: Example of a valid output
+                  value:
+                    Response: OK
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required field: <add required field name>"
+        '422':
+          description: Unprocessable entity - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid payload schema"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Model inference failed"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /info:
+    get:
+      summary: Get model information
+      description: Returns information about the currently loaded model
+      operationId: getModelInfo
+      responses:
+        '200':
+          description: Model information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelInfo'
+              example:
+                model_name: "cybersec_mlp"
+                model_version: "0.2.1"
+
+components:
+  schemas:
+    ProcessRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: The text to classify
+          minLength: 1
+          example: "Example input text to classify"
+
+    SimpleResponse:
+      type: object
+      description: Valid output with cybersecurity classification scores
+      additionalProperties:
+        type: string
+        description: Cybersecurity labels with corresponding scores
+      example:
+        "Cybersecurity": 0.85
+        "Non-Cybersecurity": 0.15
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: "Missing required field: text"
+        details:
+          type: string
+          description: Additional error details (optional)
+          example: "The 'text' field is required and cannot be empty"
+
+    ModelInfo:
+      type: object
+      description: Information about the currently loaded model
+      properties:
+        model_name:
+          type: string
+          description: Name of the model being used
+          enum:
+            - cybersec_mlp
+            - bart_mnli
+          example: "cybersec_mlp"
+        model_version:
+          type: string
+          description: Version of the model
+          example: "0.2.16"
+
+
+tags:
+  - name: System
+    description: System health and information endpoints
+  - name: Cybersecurity Classification
+    description: Endpoints for classifying text into Cybersecurity/Non-Cybersecurity
