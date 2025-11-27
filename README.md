@@ -52,7 +52,7 @@ available configs are in the `config.py`
 You can select the model via the `MODEL` env var. E.g.:
 
 ```bash
-MODEL=<default_model> flask run
+MODEL=louvain flask run
 ```
 
 
@@ -80,7 +80,17 @@ If you encounter errors, make sure that port 5500 is not in use by another appli
 Once the bot is running, you can send test data to it on which it runs its inference method:
 
 ```bash
-curl -X POST http://127.0.0.1:5500 -H "Content-Type: application/json" -d '{"key": "some data"}'
+> curl -X POST http://127.0.0.1:5500 \
+  -H "Content-Type: application/json" \
+  -d '{"stories":[{"id":"s1","tags":{"APT28":{"name":"APT28","tag_type":"APT"},"CVE-2024-1234":{"name":"CVE-2024-1234","tag_type":"cves"},"Microsoft":{"name":"Microsoft","tag_type":"Company"},"Germany":{"name":"Germany","tag_type":"Country"},"Berlin":{"name":"Berlin","tag_type":"LOC"}},"news_items":[{"news_id":"n1","title":"Headline A","content":"Lorem ipsum about APT28 targeting Microsoft in Germany, Berlin.","review":"","language":"en","link":"https://example.com/article1",".published":"2025-01-01"}]},{"id":"s2","tags":{"APT29":{"name":"APT29","tag_type":"APT"},"CVE-2023-9999":{"name":"CVE-2023-9999","tag_type":"cves"},"Google":{"name":"Google","tag_type":"Company"},"USA":{"name":"USA","tag_type":"Country"},"California":{"name":"California","tag_type":"LOC"}},"news_items":[{"news_id":"n2","title":"Headline B","content":"Dolor sit amet about APT29 and Google in California, USA.","review":"","language":"en","link":"https://example.com/article2",".published":"2025-01-02"}]}]}'
+> {"cluster_ids":{"event_clusters":[["s1"],["s2"]]},"message":"Initial Clustering done with: 2 news items"}
+```
+
+You can also set up authorization via the `API_KEY` env var. In this case, you need to send the API_KEY as an Authorization header:
+
+```bash
+> curl -X POST http://127.0.0.1:5000 -H "Content-Type: application/json" -H "Authorization: Bearer api_key" -d '{"stories":[{"id":"s1","tags":{"APT28":{"name":"APT28","tag_type":"APT"},"Windows":{"name":"Windows","tag_type":"Company"},"Russia":{"name":"Russia","tag_type":"Country"},"Europe":{"name":"Europe","tag_type":"LOC"},"Cyber":{"name":"Cyber","tag_type":"PER"}},"news_items":[{"news_id":"n1","title":"A1","content":"APT28 targets Windows users.","review":"","language":"en"}]}]}'
+>{"cluster_ids":{"event_clusters":[["s1"]]},"message":"Initial Clustering done with: 1 news items"}
 ```
 
 ## Development
