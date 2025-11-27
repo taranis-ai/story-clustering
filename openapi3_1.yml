@@ -1,23 +1,22 @@
 openapi: 3.1.0
+
 info:
-  title: A Bot classifying News Items into Cybersecurity/Non-Cybersecurity
+  title: Story Clustering Bot
   description: |
-    Categorizes news items based on their relevance to cybersecurity.
+    Clusters stories into event groups using keyword graphs,
+    semantic similarity, and Louvain community detection.
 
-    This API supports 2 different models:
-      - cybersec_mlp: An MLP-based model for binary classification
-      - bart_mnli: Zero-shot model adapted for cybersecurity classification
+    The clustering pipeline supports:
+      - Initial clustering
+      - Incremental clustering (v2 or v3 depending on configuration)
 
-    The model used is determined by the MODEL environment variable at deployment time.
   version: 0.0.0
   license:
     name: EUPL-1.2
     url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
   contact:
     name: AIT
-    email: lukas.linauer@ait.ac.at
-  x-logo:
-    url: https://github.com/taranis-ai
+    email: benjamin.akhras@ait.ac.at
 
 servers:
   - url: http://localhost:5500
@@ -28,44 +27,62 @@ servers:
 paths:
   /:
     post:
-      summary: Classify input text into Cybersecurity/Non-Cybersecurity
+      summary: Cluster stories using the Louvain method
       description: |
-        Accepts text as input, calls the predict function of the deployed model (based on the MODEL environment variable)
-        and returns the classification result as a JSON object in the format {"cybersecurity": <score>,"non-cybersecurity": <score>}
-      operationId: processText
+        Accepts a list of stories and returns clustering results.
+
+        - If **each story contains exactly one news item**, the system performs **initial clustering**.
+        - Otherwise, the system performs **incremental clustering**, separating already clustered and unclustered stories.
+
+      operationId: clusterStories
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProcessRequest'
+              $ref: '#/components/schemas/ClusterRequest'
             examples:
-              general:
-                summary: General text processing
+              minimal:
+                summary: Inline minimal clustering request
                 value:
-                  text: "Example input text to classify"
+                  stories:
+                    - id: "s1"
+                      tags:
+                        APT28: { name: "APT28", tag_type: "APT" }
+                        Windows: { name: "Windows", tag_type: "Company" }
+                        Russia: { name: "Russia", tag_type: "Country" }
+                        Europe: { name: "Europe", tag_type: "LOC" }
+                        Cyber: { name: "Cyber", tag_type: "PER" }
+                      news_items:
+                        - news_id: "n1"
+                          title: "A1"
+                          content: "APT28 targets Windows users."
+                          review: ""
+                          language: "en"
+
       responses:
         '200':
-          description: Success
+          description: Clustering performed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleResponse'
-              examples:
-                valid:
-                  summary: Example of a valid output
-                  value:
-                    Response: OK
+                $ref: '#/components/schemas/ClusterResponse'
+              example:
+                event_clusters:
+                  - ["s1", "s2"]
+                  - ["s3"]
+
         '400':
-          description: Bad request - invalid input
+          description: Invalid input payload
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Missing required field: <add required field name>"
+                error: "Missing required field: stories"
+
         '422':
-          description: Unprocessable entity - validation error
+          description: Payload validation error
           content:
             application/json:
               schema:
@@ -79,7 +96,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
               example:
-                error: "Model inference failed"
+                error: "Clustering engine failure"
 
   /health:
     get:
@@ -96,7 +113,9 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: "ok"
+                example:
+                  status: "ok"
+
         '503':
           description: Service unavailable
           content:
@@ -106,42 +125,107 @@ paths:
 
   /info:
     get:
-      summary: Get model information
-      description: Returns information about the currently loaded model
+      summary: Get clusterer model information
+      description: Returns metadata about the clustering backend
       operationId: getModelInfo
       responses:
         '200':
-          description: Model information
+          description: Model information payload
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelInfo'
               example:
-                model_name: "cybersec_mlp"
-                model_version: "0.2.1"
+                model_name: "louvain_method_clustering"
+                model_version: "1.0.0"
 
 components:
   schemas:
-    ProcessRequest:
+    ClusterRequest:
       type: object
       required:
-        - text
+        - stories
       properties:
-        text:
-          type: string
-          description: The text to classify
-          minLength: 1
-          example: "Example input text to classify"
+        stories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Story'
 
-    SimpleResponse:
+    Story:
       type: object
-      description: Valid output with cybersecurity classification scores
-      additionalProperties:
-        type: string
-        description: Cybersecurity labels with corresponding scores
-      example:
-        "Cybersecurity": 0.85
-        "Non-Cybersecurity": 0.15
+      required:
+        - id
+        - tags
+        - news_items
+      properties:
+        id:
+          type: string
+          description: Unique story identifier
+        tags:
+          type: object
+          description: |
+            Dictionary of tags.
+            Is only considered if it contains at least 5 entries.
+          minProperties: 5
+          additionalProperties:
+            $ref: '#/components/schemas/Tag'
+        news_items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/NewsItem'
+
+    Tag:
+      type: object
+      required:
+        - tag_type
+      properties:
+        tag_type:
+          type: string
+          description: |
+            Tag classification type used in TF boosting.
+            Examples: APT, cves, Company, Country, PER, LOC, ORG
+        # Additional fields may exist but are not required.
+      additionalProperties: true
+
+    NewsItem:
+      type: object
+      required:
+        - title
+        - content
+        - language
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        review:
+          type: string
+          nullable: true
+        language:
+          type: string
+          example: "en"
+        link:
+          type: string
+          nullable: true
+          example: "https://example.com/article"
+        .published:
+          type: string
+          nullable: true
+          description: Publication timestamp
+
+    ClusterResponse:
+      type: object
+      properties:
+        event_clusters:
+          type: array
+          description: |
+            Each entry is a list of story IDs that belong to the same event cluster.
+          items:
+            type: array
+            items:
+              type: string
+              example: "s1"
 
     Error:
       type: object
@@ -150,32 +234,21 @@ components:
       properties:
         error:
           type: string
-          description: Error message describing what went wrong
-          example: "Missing required field: text"
         details:
           type: string
-          description: Additional error details (optional)
-          example: "The 'text' field is required and cannot be empty"
 
     ModelInfo:
       type: object
-      description: Information about the currently loaded model
       properties:
         model_name:
           type: string
-          description: Name of the model being used
-          enum:
-            - cybersec_mlp
-            - bart_mnli
-          example: "cybersec_mlp"
+          example: "louvain_method_clustering"
         model_version:
           type: string
-          description: Version of the model
-          example: "0.2.16"
-
+          example: "1.0.0"
 
 tags:
+  - name: Story Clustering
+    description: Endpoints for clustering stories
   - name: System
-    description: System health and information endpoints
-  - name: Cybersecurity Classification
-    description: Endpoints for classifying text into Cybersecurity/Non-Cybersecurity
+    description: Health and metadata endpoints
