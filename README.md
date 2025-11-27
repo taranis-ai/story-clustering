@@ -47,6 +47,14 @@ flask run --port 5500
 granian app --port 5500
 ```
 
+You can set configs either via a `.env` file or by setting environment variables directly.
+available configs are in the `config.py`
+You can select the model via the `MODEL` env var. E.g.:
+
+```bash
+MODEL=<default_model> flask run
+```
+
 
 ## Docker
 
