@@ -8,14 +8,13 @@ class Gte:
     def __init__(self):
         pass
 
-    def _compute_centroid(self, stories_in_cluster):
+    def compute_centroid(self, stories_in_cluster: list[dict]) -> np.ndarray:
         """Compute normalized centroid from all news_items of all stories."""
         all_embeddings = []
         for story in stories_in_cluster:
-            for ni in story["news_items"]:
-                all_embeddings.append(np.array(ni["embedding"], dtype=float))
+            all_embeddings.extend(news_item["embedding"] for news_item in story["news_items"])
 
-        centroid = np.mean(all_embeddings, axis=0)
+        centroid = np.mean(np.vstack(all_embeddings), axis=0)
         norm = np.linalg.norm(centroid)
         return centroid / norm if norm > 0 else centroid
 
@@ -23,41 +22,28 @@ class Gte:
         msg = "ok"
         threshold = 0.8
 
-        # Start with each story as its own cluster
         clusters = [[s] for s in stories]
 
         while True:
-            # ---- Recompute centroids for all clusters ----
-            centroids = []
-            for cluster in clusters:
-                if len(cluster) == 0:
-                    centroids.append(None)
-                else:
-                    centroids.append(self._compute_centroid(cluster))
+            centroids = [self.compute_centroid(cluster) for cluster in clusters]
 
-            # ---- Build similarity matrix ----
-            active_centroids = [c for c in centroids if c is not None]
-            if len(active_centroids) <= 1:
-                break  # nothing to merge
-
-            embedding_matrix = np.vstack(active_centroids)
+            embedding_matrix = np.vstack(centroids)
             sim_matrix = embedding_matrix @ embedding_matrix.T
-
-            # prevent self-matching
             np.fill_diagonal(sim_matrix, -np.inf)
 
-            # ---- Find the most similar cluster pair ----
             i, j = np.unravel_index(np.argmax(sim_matrix), sim_matrix.shape)
             max_sim = sim_matrix[i, j]
 
             if max_sim < threshold:
-                break  # stop merging
+                break
 
-            # ---- Merge clusters i and j ----
             clusters[i].extend(clusters[j])
-            clusters[j] = []  # mark as deleted
+            clusters[j] = []
 
-        # ---- Clean empty clusters and extract story_ids ----
+            clusters = [c for c in clusters if len(c) > 0]
+            if len(clusters) <= 1:
+                break
+
         event_clusters = []
         for cluster in clusters:
             if cluster:
