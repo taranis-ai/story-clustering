@@ -1,12 +1,15 @@
 import numpy as np
 from typing import Any
+from story_clustering.structure_compare import StructureTokenizer
+from itertools import combinations
+import math
 
 
 class Gte:
     model_name = "embedding_based_clustering"
 
     def __init__(self):
-        pass
+        self.cmp = StructureTokenizer()
 
     def compute_centroid(self, stories_in_cluster: list[dict]) -> np.ndarray:
         """Compute normalized centroid from all news_items of all stories."""
@@ -18,9 +21,22 @@ class Gte:
         norm = np.linalg.norm(centroid)
         return centroid / norm if norm > 0 else centroid
 
+    def compute_layout_similarity(self, cluster: list[dict]) -> float:
+        """Compute the layout similarity pairwise between all news items in cluster1 and cluster2"""
+        layout_sim = 0.0
+        news_items = []
+        for story in cluster:
+            news_items.extend(story["news_items"])
+
+        for news_item_pair in combinations(news_items, 2):
+            t1 = self.cmp.tokenize(news_item_pair[0]["content"])
+            t2 = self.cmp.tokenize(news_item_pair[1]["content"])
+            layout_sim += self.cmp.calc_fuzzy_similarity(t1, t2)
+        return layout_sim / math.comb(len(news_items), 2)
+
     def predict(self, stories: list[dict]) -> dict[str, Any]:
         msg = "ok"
-        threshold = 0.8
+        threshold = 0.75
 
         clusters = [[s] for s in stories]
 
@@ -34,7 +50,11 @@ class Gte:
             i, j = np.unravel_index(np.argmax(sim_matrix), sim_matrix.shape)
             max_sim = sim_matrix[i, j]
 
-            if max_sim < threshold:
+            # take into account similar layout
+            layout_sim = self.compute_layout_similarity(clusters[i] + clusters[j])
+            total_sim = max_sim * np.exp(-layout_sim / 4)
+
+            if total_sim < threshold:
                 break
 
             clusters[i].extend(clusters[j])
