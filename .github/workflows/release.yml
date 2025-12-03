@@ -66,4 +66,5 @@ jobs:
           append_body: true
           body_path: ${{ runner.temp }}/release_body.md
           files: |
+            docker/compose.yml
             ${{ runner.temp }}/sbom_${{ env.TAG_SAFE }}.json

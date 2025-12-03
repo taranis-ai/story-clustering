@@ -1,0 +1,10 @@
+services:
+  story_clustering:
+    image: ghcr.io/taranis-ai/taranis-story-clustering:latest
+    environment:
+      DEBUG: "${DEBUG:-False}"
+      MODEL: "${MODEL:-louvain}"
+      API_KEY: "${API_KEY:-testkey}"
+    ports:
+      - "5500:8000"
+    restart: unless-stopped
