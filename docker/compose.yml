@@ -6,5 +6,5 @@ services:
       MODEL: "${MODEL:-louvain}"
       API_KEY: "${API_KEY:-testkey}"
     ports:
-      - "5500:8000"
+      - "${BOT_PORT:-5500}:8000"
     restart: unless-stopped
