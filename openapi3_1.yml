@@ -1,0 +1,254 @@
+openapi: 3.1.0
+
+info:
+  title: Story Clustering Bot
+  description: |
+    Clusters stories into event groups using keyword graphs,
+    semantic similarity, and Louvain community detection.
+
+    The clustering pipeline supports:
+      - Initial clustering
+      - Incremental clustering (v2 or v3 depending on configuration)
+
+  version: 0.0.0
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  contact:
+    name: AIT
+    email: benjamin.akhras@ait.ac.at
+
+servers:
+  - url: http://localhost:5500
+    description: Local development server
+  - url: http://localhost:8000
+    description: Docker container server
+
+paths:
+  /:
+    post:
+      summary: Cluster stories using the Louvain method
+      description: |
+        Accepts a list of stories and returns clustering results.
+
+        - If **each story contains exactly one news item**, the system performs **initial clustering**.
+        - Otherwise, the system performs **incremental clustering**, separating already clustered and unclustered stories.
+
+      operationId: clusterStories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClusterRequest'
+            examples:
+              minimal:
+                summary: Inline minimal clustering request
+                value:
+                  stories:
+                    - id: "s1"
+                      tags:
+                        APT28: { name: "APT28", tag_type: "APT" }
+                        Windows: { name: "Windows", tag_type: "Company" }
+                        Russia: { name: "Russia", tag_type: "Country" }
+                        Europe: { name: "Europe", tag_type: "LOC" }
+                        Cyber: { name: "Cyber", tag_type: "PER" }
+                      news_items:
+                        - news_id: "n1"
+                          title: "A1"
+                          content: "APT28 targets Windows users."
+                          review: ""
+                          language: "en"
+
+      responses:
+        '200':
+          description: Clustering performed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterResponse'
+              example:
+                event_clusters:
+                  - ["s1", "s2"]
+                  - ["s3"]
+
+        '400':
+          description: Invalid input payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required field: stories"
+
+        '422':
+          description: Payload validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid payload schema"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Clustering engine failure"
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: "ok"
+
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /info:
+    get:
+      summary: Get clusterer model information
+      description: Returns metadata about the clustering backend
+      operationId: getModelInfo
+      responses:
+        '200':
+          description: Model information payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelInfo'
+              example:
+                model_name: "louvain_method_clustering"
+                model_version: "1.0.0"
+
+components:
+  schemas:
+    ClusterRequest:
+      type: object
+      required:
+        - stories
+      properties:
+        stories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Story'
+
+    Story:
+      type: object
+      required:
+        - id
+        - tags
+        - news_items
+      properties:
+        id:
+          type: string
+          description: Unique story identifier
+        tags:
+          type: object
+          description: |
+            Dictionary of tags.
+            Is only considered if it contains at least 5 entries.
+          minProperties: 5
+          additionalProperties:
+            $ref: '#/components/schemas/Tag'
+        news_items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/NewsItem'
+
+    Tag:
+      type: object
+      required:
+        - tag_type
+      properties:
+        tag_type:
+          type: string
+          description: |
+            Tag classification type used in TF boosting.
+            Examples: APT, cves, Company, Country, PER, LOC, ORG
+        # Additional fields may exist but are not required.
+      additionalProperties: true
+
+    NewsItem:
+      type: object
+      required:
+        - title
+        - content
+        - language
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        review:
+          type: string
+          nullable: true
+        language:
+          type: string
+          example: "en"
+        link:
+          type: string
+          nullable: true
+          example: "https://example.com/article"
+        .published:
+          type: string
+          nullable: true
+          description: Publication timestamp
+
+    ClusterResponse:
+      type: object
+      properties:
+        event_clusters:
+          type: array
+          description: |
+            Each entry is a list of story IDs that belong to the same event cluster.
+          items:
+            type: array
+            items:
+              type: string
+              example: "s1"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+
+    ModelInfo:
+      type: object
+      properties:
+        model_name:
+          type: string
+          example: "louvain_method_clustering"
+        model_version:
+          type: string
+          example: "1.0.0"
+
+tags:
+  - name: Story Clustering
+    description: Endpoints for clustering stories
+  - name: System
+    description: Health and metadata endpoints

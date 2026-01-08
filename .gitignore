@@ -1,6 +1,7 @@
 # built and cached files
 venv/
 .venv/
+.env
 .envrc
 __pycache__/
 *.pyc
