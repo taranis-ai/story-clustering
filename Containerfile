@@ -40,8 +40,10 @@ ENV GRANIAN_INTERFACE=wsgi
 ENV GRANIAN_HOST=0.0.0.0
 ENV GRANIAN_LOG_ACCESS_ENABLED=1
 ENV MODEL=${MODEL}
+ENV NLTK_DATA=/app/nltk_data
 
 # bake models in to the image
+RUN python -c "import nltk; nltk.download('stopwords', download_dir='/app/nltk_data')"
 RUN python -c 'from story_clustering.config import Config; from taranis_base_bot.misc import get_model; get_model(Config)'
 
 EXPOSE 8000

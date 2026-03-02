@@ -1,5 +1,4 @@
 import torch
-import nltk
 import logging
 from sentence_transformers import util
 
@@ -34,8 +33,6 @@ LOW_PRIORITY = 1
 
 class Cluster:
     def __init__(self):
-        nltk.download("stopwords")
-
         bert_logger = logging.getLogger("BERTopic")
 
         self.stopwords = get_stop_words()
