@@ -24,7 +24,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "pytest-asyncio", "ruff"]
 
 [project.urls]
 "Source Code" = "https://github.com/taranis-ai/story-clustering"
