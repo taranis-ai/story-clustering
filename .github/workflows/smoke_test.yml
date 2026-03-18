@@ -3,6 +3,8 @@ permissions:
   contents: read
 on:
   workflow_dispatch:
+  pull_request:
+    types: [opened]
   pull_request_review:
     types: [submitted]
 
