@@ -1,6 +1,9 @@
 from pathlib import Path
 
+<<<<<<< before updating
 
+=======
+>>>>>>> after updating
 def test_container_uses_asgi_interface_for_quart():
     containerfile = Path(__file__).resolve().parents[1] / "Containerfile"
     contents = containerfile.read_text()
