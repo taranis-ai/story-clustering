@@ -3,14 +3,8 @@ services:
     image: ghcr.io/taranis-ai/taranis-story-clustering:latest
     environment:
       DEBUG: "${DEBUG:-False}"
-<<<<<<< before updating
       MODEL: "${MODEL:-louvain}"
       API_KEY: "${API_KEY:-testkey}"
-=======
-      MODEL: "${MODEL:-<default_model>}"
-      API_KEY: "${API_KEY:-testkey}"
-      # add additional env vars
->>>>>>> after updating
     ports:
       - "${BOT_PORT:-5500}:8000"
     restart: unless-stopped
