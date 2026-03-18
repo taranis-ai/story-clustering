@@ -31,6 +31,7 @@ COPY --chown=user:user README.md app.py LICENSE.md /app/
 
 USER user
 
+ENV PYTHONOPTIMIZE=1
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 ENV GRANIAN_THREADS=2
